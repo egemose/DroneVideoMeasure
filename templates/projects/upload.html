@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block head %}
+  {{ super() }}
+  {{ dropzone.load_css() }}
+  {{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 400px;') }}
+{% endblock %}
+
+{% block body %}
+{{ dropzone.load_js() }}
+  {{ super() }}
+{% endblock %}
+
+{% block add_navbar %}
+<li class="nav-item active">
+  <a class="nav-link" href="{{ url_for('projects.video_gallery', project=project) }}" ><i class="fas fa-images"></i>Video gallery</a>
+</li>
+{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+      <div class="row justify-content-between">
+        <div class="col-auto mx-auto text-center">
+          <h1>Upload files to {{ project }}</h1>
+          <p>When done results can be viewed in <a href="{{ url_for('projects.video_gallery', project=project) }}" >Video gallery</a></p>
+          <p>After uploading videos are converted, which may take some time, so please be patient.</p>
+        </div>
+      </div>
+      {{ dropzone.create(action=url_for('projects.upload', project=project)) }}
+      {{ dropzone.config() }}
+    </div>
+{%- endblock %}

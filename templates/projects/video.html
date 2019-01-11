@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.css" type="text/css" />
+<script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.js"></script>
+<script type="text/javascript">
+  Bokeh.set_log_level("info");
+</script>
+{% endblock %}
+
+{% block navbar %}
+<!--remove navbar -->
+{% endblock %}
+
+{% block before_content %}
+<!-- remove container -->
+{% endblock %}
+
+{% block content %}
+{% include 'projects/video_controls.html' %}
+{% include 'projects/optionsModal.html' %}
+{% include 'projects/line_width_modal.html' %}
+
+<video id="video" muted="" class="canvas-img" width={{ video_width }} height={{ video_height }} preload="auto" style="display: none">
+  <source src="{{ url_for('projects_folder', filename = project + '/' + video) }}" type="video/mp4">
+</video>
+
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-10">
+      <div id="openseadragon" class="openseadragon mx-auto"></div>
+    </div>
+  </div>
+  <div class="collapse">
+    <div class="row justify-content-center">
+      <div class="col-10">
+        {{ plot_div | safe }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block after_content %}
+<!-- remove container -->
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ plot_script | safe }}
+<script src={{ url_for( 'static', filename='openseadragon/openseadragon.min.js' ) }}></script>
+<script src={{ url_for( 'static', filename='openseadragon-fabricjs-overlay.js' ) }}></script>
+<script src={{ url_for( 'static', filename='fabric/fabric.adapted.js' ) }}></script>
+<script src={{ url_for( 'static', filename='VideoFrame.min.js' ) }}></script>
+<script src={{ url_for( 'static', filename='video_annotater.js' ) }}></script>
+<script type="text/javascript">
+  var VideoAnnotater = new video_annotater("{{ url_for('static', filename='background.jpg') }}", "toolbar", {{ video_width }}, {{ video_height }}, {{ fps }}, {{ num_frames }});
+  if ("{{ json_data }}" != "None") {
+    VideoAnnotater.load('{{ json_data | tojson | safe }}');
+  }
+  $(function() {
+    $('#colorpicker').colorpicker().on('colorpickerChange', function(event) {
+      VideoAnnotater.on_color_change(event);
+    });
+  });
+  $(function() {
+    $('#colorpicker_default').colorpicker({
+      format: 'auto'
+    }).on('colorpickerChange', function(event) {
+      VideoAnnotater.on_default_color_change(event);
+    });
+  });
+  $(document).keypress(function(e) {
+    if ($("#line_width_modal").hasClass('show') && (e.key == 'Enter')) {
+      VideoAnnotater.on_line_width_done();
+    }
+  });
+  $("#line_width_form").submit(function() {
+    VideoAnnotater.on_line_width_done();
+    $('#line_width_modal').modal('toggle')
+    return false;
+  });
+  $('#video_seek').click(function(e) {
+    VideoAnnotater.video.seekTo({
+      frame: (e.offsetX / this.offsetWidth) * {{ num_frames }}
+    });
+  });
+  fabric.util.requestAnimFrame(function render() {
+    VideoAnnotater.on_new_frame()
+    fabric.util.requestAnimFrame(render);
+  });
+  $("#show_hide_plot").click(function() {
+    if ($(".collapse").hasClass("show") == true) {
+      $(".collapse").collapse('hide')
+    }
+    else {
+      $(".collapse").collapse('show')
+    }
+
+  })
+</script>
+{% endblock %}

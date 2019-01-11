@@ -1,0 +1,37 @@
+{% extends 'bootstrap_base.html' %}
+{% import 'bootstrap_utils.html' as utils %}
+{% import 'bootstrap_wtf.html' as wtf %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32">
+{% endblock %}
+
+{% block title %}Porpoise Meassure{% endblock %}
+
+{% block navbar %}
+<header>
+  <!-- Fixed navbar -->
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <div class="container">
+    <a class="navbar-brand" href={{ url_for('projects.index') }}>Porpoise Measure</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav mr-auto">
+        {% block add_navbar %}
+        {% endblock %}
+      </ul>
+      {% block navbar_end %}
+      {% endblock %}
+    </div>
+  </div>
+  </nav>
+</header>
+{% endblock %}
+
+{% block content %}
+{% endblock %}

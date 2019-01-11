@@ -1,0 +1,25 @@
+<!-- Modal -->
+<div class="modal fade" id="create_new_project_modal" tabindex="-1" role="dialog" aria-labelledby="CreateNewProject" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Create New Project</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form class="form" method="post" role="form">
+        <div class="modal-body">
+            {{ new_project_form.hidden_tag() }}
+            {{ wtf.form_field(new_project_form.name) }}
+            {{ wtf.form_field(new_project_form.description) }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          {{ wtf.form_field(new_project_form.submit, button_map={'submit': 'primary'}) }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Model end -->

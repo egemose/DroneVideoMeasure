@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block add_navbar %}
+<li class="nav-item active">
+  <a class="nav-link" href="{{ url_for('projects.upload', project=project) }}"><i class="fas fa-plus"></i> Upload</a>
+</li>
+<li class="nav-item active">
+  <a class="nav-link" href="{{ url_for( 'projects.download', project=project, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download</a>
+</li>
+<li class="nav-item active">
+  <a class="nav-link" href="{{ url_for( 'projects.plot_log', project=project) }}"><i class="fas fa-chart-area"></i> Plot Log file</a>
+</li>
+{% endblock %}
+{% block navbar_end %}
+<form class="form-inline mt-2 mt-md-0">
+  <input id="filter_images" class="form-control" type="text" placeholder="Search" aria-label="Search">
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="card-columns">
+  {% for video in videos %}
+  <div class="collapse show">
+    <a href={{ url_for('projects.video', project=project, video_file=video) }}>
+      <div class="card text-white bg-dark">
+        <div class="card-body">
+          <h5 class="card-title">{{ video }}</h5>
+        </div>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+  $('#filter_images').on('input', function(event) {
+    var input = $(this)
+    var text = input.val()
+    var regex = RegExp(text)
+    $('.card').each(function() {
+      project = $(this).find('.card-title').text()
+      if (regex.test(project)) {
+        $(this).parent().collapse('show')
+      } else {
+        $(this).parent().collapse('hide')
+      }
+    })
+  });
+</script>
+{% endblock %}
