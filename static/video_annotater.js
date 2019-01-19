@@ -1,34 +1,39 @@
 var current_frame = 0;
 
-var frame_line = fabric.util.createClass(fabric.Line, {
-  initialize: function(frame, points, options) {
+// make lines only on some frames
+fabric.FrameLine = fabric.util.createClass(fabric.Line, {
+  type: 'FrameLine',
+  initialize: function(points, options) {
     this.callSuper('initialize', points, options);
-    this.frame = frame;
+    this.set('frame', options.frame);
+    this.set('name', options.name);
     this.objectCaching = false;
   },
+  toObject: function() {
+    return fabric.util.object.extend(this.callSuper('toObject'), {
+      frame: this.get('frame'),
+      name: this.get('name')
+    });
+  },
   _render: function(ctx) {
-    if (this.frame == current_frame) {
+    if (this.get('frame') == current_frame) {
       this.selectable = true;
       this.evented = true;
-      ctx.beginPath();
-      if (!this.strokeDashArray || this.strokeDashArray && supportsLineDash) {
-        var p = this.calcLinePoints();
-        ctx.moveTo(p.x1, p.y1);
-        ctx.lineTo(p.x2, p.y2);
-      }
-      ctx.lineWidth = this.strokeWidth;
-      var origStrokeStyle = ctx.strokeStyle;
-      ctx.strokeStyle = this.stroke || ctx.fillStyle;
-      this.stroke && this._renderStroke(ctx);
-      ctx.strokeStyle = origStrokeStyle;
-    }
-    else {
+      this.callSuper('_render', ctx);
+    } else {
       this.selectable = false;
       this.evented = false;
     }
   }
 });
 
+fabric.FrameLine.fromObject = function(object, callback) {
+  var points = [object.x1, object.y1, object.x2, object.y2];
+  var frame_line = new fabric.FrameLine(points, object);
+  callback && callback(frame_line);
+};
+
+// annotate video
 class video_annotater {
 
   constructor(image_url, toolbar_id, video_width, video_height, fps, num_frames) {
@@ -56,25 +61,32 @@ class video_annotater {
       self.mouse_is_down = true;
       self.viewer.setMouseNavEnabled(!self.mouse_is_down);
       self.start_position = self.overlay.fabricCanvas().getPointer(event.e);
-      self.line = new frame_line(current_frame, [self.start_position.x, self.start_position.y, self.start_position.x, self.start_position.y], {
+      self.line = new fabric.FrameLine([self.start_position.x, self.start_position.y, self.start_position.x, self.start_position.y], {
         stroke: self.default_stroke,
         strokeWidth: self.default_line_width,
-        hasRotatingPoint: false
+        hasRotatingPoint: false,
+        frame: current_frame,
+        name: self.current_name,
       });
       self.overlay.fabricCanvas().add(self.line);
     });
     this.overlay.fabricCanvas().on('mouse:move', function(event) {
-      if (!self.mouse_is_down || !self.do_draw || self.selection  || event.e.target.tagName != "CANVAS") return;
+      if (!self.mouse_is_down || !self.do_draw || self.selection || event.e.target.tagName != "CANVAS") return;
       self.end_position = self.overlay.fabricCanvas().getPointer(event.e);
-      self.line.set({x2: self.end_position.x, y2:self.end_position.y});
+      self.line.set({
+        x2: self.end_position.x,
+        y2: self.end_position.y,
+      });
       self.overlay.fabricCanvas().renderAll();
     });
     this.overlay.fabricCanvas().on('mouse:up', function(event) {
-      if (!self.do_draw || self.selection  || event.e.target.tagName != "CANVAS") return;
+      if (!self.do_draw || self.selection || event.e.target.tagName != "CANVAS") return;
       self.mouse_is_down = false;
       self.viewer.setMouseNavEnabled(!self.mouse_is_down);
       self.overlay.fabricCanvas().remove(self.line);
-      self.overlay.fabricCanvas().add(self.line);
+      if (self.line.width != 0 && self.line.height != 0) {
+        self.overlay.fabricCanvas().add(self.line);
+      };
       self.updateModifications(true);
     });
     this.overlay.fabricCanvas().on("object:selected", function() {
@@ -110,15 +122,15 @@ class video_annotater {
     this.default_line_width = 3;
     this.videoEl = document.getElementById('video');
     this.fabric_video = new fabric.Image(this.videoEl, {
-        left: 0,
-        top: 0,
-        angle: 0,
-        originX: 'left',
-        originY: 'top',
-        objectCaching: false,
-        selectable: false,
-        evented: false,
-        excludeFromExport: true,
+      left: 0,
+      top: 0,
+      angle: 0,
+      originX: 'left',
+      originY: 'top',
+      objectCaching: false,
+      selectable: false,
+      evented: false,
+      excludeFromExport: true,
     });
     this.num_frames = num_frames
     this.overlay.fabricCanvas().add(this.fabric_video);
@@ -126,36 +138,40 @@ class video_annotater {
       id: 'video',
       frameRate: fps,
     });
+    this.current_name = 'Doodles'
+  }
+
+  set_current_name(name) {
+    this.current_name = name;
   }
 
   play_pause() {
-    if (this.video.video.paused){
+    if (this.video.video.paused) {
       this.video.video.play();
       $('#play_pause').html('<i class="fas fa-pause"></i>');
       $('#draw-mode').removeClass('active')
       this.do_draw = false;
-    }
-    else {
+    } else {
       this.video.video.pause();
       $('#play_pause').html('<i class="fas fa-play"></i>');
     }
   }
 
   next_frame() {
-    if (this.video.video.paused){
+    if (this.video.video.paused) {
       this.video.seekForward(1);
     }
   }
 
   previous_frame() {
-    if (this.video.video.paused){
+    if (this.video.video.paused) {
       this.video.seekBackward(1);
     }
   }
 
   on_new_frame() {
     current_frame = this.video.get()
-    var progress = current_frame/this.num_frames*100+'%';
+    var progress = current_frame / this.num_frames * 100 + '%';
     $('#video_seek').find('.progress-bar').css('width', progress);
     $('#video_seek').find('.progress-bar').html(this.video.toTime());
     if (this.video.video.paused) {
@@ -170,12 +186,9 @@ class video_annotater {
 
   save(save_url) {
     var json = JSON.stringify(this.overlay.fabricCanvas());
-    $.ajax({
-      method: 'POST',
-      url: save_url,
-      data: {json : json},
-      datatype: 'json'
-    }).done();
+    $.post(save_url, {
+      fabric_json: json,
+      });
   }
 
   load(json_data) {
@@ -203,8 +216,9 @@ class video_annotater {
 
   updateModifications(savehistory) {
     if (savehistory == true) {
-        var myjson = JSON.stringify(this.overlay.fabricCanvas());
-        this.states.push(myjson);
+      var myjson = JSON.stringify(this.overlay.fabricCanvas());
+      this.states.push(myjson);
+      markings_modified(myjson);
     }
   }
 

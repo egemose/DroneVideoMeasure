@@ -6,6 +6,7 @@
 <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.js"></script>
 <script type="text/javascript">
   Bokeh.set_log_level("info");
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
 {% endblock %}
 
@@ -21,6 +22,7 @@
 {% include 'projects/video_controls.html' %}
 {% include 'projects/optionsModal.html' %}
 {% include 'projects/line_width_modal.html' %}
+{% include 'projects/new_name_modal.html' %}
 
 <video id="video" muted="" class="canvas-img" width={{ video_width }} height={{ video_height }} preload="auto" style="display: none">
   <source src="{{ url_for('projects_folder', filename = project + '/' + video) }}" type="video/mp4">
@@ -30,6 +32,15 @@
   <div class="row justify-content-center">
     <div class="col-10">
       <div id="openseadragon" class="openseadragon mx-auto"></div>
+    </div>
+    <div class="col-2">
+      <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+        <div class="btn-group my-1 mr-2" role="group" aria-label="group">
+          <button type="button" class="btn btn-secondary" id="new-name" onclick="on_new_name()"><i class="fas fa-plus"></i></button>
+          <button type="button" class="btn btn-secondary" id="jump-to-frame" onclick="jump_to_frame()"><i class="fas fa-level-down-alt"></i></button>
+        </div>
+      </div>
+      <div id="tree" class="tree"></div>
     </div>
   </div>
   <div class="collapse">
@@ -49,6 +60,7 @@
 {% block scripts %}
 {{ super() }}
 {{ plot_script | safe }}
+<script type="text/javascript" src="{{ url_for('static', filename='bootstrap_tree/bootstrap-treeview.min.js') }}"></script>
 <script src={{ url_for( 'static', filename='openseadragon/openseadragon.min.js' ) }}></script>
 <script src={{ url_for( 'static', filename='openseadragon-fabricjs-overlay.js' ) }}></script>
 <script src={{ url_for( 'static', filename='fabric/fabric.adapted.js' ) }}></script>
@@ -58,7 +70,7 @@
   var VideoAnnotater = new video_annotater("{{ url_for('static', filename='background.jpg') }}", "toolbar", {{ video_width }}, {{ video_height }}, {{ fps }}, {{ num_frames }});
   if ("{{ json_data }}" != "None") {
     VideoAnnotater.load('{{ json_data | tojson | safe }}');
-  }
+  };
   $(function() {
     $('#colorpicker').colorpicker().on('colorpickerChange', function(event) {
       VideoAnnotater.on_color_change(event);
@@ -86,18 +98,80 @@
       frame: (e.offsetX / this.offsetWidth) * {{ num_frames }}
     });
   });
+  function jump_to_frame() {
+    if (VideoAnnotater.jump_frame != null) {
+      VideoAnnotater.video.seekTo({frame: VideoAnnotater.jump_frame});
+    };
+  };
+
   fabric.util.requestAnimFrame(function render() {
     VideoAnnotater.on_new_frame()
     fabric.util.requestAnimFrame(render);
   });
-  $("#show_hide_plot").click(function() {
+  function on_show_hide_plot() {
     if ($(".collapse").hasClass("show") == true) {
       $(".collapse").collapse('hide')
     }
     else {
       $(".collapse").collapse('show')
     }
-
-  })
+  };
+  function on_selection(event, node) {
+    var parent = $('#tree').treeview('getNode', node.parentId);
+    if (parent.nodes != null) {
+      var name = parent.text;
+      var re = /Frame: (\d+)/;
+      var frame = parseInt(node.text.match(re)[1]);
+      VideoAnnotater.jump_frame = frame;
+    } else {
+      var name = node.text;
+      VideoAnnotater.jump_frame = null;
+    }
+    VideoAnnotater.set_current_name(name);
+  };
+  function on_new_name() {
+    $('#new_name_modal').modal('toggle');
+  };
+  function on_new_name_done() {
+    var name = $('#new_name_input').val();
+    add_name(name);
+    $('#new_name_modal').modal('toggle');
+  };
+  function add_name(name) {
+    $.post($SCRIPT_ROOT + '/add_marking', {
+      add_name: true,
+      name: name,
+    }, function(data) {
+      $('#tree').treeview({
+        data: data,
+        collapseIcon: 'fas fa-minus',
+        expandIcon: 'fas fa-plus',
+        levels: 1,
+        onNodeSelected: function(event, node) {on_selection(event, node)},
+      });
+      var node = $('#tree').treeview('search', [ name, {
+        ignoreCase: false,
+        exactMatch: true,
+        revealResults: false,
+      }]);
+      $('#tree').treeview('selectNode', [node]);
+      $('#tree').treeview('clearSearch');
+    }, 'json');
+  };
+  function markings_modified(fabric_json) {
+    $.post($SCRIPT_ROOT + '/add_marking', {
+      add_name: false,
+      fabric_json: fabric_json,
+    }, function(data) {
+      $('#tree').treeview({
+        data: data,
+        collapseIcon: 'fas fa-minus',
+        expandIcon: 'fas fa-plus',
+        levels: 1,
+        onNodeSelected: function(event, node) {on_selection(event, node)},
+      });
+    }, 'json');
+  };
+  markings_modified('{}');
 </script>
 {% endblock %}
