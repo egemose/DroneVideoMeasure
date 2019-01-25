@@ -19,10 +19,10 @@
 {% endblock %}
 
 {% block content %}
-{% include 'projects/video_controls.html' %}
-{% include 'projects/optionsModal.html' %}
-{% include 'projects/line_width_modal.html' %}
-{% include 'projects/new_name_modal.html' %}
+{% include 'videos/video_controls.html' %}
+{% include 'videos/optionsModal.html' %}
+{% include 'videos/line_width_modal.html' %}
+{% include 'videos/new_name_modal.html' %}
 
 <video id="video" muted="" class="canvas-img" width={{ video_width }} height={{ video_height }} preload="auto" style="display: none">
   <source src="{{ url_for('projects_folder', filename = project + '/' + video) }}" type="video/mp4">

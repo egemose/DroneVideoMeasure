@@ -3,16 +3,18 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Create New Project</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Edit Project</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form class="form" method="post" role="form">
+      <form class="form" method="post" role="form" enctype="multipart/form-data">
         <div class="modal-body">
             {{ edit_project_form.hidden_tag() }}
             {{ wtf.form_field(edit_project_form.edit_name) }}
             {{ wtf.form_field(edit_project_form.edit_description) }}
+            {{ wtf.form_field(edit_project_form.edit_drone) }}
+            {{ wtf.form_field(edit_project_form.edit_log_file) }}
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

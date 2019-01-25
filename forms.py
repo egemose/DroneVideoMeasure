@@ -1,16 +1,43 @@
-from flask_wtf import FlaskForm
-from wtforms.fields import SubmitField, StringField, TextAreaField, HiddenField
-from wtforms.validators import DataRequired
+import flask_wtf
+import wtforms
+from flask_wtf.file import FileField
 
 
-class NewProjectForm(FlaskForm):
-    name = StringField(u'Project Name', validators=[DataRequired()])
-    description = TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
-    submit = SubmitField(u'Add Project')
+class NewProjectForm(flask_wtf.FlaskForm):
+    name = wtforms.fields.StringField(u'Project Name', validators=[wtforms.validators.DataRequired()])
+    description = wtforms.fields.TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
+    drone = wtforms.fields.SelectField(u'Drone')
+    log_file = FileField(u'Drone log')
+    submit = wtforms.fields.SubmitField(u'Add Project')
 
 
-class EditProjectForm(FlaskForm):
-    edit_project_before = HiddenField()
-    edit_name = StringField(u'Project Name', validators=[DataRequired()])
-    edit_description = TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
-    edit_submit = SubmitField(u'Edit Project')
+class EditProjectForm(flask_wtf.FlaskForm):
+    edit_project_before = wtforms.fields.HiddenField()
+    edit_name = wtforms.fields.StringField(u'Project Name', validators=[wtforms.validators.DataRequired()])
+    edit_description = wtforms.fields.TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
+    edit_drone = wtforms.fields.SelectField(u'Drone')
+    edit_log_file = FileField(u'Drone log')
+    edit_submit = wtforms.fields.SubmitField(u'Edit Project')
+
+
+class NewDroneForm(flask_wtf.FlaskForm):
+    name = wtforms.fields.StringField(u'Drone Name', validators=[wtforms.validators.DataRequired()])
+    camera_settings = wtforms.fields.TextAreaField(u'Camera Settings', render_kw={'placeholder': 'Optional description of camera settings used. \n'
+                                                                                  'Format, fps, etc. \n'
+                                                                                  'Useful if Drone is used with different settings',
+                                                                                  'rows': 4})
+    vfov = wtforms.fields.DecimalField(u'Vertical FOV', validators=[wtforms.validators.DataRequired()])
+    hfov = wtforms.fields.DecimalField(u'Horizontal FOV', validators=[wtforms.validators.DataRequired()])
+    submit = wtforms.fields.SubmitField(u'Add Drone')
+
+
+class EditDroneForm(flask_wtf.FlaskForm):
+    edit_drone_before = wtforms.fields.HiddenField()
+    edit_name = wtforms.fields.StringField(u'Drone Name', validators=[wtforms.validators.DataRequired()])
+    edit_camera_settings = wtforms.fields.TextAreaField(u'Camera Settings', render_kw={'placeholder': 'Optional description of camera settings used. \n'
+                                                                                       'Format, fps, etc. \n'
+                                                                                       'Useful if Drone is used with different settings',
+                                                                        'rows': 4})
+    edit_vfov = wtforms.fields.DecimalField(u'Vertical FOV', validators=[wtforms.validators.DataRequired()])
+    edit_hfov = wtforms.fields.DecimalField(u'Horizontal FOV', validators=[wtforms.validators.DataRequired()])
+    edit_submit = wtforms.fields.SubmitField(u'Add Drone')

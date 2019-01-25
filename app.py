@@ -1,8 +1,14 @@
 import argparse
 from app_config import app
 from projects import projects_view
+from videos import videos_view
+from misc import misc_view
+from drones import drones_view
 
 app.register_blueprint(projects_view)
+app.register_blueprint(videos_view)
+app.register_blueprint(misc_view)
+app.register_blueprint(drones_view)
 
 
 def parse_args():

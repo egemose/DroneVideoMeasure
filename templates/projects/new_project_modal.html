@@ -8,11 +8,13 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form class="form" method="post" role="form">
+      <form class="form" method="post" role="form" enctype="multipart/form-data">
         <div class="modal-body">
             {{ new_project_form.hidden_tag() }}
             {{ wtf.form_field(new_project_form.name) }}
             {{ wtf.form_field(new_project_form.description) }}
+            {{ wtf.form_field(new_project_form.drone) }}
+            {{ wtf.form_field(new_project_form.log_file) }}
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

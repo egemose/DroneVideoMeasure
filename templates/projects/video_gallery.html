@@ -21,7 +21,7 @@
 <div class="card-columns">
   {% for video in videos %}
   <div class="collapse show">
-    <a href={{ url_for('projects.video', project=project, video_file=video) }}>
+    <a href={{ url_for('videos.video', project=project, video_file=video) }}>
       <div class="card text-white bg-dark">
         <div class="card-body">
           <h5 class="card-title">{{ video }}</h5>

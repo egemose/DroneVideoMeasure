@@ -1,6 +1,20 @@
 {% extends 'base.html' %}
 
+{% block head %}
+  {{ super() }}
+  {{ dropzone.load_css() }}
+  {{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 100px;') }}
+{% endblock %}
+
+{% block body %}
+{{ dropzone.load_js() }}
+  {{ super() }}
+{% endblock %}
+
 {% block add_navbar %}
+<li class="nav-item active">
+  <a class="nav-link" href="{{ url_for('drones.index') }}"><i class="fas fa-plane"></i> Drones</a>
+</li>
 <li class="nav-item active">
   <a class="nav-link" href="#" data-toggle="modal" data-target="#create_new_project_modal"><i class="fas fa-plus"></i> Add Project</a>
 </li>
