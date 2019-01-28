@@ -1,20 +1,38 @@
 import os
 import json
 import flask
+import csv
 from markings import MarkingView
-import drone_log_data
+from help_functions import drone_log, fov
+import plot_log_data
 
 
-marking_class = MarkingView()
+marking_class = MarkingView(drone_log, fov)
 videos_view = flask.Blueprint('videos', __name__)
+
+
+@videos_view.route('/<project>/plot')
+def plot_log(project):
+    if drone_log.project != project:
+        drone_log.get_log_data(project)
+    plot_script, plot_div = plot_log_data.get_log_plot(drone_log.log_data())
+    return flask.render_template('videos/plot.html', plot_div=plot_div, plot_script=plot_script, project=project)
 
 
 @videos_view.route('/<project>/<video_file>/annotate')
 def video(project, video_file):
-    log_data = drone_log_data.get_log_data(project)
-    video_duration, video_frames, video_size, video_pos = drone_log_data.get_video_data(project, video_file)
-    video_start_time = drone_log_data.match_log_and_video(log_data, video_duration, video_pos)
-    plot_script, plot_div = drone_log_data.get_log_plot_with_video(log_data, video_start_time, video_duration, video_frames)
+    with open(os.path.join('.', 'projects', project, 'drone.txt')) as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            fov.set_fov(float(row.get('hfov')), float(row.get('vfov')))
+    if drone_log.project != project:
+        drone_log.get_log_data(project)
+    drone_log.get_video_data(project, video_file)
+    fov.set_image_size(*drone_log.video_size)
+    video_start_time, message = drone_log.match_log_and_video()
+    if message:
+        flask.flash(message, 'warning')
+    plot_script, plot_div = plot_log_data.get_log_plot_with_video(drone_log.log_data(), video_start_time, drone_log.video_duration, drone_log.video_nb_frames)
     json_filename = os.path.join('.', 'projects', project, video_file + '.json')
     if os.path.isfile(json_filename):
         with open(json_filename, 'r') as json_file:
@@ -26,10 +44,10 @@ def video(project, video_file):
                 json_data=json_data,
                 plot_script=plot_script,
                 plot_div=plot_div,
-                video_width=video_size[0],
-                video_height=video_size[1],
-                num_frames=video_frames,
-                fps=video_frames / video_duration)
+                video_width=drone_log.video_size[0],
+                video_height=drone_log.video_size[1],
+                num_frames=drone_log.video_nb_frames,
+                fps=drone_log.video_nb_frames / drone_log.video_duration)
     return flask.render_template('videos/video.html', **args)
 
 
@@ -51,5 +69,5 @@ def add_marking():
         marking_class.add_name(name)
     else:
         fabric_json = flask.request.form.get('fabric_json')
-        marking_class = MarkingView.from_fabric_json(fabric_json)
+        marking_class = MarkingView.from_fabric_json(fabric_json, drone_log, fov)
     return flask.jsonify(marking_class.get_data())

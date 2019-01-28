@@ -98,5 +98,12 @@
       }
     })
   });
+  $(document).keypress(function(event) {
+    if (event.key == 'Enter') {
+      if (event.target = $('#filter_projects')) {
+        return false;
+      }
+    }
+  });
 </script>
 {% endblock %}

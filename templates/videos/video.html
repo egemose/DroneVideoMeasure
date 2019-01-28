@@ -29,6 +29,11 @@
 </video>
 
 <div class="container-fluid">
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      {{utils.flashed_messages(messages, dismissible=True)}}
+    {% endif %}
+  {% endwith %}
   <div class="row justify-content-center">
     <div class="col-10">
       <div id="openseadragon" class="openseadragon mx-auto"></div>
@@ -154,7 +159,7 @@
         exactMatch: true,
         revealResults: false,
       }]);
-      $('#tree').treeview('selectNode', [node]);
+      $('#tree').treeview('selectNode', [ node, { silent: true } ]);
       $('#tree').treeview('clearSearch');
     }, 'json');
   };
@@ -170,8 +175,16 @@
         levels: 1,
         onNodeSelected: function(event, node) {on_selection(event, node)},
       });
+      var node = $('#tree').treeview('search', [ VideoAnnotater.current_name, {
+        ignoreCase: false,
+        exactMatch: true,
+        revealResults: false,
+      }]);
+      $('#tree').treeview('selectNode', [ node, { silent: true } ]);
+      $('#tree').treeview('expandNode', [ node, { levels: 2, silent: true } ]);
+      $('#tree').treeview('clearSearch');
     }, 'json');
   };
-  markings_modified('{}');
+  markings_modified(JSON.stringify(VideoAnnotater.overlay.fabricCanvas()));
 </script>
 {% endblock %}

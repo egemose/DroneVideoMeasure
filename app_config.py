@@ -10,7 +10,7 @@ class AppConfig:
 
     # Dropzone settings
     DROPZONE_UPLOAD_MULTIPLE = True
-    DROPZONE_MAX_FILE_SIZE = 10000
+    DROPZONE_MAX_FILE_SIZE = 100000
     DROPZONE_PARALLEL_UPLOADS = 20
     DROPZONE_TIMEOUT = 1800000
     # Obscure settings

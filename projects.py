@@ -4,18 +4,19 @@ import os
 import shutil
 import random
 import subprocess
+import numpy as np
 from collections import namedtuple
 import ffmpeg
 import flask
 import json
 from werkzeug.utils import secure_filename
 from forms import NewProjectForm, EditProjectForm
-import drone_log_data
-from help_functions import get_last_modified_time, get_last_updated_time_as_string
+from help_functions import get_last_modified_time, get_last_updated_time_as_string, drone_log, fov
 
 # todo add warning when clear Annotations
-# todo check if enter is hit what happens
-# todo add conversion from fabricjs to csv
+# todo save video start time for all videos
+# todo change video start time manual
+# todo add points
 
 project_tuple = namedtuple('project', ['title', 'description', 'last_updated'])
 projects_view = flask.Blueprint('projects', __name__)
@@ -88,7 +89,6 @@ def get_edit_project_form(project_dict):
             last_updated = get_last_updated_time_as_string(0)
             project = project_tuple(project_title, description, last_updated)
             project_dict.update({project_title: project})
-            print(form.edit_log_file.data)
             if form.edit_log_file.data:
                 log_file = os.path.join('.', 'projects', project_title, 'drone_log.txt')
                 form.edit_log_file.data.save(log_file)
@@ -119,13 +119,6 @@ def video_gallery(project):
     return flask.render_template('projects/video_gallery.html', project=project, videos=videos, random_int=random_int)
 
 
-@projects_view.route('/<project>/plot')
-def plot_log(project):
-    log_data = drone_log_data.get_log_data(project)
-    plot_script, plot_div = drone_log_data.get_log_plot(log_data)
-    return flask.render_template('projects/plot.html', plot_div=plot_div, plot_script=plot_script, project=project)
-
-
 @projects_view.route('/<project>/download')
 def download(project):
     filename = os.path.join('.', 'projects', project, 'annotations.csv')
@@ -137,7 +130,7 @@ def download(project):
 def save_annotations_csv(annotations, filename):
     with open(filename, 'w') as fp:
         csv_writer = csv.writer(fp, delimiter=',')
-        header = ('name', 'length', 'time', 'lat', 'lon', 'east', 'north', 'zone', 'drone height', 'rotation', 'pos')
+        header = ('name', 'time', 'length', 'lat', 'lon', 'east', 'north', 'zone number', 'zone letter', 'video', 'project')
         csv_writer.writerow(header)
         for annotation in annotations:
             csv_writer.writerow(annotation)
@@ -145,20 +138,26 @@ def save_annotations_csv(annotations, filename):
 
 def get_all_annotations(project):
     annotations = []
+    with open(os.path.join('.', 'projects', project, 'drone.txt')) as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            fov.set_fov(float(row.get('hfov')), float(row.get('vfov')))
     reg_files = os.path.join('.', 'projects', project, '*.json')
     files = glob.glob(reg_files)
+    drone_log.get_log_data(project)
     for file in files:
         with open(file, 'r') as fp:
             json_data = json.load(fp)
         objects = json_data['objects']
         video_file = file.split(os.sep)[-1][:-5]
-        log_file = None  # todo
-        drone_used = None  # todo
+        drone_log.get_video_data(project, video_file)
+        fov.set_image_size(*drone_log.video_size)
+        drone_log.match_log_and_video()
         if objects:
             for obj in objects:
                 if obj['type'] == 'FrameLine':
                     annotation = get_frame_line_data(obj)
-                    annotation.extend(video_file, log_file, drone_used)
+                    annotation.extend([video_file, project])
                 else:
                     annotation = None
                 annotations.append(annotation)
@@ -166,14 +165,31 @@ def get_all_annotations(project):
 
 
 def get_frame_line_data(obj):
-    # todo
-    # name
-    # length
-    # time
-    # lat, lon
-    # east, north, zone
-    # drone height, rotation, pos
-    return obj
+    name = obj.get('name')
+    time, length, pos, wp, zone = _get_drone_data(obj)
+    annotation = [name, time, length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1]]
+    return annotation
+
+
+def _get_drone_data(obj):
+    log_data = drone_log.get_log_data_from_frame(obj.get('frame'))
+    x1 = obj.get('x1')
+    x2 = obj.get('x2')
+    y1 = obj.get('y1')
+    y2 = obj.get('y2')
+    direction = (x1 < 0 and y1 < 0) or (x2 < 0 and y2 < 0)
+    if direction:
+        image_point1 = (obj.get('left'), obj.get('top'))
+        image_point2 = (obj.get('left') + obj.get('width'), obj.get('top') + obj.get('height'))
+    else:
+        image_point1 = (obj.get('left') + obj.get('width'), obj.get('top'))
+        image_point2 = (obj.get('left'), obj.get('top') + obj.get('height'))
+    wp1, zone = fov.get_world_point(image_point1, *log_data[1:], return_zone=True)
+    wp2 = fov.get_world_point(image_point2, *log_data[1:])
+    wp = ((wp1[0] + wp2[0]) / 2, (wp1[1] + wp2[1]) / 2)
+    pos = fov.convert_utm(wp[0], wp[1], zone)
+    length = np.sqrt((wp1[0] - wp2[0]) ** 2 + (wp1[1] - wp2[1]) ** 2)
+    return log_data[0], length, pos, wp, zone
 
 
 @projects_view.route('/<project>/remove')

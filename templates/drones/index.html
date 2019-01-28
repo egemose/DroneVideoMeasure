@@ -7,7 +7,7 @@
 {% endblock %}
 {% block navbar_end %}
 <form class="form-inline mt-2 mt-md-0">
-  <input id="filter_projects" class="form-control" type="text" placeholder="Search" aria-label="Search">
+  <input id="filter_drones" class="form-control" type="text" placeholder="Search" aria-label="Search">
 </form>
 {% endblock %}
 
@@ -83,6 +83,13 @@
         $(this).parent().collapse('hide')
       }
     })
+  });
+  $(document).keypress(function(event) {
+    if (event.key == 'Enter') {
+      if (event.target = $('#filter_drones')) {
+        return false;
+      }
+    }
   });
 </script>
 {% endblock %}

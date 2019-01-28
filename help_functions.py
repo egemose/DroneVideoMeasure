@@ -1,6 +1,11 @@
 import glob
 import os
 import time
+from drone_log_data import DroneLog
+from fov import Fov
+
+drone_log = DroneLog()
+fov = Fov()
 
 
 def get_last_modified_time(m_type, name):
