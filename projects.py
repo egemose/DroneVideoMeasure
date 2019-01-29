@@ -13,9 +13,7 @@ from werkzeug.utils import secure_filename
 from forms import NewProjectForm, EditProjectForm
 from help_functions import get_last_modified_time, get_last_updated_time_as_string, drone_log, fov
 
-# todo add warning when clear Annotations
-# todo save video start time for all videos
-# todo change video start time manual
+# todo add way to concat videos
 # todo add points
 
 project_tuple = namedtuple('project', ['title', 'description', 'last_updated'])

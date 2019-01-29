@@ -209,9 +209,14 @@ class video_annotater {
   }
 
   clear() {
+    $('#clear_markings_modal').modal('toggle');
+  }
+
+  clear_done() {
     this.overlay.fabricCanvas().clear();
     this.overlay.fabricCanvas().add(this.fabric_video);
     this.updateModifications(true);
+    $('#clear_markings_modal').modal('toggle');
   }
 
   updateModifications(savehistory) {

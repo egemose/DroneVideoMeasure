@@ -2,6 +2,7 @@ import os
 import json
 import flask
 import csv
+from datetime import datetime, time
 from markings import MarkingView
 from help_functions import drone_log, fov
 import plot_log_data
@@ -29,9 +30,18 @@ def video(project, video_file):
         drone_log.get_log_data(project)
     drone_log.get_video_data(project, video_file)
     fov.set_image_size(*drone_log.video_size)
-    video_start_time, message = drone_log.match_log_and_video()
-    if message:
-        flask.flash(message, 'warning')
+    video_info_file = os.path.join('.', 'projects', project, video_file + '.txt')
+    if os.path.isfile(video_info_file):
+        with open(video_info_file) as v_file:
+            timestamp = v_file.read()
+            video_start_time = datetime.fromtimestamp(float(timestamp))
+            drone_log.video_start_time = video_start_time
+    else:
+        video_start_time, message = drone_log.match_log_and_video()
+        if message:
+            flask.flash(message, 'warning')
+        with open(video_info_file, 'w') as v_file:
+            v_file.write(str(video_start_time.timestamp()))
     plot_script, plot_div = plot_log_data.get_log_plot_with_video(drone_log.log_data(), video_start_time, drone_log.video_duration, drone_log.video_nb_frames)
     json_filename = os.path.join('.', 'projects', project, video_file + '.json')
     if os.path.isfile(json_filename):
@@ -47,7 +57,8 @@ def video(project, video_file):
                 video_width=drone_log.video_size[0],
                 video_height=drone_log.video_size[1],
                 num_frames=drone_log.video_nb_frames,
-                fps=drone_log.video_nb_frames / drone_log.video_duration)
+                fps=drone_log.video_nb_frames / drone_log.video_duration,
+                video_start_time=video_start_time)
     return flask.render_template('videos/video.html', **args)
 
 
@@ -71,3 +82,18 @@ def add_marking():
         fabric_json = flask.request.form.get('fabric_json')
         marking_class = MarkingView.from_fabric_json(fabric_json, drone_log, fov)
     return flask.jsonify(marking_class.get_data())
+
+
+@videos_view.route('/<project>/<video_file>/save_start_time', methods=['POST'])
+def save_start_time(project, video_file):
+    start_time_str = flask.request.form.get('start_time')
+    start_time = time(int(start_time_str[:2]), int(start_time_str[3:5]), int(start_time_str[6:8]), int(start_time_str[9:]))
+    video_info_file = os.path.join('.', 'projects', project, video_file + '.txt')
+    with open(video_info_file) as v_file:
+        timestamp = v_file.read()
+        video_start_time = datetime.fromtimestamp(float(timestamp))
+    new_video_start_time = datetime.combine(video_start_time, start_time)
+    with open(video_info_file, 'w') as v_file:
+        v_file.write(str(new_video_start_time.timestamp()))
+    drone_log.video_start_time = new_video_start_time
+    return ''

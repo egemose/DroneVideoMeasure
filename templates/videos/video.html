@@ -23,6 +23,8 @@
 {% include 'videos/optionsModal.html' %}
 {% include 'videos/line_width_modal.html' %}
 {% include 'videos/new_name_modal.html' %}
+{% include 'videos/clear_markings_modal.html' %}
+{% include 'videos/change_video_start_time_modal.html' %}
 
 <video id="video" muted="" class="canvas-img" width={{ video_width }} height={{ video_height }} preload="auto" style="display: none">
   <source src="{{ url_for('projects_folder', filename = project + '/' + video) }}" type="video/mp4">
@@ -120,6 +122,18 @@
     else {
       $(".collapse").collapse('show')
     }
+  };
+  function on_video_start_time() {
+    $('#video_start_time_modal').modal('toggle');
+    $('#video_start_time_input').val('{{ video_start_time.time() }}');
+  };
+  function on_save_start_time() {
+    var start_time = $('#video_start_time_input').val();
+    $.post('{{ url_for('videos.save_start_time', project=project, video_file=video) }}', {
+      start_time: start_time,
+    }, function(data) {
+      window.location.href = '{{ url_for('videos.video', project=project, video_file=video) }}'
+    });
   };
   function on_selection(event, node) {
     var parent = $('#tree').treeview('getNode', node.parentId);
