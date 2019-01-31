@@ -13,7 +13,6 @@ from werkzeug.utils import secure_filename
 from forms import NewProjectForm, EditProjectForm
 from help_functions import get_last_modified_time, get_last_updated_time_as_string, drone_log, fov
 
-# todo add way to concat videos
 # todo add points
 
 project_tuple = namedtuple('project', ['title', 'description', 'last_updated'])
@@ -115,6 +114,34 @@ def video_gallery(project):
     videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join('.', 'projects', project, '*.MOV'))])
     random_int = random.randint(1, 10000000)
     return flask.render_template('projects/video_gallery.html', project=project, videos=videos, random_int=random_int)
+
+
+@projects_view.route('/<project>/concatenate_videos')
+def concat_videos(project):
+    videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join('.', 'projects', project, '*.MOV'))])
+    return flask.render_template('projects/cancat_videos.html', project=project, videos=videos)
+
+
+@projects_view.route('/<project>/concatenating', methods=['POST'])
+def do_concat_videos(project):
+    videos_json = flask.request.form.get('videos')
+    output_file_name = flask.request.form.get('output_name')
+    if output_file_name[-4:] != '.MOV':
+        output_file_name += '.MOV'
+    videos = json.loads(videos_json)
+    video_str = ''
+    for video in videos:
+        video_str += 'file ' + video + '\n'
+    concat_file = os.path.join('.', 'projects', project, 'concat.txt')
+    with open(concat_file, 'w') as file:
+        file.write(video_str)
+    output_file = os.path.join('.', 'projects', project, output_file_name)
+    cmd = 'ffmpeg -y -f concat -safe 0 -i ' + concat_file + ' -c copy ' + output_file
+    res = subprocess.run(cmd, shell=True)
+    if res.returncode != 0:
+        return json.dumps([{'type': 'error', 'message': 'Error when concatenating videos.'}])
+    else:
+        return 'true'
 
 
 @projects_view.route('/<project>/download')

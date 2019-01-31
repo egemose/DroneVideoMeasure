@@ -10,6 +10,9 @@
 <li class="nav-item active">
   <a class="nav-link" href="{{ url_for( 'videos.plot_log', project=project) }}"><i class="fas fa-chart-area"></i> Plot Log file</a>
 </li>
+<li class="nav-item active">
+  <a class="nav-link" href="{{ url_for( 'projects.concat_videos', project=project) }}"><i class="fas fa-file-video"></i> Concatenate videos</a>
+</li>
 {% endblock %}
 {% block navbar_end %}
 <form class="form-inline mt-2 mt-md-0">

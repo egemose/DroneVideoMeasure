@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block head %}
+  {{ super() }}
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { fonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js">
+</script>
+{% endblock %}
+
+{% block add_navbar %}
+<li class="nav-item active">
+  <a class="nav-link" href="{{ url_for('drones.index') }}"><i class="fas fa-plane"></i> Drones</a>
+</li>
+{% endblock %}
+
+{% block content %}
+  <div class="jumbotron">
+    <div class="row justify-content-between">
+      <div class="col-auto mx-auto text-center">
+        <h2>Camera Calibration Parameters</h2>
+        $$
+        \begin{align}
+        camera\ matrix & =
+        \begin{bmatrix}
+          f_x={{ mtx[0, 0] }} & 0 & c_x={{ mtx[0, 2] }} \\
+          0 & f_y={{ mtx[1, 1] }} & c_y={{ mtx[1, 2] }} \\
+          0 & 0 & 1
+        \end{bmatrix}\\
+
+        distortion\ coefficients & =
+        \begin{bmatrix}
+          k_1={{ dist[0, 0] }} & k_2={{ dist[0, 1] }} & p_1={{ dist[0, 2] }} & p_2={{ dist[0, 3] }} & k_3={{ dist[0, 4] }}\\
+        \end{bmatrix}
+        \end{align}
+        $$
+        <h3>Description:</h3>
+        <p>
+          Focal length $(f_x, f_y)$
+        </p>
+        <p>
+          Optical centers $(c_x, c_y)$
+        </p>
+        <p>
+          Radial distortion $(k_1, k_2, k_3)$
+        </p>
+        <p>
+          Tangential distortion $(p_1, p_2)$
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+</script>
+{% endblock %}

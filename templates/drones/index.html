@@ -24,13 +24,18 @@
       </div>
       <div class="card-body text-right">
         <p class="card-text text-left">{{ drone.camera_settings }}</p>
+        {% if drone.calibrated %}
+        <a class="btn btn-primary" href="{{ url_for('drones.view_calibration', drone=drone.title) }}"><i class="fas fa-check-square"></i> Camera Calibrated</a>
+        {% else %}
+        <a class="btn btn-primary" href="{{ url_for('drones.add_calibration', drone=drone.title) }}"><i class="fas fa-camera"></i> Camera Calibration</a>
+        {% endif %}
         <div class="btn-group">
           <a class="btn btn-primary" data-toggle="modal" data-target="#edit_drone_modal" data-drone="{{ drone.title }}" data-camera_settings="{{ drone.camera_settings }}" data-vfov="{{ drone.vfov }}" data-hfov="{{ drone.hfov }}" href="#"><i class="far fa-edit"></i> Edit</a>
           <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
           <div class="dropdown-menu">
-            <a class="dropdown-item" href="{{ url_for('drones.add_calibration', drone=drone.title) }}"><i class="fas fa-camera"></i></i> Add Camera Calibration</a>
+            <a class="dropdown-item" href="{{ url_for('drones.add_calibration', drone=drone.title) }}"><i class="fas fa-camera"></i> Add Camera Calibration</a>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" data-toggle="modal" data-target="#remove_drone_modal" data-drone="{{ drone.title }}" data-link="{{ url_for('drones.remove_drone', drone=drone.title) }}" href="#"><i class="far fa-trash-alt"></i>Remove</a>
           </div>
