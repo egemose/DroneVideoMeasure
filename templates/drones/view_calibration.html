@@ -31,19 +31,23 @@
       <div class="col-auto mx-auto text-center">
         <h2>Camera Calibration Parameters</h2>
         $$
-        \begin{align}
-        camera\ matrix & =
+        \begin{gather}
+        camera\ matrix =
         \begin{bmatrix}
           f_x={{ mtx[0, 0] }} & 0 & c_x={{ mtx[0, 2] }} \\
           0 & f_y={{ mtx[1, 1] }} & c_y={{ mtx[1, 2] }} \\
           0 & 0 & 1
         \end{bmatrix}\\
-
-        distortion\ coefficients & =
+        \\
+        distortion\ coefficients =
         \begin{bmatrix}
           k_1={{ dist[0, 0] }} & k_2={{ dist[0, 1] }} & p_1={{ dist[0, 2] }} & p_2={{ dist[0, 3] }} & k_3={{ dist[0, 4] }}\\
-        \end{bmatrix}
-        \end{align}
+        \end{bmatrix}\\
+        \\
+        horizontal\ field\ of\ view = {{ fov_x }}^{\circ}\\
+        vertical\ field\ of\ view = {{ fov_y }}^{\circ}\\
+        \\
+        \end{gather}
         $$
         <h3>Description:</h3>
         <p>

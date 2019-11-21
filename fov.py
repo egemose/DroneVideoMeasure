@@ -1,6 +1,5 @@
 import csv
 import numpy as np
-import scipy.io as sio
 import utm
 import cv2
 from collections import defaultdict
@@ -16,34 +15,12 @@ class Fov:
         self.camera_matrix = None
         self.dist_coefficients = None
 
-    def set_image_size(self, width, height):
-        if self.camera_matrix is not None:
-            corners = np.array([[[0, 0], [width, 0], [width, height], [0, height]]], dtype=np.float32)
-            undist_corners = cv2.undistortPoints(corners, self.camera_matrix, self.dist_coefficients, P=self.camera_matrix)[0]
-            w = (undist_corners[1][0] - undist_corners[0][0] + undist_corners[2][0] - undist_corners[3][0]) / 2
-            h = (undist_corners[3][1] - undist_corners[0][1] + undist_corners[2][1] - undist_corners[1][1]) / 2
-            self.image_size = (w, h)
-        else:
-            self.image_size = (width, height)
-
-    def set_fov_from_file(self, fov_file):
-        with open(fov_file, 'r') as csv_file:
-            reader = csv.reader(csv_file, delimiter=',')
-            field_names = reader.__next__()
-            horizontal_fov_idx = field_names.index('horizontal_fov')
-            vertical_fov_idx = field_names.index('vertical_fov')
-            row = reader.__next__()
-            self.horizontal_fov = (float(row[horizontal_fov_idx])) * np.pi / 180
-            self.vertical_fov = (float(row[vertical_fov_idx])) * np.pi / 180
-
     def set_camera_params(self, mat_file):
-        mat_contents = sio.loadmat(mat_file, squeeze_me=True)
-        self.camera_matrix = np.transpose(mat_contents['camera_matrix'])
-        self.dist_coefficients = np.append(mat_contents['dist_coeff'], [0, 0])
-
-    def set_fov(self, horizontal_fov, vertical_fov):
-        self.horizontal_fov = horizontal_fov * np.pi / 180
-        self.vertical_fov = vertical_fov * np.pi / 180
+        mat_contents = np.load(mat_file)
+        self.camera_matrix = np.transpose(mat_contents['mtx'])
+        self.dist_coefficients = mat_contents['dist']
+        self.horizontal_fov = mat_contents['fov_x'] * np.pi / 180
+        self.vertical_fov = mat_contents['fov_y'] * np.pi / 180
 
     @staticmethod
     def roll(roll):

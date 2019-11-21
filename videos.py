@@ -1,7 +1,6 @@
 import os
 import json
 import flask
-import csv
 from datetime import datetime, time
 from markings import MarkingView
 from help_functions import drone_log, fov
@@ -22,10 +21,8 @@ def plot_log(project):
 
 @videos_view.route('/<project>/<video_file>/annotate')
 def video(project, video_file):
-    with open(os.path.join('.', 'projects', project, 'drone.txt')) as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            fov.set_fov(float(row.get('hfov')), float(row.get('vfov')))
+    mat_file = os.path.join('.', 'projects', project, 'drone.cam.npz')
+    fov.set_camera_params(mat_file)
     if drone_log.project != project:
         drone_log.get_log_data(project)
     drone_log.get_video_data(project, video_file)

@@ -45,6 +45,7 @@ def make_project_dict():
 def get_new_project_form(project_dict):
     form = NewProjectForm()
     drones = next(os.walk(os.path.join('.', 'drones')))[2]
+    drones = [x for x in drones if x.endswith('.txt')]
     form.drone.choices = [(d, d[:-4]) for d in drones]
     if form.validate_on_submit():
         project_title = form.name.data
@@ -56,12 +57,10 @@ def get_new_project_form(project_dict):
             os.mkdir(os.path.join('.', 'projects', project_title))
             with open(os.path.join('.', 'projects', project_title, 'description.txt'), 'w') as file:
                 file.write(description)
-            shutil.copyfile(os.path.join('.', 'drones', drone), os.path.join('.', 'projects', project_title, 'drone.txt'))
-            log_file = os.path.join('.', 'projects', project_title, 'drone_log.txt')
+            print(os.path.join('.', 'drones', drone[:-4] + '.cam.npz'))
+            shutil.copyfile(os.path.join('.', 'drones', drone[:-4] + '.cam.npz'), os.path.join('.', 'projects', project_title, 'drone.cam.npz'))
+            log_file = os.path.join('.', 'projects', project_title, 'drone_log.csv')
             form.log_file.data.save(log_file)
-            converted_log = os.path.join('.', 'projects', project_title, 'drone_log.csv')
-            cmd = 'wine drone_log/TXTlogToCSVtool "' + log_file + '" "' + converted_log + '"'
-            subprocess.call(cmd, shell=True)
             return flask.redirect(flask.url_for('projects.upload', project=project_title)), form
     return None, form
 
@@ -79,7 +78,7 @@ def get_edit_project_form(project_dict):
             flask.flash('A project with that name already exist!')
         else:
             project_dict.pop(project_before, None)
-            shutil.copyfile(os.path.join('.', 'drones', drone), os.path.join('.', 'projects', project_title, 'drone.txt'))
+            shutil.copyfile(os.path.join('.', 'drones', drone[:-4] + '.cam.npz'), os.path.join('.', 'projects', project_title, 'drone.cam.npz'))
             os.rename(os.path.join('.', 'projects', project_before), os.path.join('.', 'projects', project_title))
             with open(os.path.join('.', 'projects', project_title, 'description.txt'), 'w') as file:
                 file.write(description)
@@ -87,11 +86,8 @@ def get_edit_project_form(project_dict):
             project = project_tuple(project_title, description, last_updated)
             project_dict.update({project_title: project})
             if form.edit_log_file.data:
-                log_file = os.path.join('.', 'projects', project_title, 'drone_log.txt')
+                log_file = os.path.join('.', 'projects', project_title, 'drone_log.csv')
                 form.edit_log_file.data.save(log_file)
-                converted_log = os.path.join('.', 'projects', project_title, 'drone_log.csv')
-                cmd = 'wine drone_log/TXTlogToCSVtool "' + log_file + '" "' + converted_log + '"'
-                subprocess.call(cmd, shell=True)
     return form
 
 
@@ -102,9 +98,13 @@ def upload(project):
         for file in file_obj.values():
             file_location = os.path.join('.', 'projects', project, secure_filename(file.filename))
             if file.mimetype == 'video/quicktime':
-                temp_file = os.path.join('.', 'projects', project, secure_filename('temp.MOV'))
+                while True:
+                    random_int = random.randint(1, 10000000)
+                    temp_file = os.path.join('.', 'projects', project, secure_filename(str(random_int) + '.MOV'))
+                    if not os.path.exists(temp_file):
+                        break
                 file.save(temp_file)
-                ffmpeg.input(temp_file).filter('scale', -1, 1080).output(file_location).overwrite_output().run()
+                ffmpeg.input(temp_file).filter('scale', -1, 1440).output(file_location).overwrite_output().run()
                 os.remove(temp_file)
     return flask.render_template('projects/upload.html', project=project)
 
@@ -163,10 +163,8 @@ def save_annotations_csv(annotations, filename):
 
 def get_all_annotations(project):
     annotations = []
-    with open(os.path.join('.', 'projects', project, 'drone.txt')) as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            fov.set_fov(float(row.get('hfov')), float(row.get('vfov')))
+    mat_file = os.path.join('.', 'projects', project, 'drone.cam.npz')
+    fov.set_camera_params(mat_file)
     reg_files = os.path.join('.', 'projects', project, '*.json')
     files = glob.glob(reg_files)
     drone_log.get_log_data(project)

@@ -10,10 +10,8 @@ from forms import NewDroneForm, EditDroneForm
 from help_functions import get_last_updated_time_as_string, get_last_modified_time
 from calibration import CalibrateCamera
 
-# todo add camera calibration to fov calc
-
 drones_view = flask.Blueprint('drones', __name__)
-drone_tuple = namedtuple('drone', ['title', 'camera_settings', 'vfov', 'hfov', 'calibrated', 'last_updated'])
+drone_tuple = namedtuple('drone', ['title', 'camera_settings', 'calibrated', 'last_updated'])
 
 
 @drones_view.route('/drones', methods=['GET', 'POST'])
@@ -29,17 +27,15 @@ def get_drone_form(drone_dict):
     if form.validate_on_submit():
         drone_title = form.name.data
         camera_settings = form.camera_settings.data
-        vfov = form.vfov.data
-        hfov = form.hfov.data
         if drone_title in drone_dict:
             flask.flash('A project with that name already exist!')
         else:
             with open(os.path.join('.', 'drones',  drone_title + '.txt'), 'w') as file:
                 writer = csv.writer(file)
-                header = ('title', 'camera_settings', 'vfov', 'hfov')
+                header = ('title', 'camera_settings')
                 writer.writerow(header)
-                writer.writerow((drone_title, camera_settings, vfov, hfov))
-            drone = drone_tuple(drone_title, camera_settings, vfov, hfov, False, get_last_updated_time_as_string(0))
+                writer.writerow((drone_title, camera_settings))
+            drone = drone_tuple(drone_title, camera_settings, False, get_last_updated_time_as_string(0))
             drone_dict.update({drone.title: drone})
     return form
 
@@ -50,8 +46,6 @@ def get_edit_drone_form(drone_dict):
         project_before = form.edit_drone_before.data
         drone_title = form.edit_name.data
         camera_settings = form.edit_camera_settings.data
-        vfov = form.edit_vfov.data
-        hfov = form.edit_hfov.data
         if drone_title in drone_dict and not drone_title == project_before:
             flask.flash('A project with that name already exist!')
         else:
@@ -60,10 +54,10 @@ def get_edit_drone_form(drone_dict):
             os.rename(os.path.join('.', 'drones', project_before + '.txt'), os.path.join('.', 'drones', drone_title + '.txt'))
             with open(os.path.join('.', 'drones', drone_title + '.txt'), 'w') as file:
                 writer = csv.writer(file)
-                header = ('title', 'camera_settings', 'vfov', 'hfov')
+                header = ('title', 'camera_settings')
                 writer.writerow(header)
-                writer.writerow((drone_title, camera_settings, vfov, hfov))
-            drone = drone_tuple(drone_title, camera_settings, vfov, hfov, calibrated, get_last_updated_time_as_string(0))
+                writer.writerow((drone_title, camera_settings))
+            drone = drone_tuple(drone_title, camera_settings, calibrated, get_last_updated_time_as_string(0))
             drone_dict.update({drone.title: drone})
     return form
 
@@ -78,7 +72,7 @@ def make_drone_dict():
             with open(os.path.join('.', 'drones', drone_title), 'r') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    drone = drone_tuple(row.get('title'), row.get('camera_settings'), row.get('vfov'), row.get('hfov'), calibrated, last_modified_string)
+                    drone = drone_tuple(row.get('title'), row.get('camera_settings'), calibrated, last_modified_string)
                     drone_dict.update({drone.title: drone})
     return drone_dict
 
@@ -105,11 +99,11 @@ def do_calibration(drone):
         checkerboard_height = int(flask.request.form.get('checkerboard_height'))
     except ValueError:
         return json.dumps([{'type': 'danger', 'message': 'Error interpreting the checkerboard size.'}])
-    CC = CalibrateCamera((checkerboard_width, checkerboard_height))
+    calibrate_cam = CalibrateCamera((checkerboard_width, checkerboard_height))
     in_folder = os.path.join('.', 'drones', 'calibration')
     save_file = os.path.join('.', 'drones', drone + '.cam')
     try:
-        CC(in_folder, save_file)
+        calibrate_cam(in_folder, save_file)
     except AttributeError:
         return json.dumps([{'type': 'danger', 'message': 'Error loading images.'}])
     return 'true'
@@ -121,8 +115,9 @@ def view_calibration(drone):
     np_file = np.load(cam_file)
     mtx = np_file['mtx']
     dist = np_file['dist']
-    print(mtx, dist)
-    return flask.render_template('drones/view_calibration.html', mtx=np.around(mtx, 1), dist=np.around(dist, 5))
+    fov_x = np_file['fov_x']
+    fov_y = np_file['fov_y']
+    return flask.render_template('drones/view_calibration.html', mtx=np.around(mtx, 1), dist=np.around(dist, 5), fov_x=np.round(fov_x, 2), fov_y=np.round(fov_y, 2))
 
 
 @drones_view.route('/drones/<drone>/remove')

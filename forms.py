@@ -26,8 +26,6 @@ class NewDroneForm(flask_wtf.FlaskForm):
                                                                                   'Format, fps, etc. \n'
                                                                                   'Useful if Drone is used with different settings',
                                                                                   'rows': 4})
-    vfov = wtforms.fields.DecimalField(u'Vertical FOV', validators=[wtforms.validators.DataRequired()])
-    hfov = wtforms.fields.DecimalField(u'Horizontal FOV', validators=[wtforms.validators.DataRequired()])
     submit = wtforms.fields.SubmitField(u'Add Drone')
 
 
@@ -37,7 +35,5 @@ class EditDroneForm(flask_wtf.FlaskForm):
     edit_camera_settings = wtforms.fields.TextAreaField(u'Camera Settings', render_kw={'placeholder': 'Optional description of camera settings used. \n'
                                                                                        'Format, fps, etc. \n'
                                                                                        'Useful if Drone is used with different settings',
-                                                                        'rows': 4})
-    edit_vfov = wtforms.fields.DecimalField(u'Vertical FOV', validators=[wtforms.validators.DataRequired()])
-    edit_hfov = wtforms.fields.DecimalField(u'Horizontal FOV', validators=[wtforms.validators.DataRequired()])
+                                                                                       'rows': 4})
     edit_submit = wtforms.fields.SubmitField(u'Add Drone')

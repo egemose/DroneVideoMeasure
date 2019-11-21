@@ -2,11 +2,13 @@ import os
 import numpy as np
 import cv2
 import glob
+from tqdm import tqdm
 
 
 class CalibrateCamera:
-    def __init__(self, checkerboard_size):
+    def __init__(self, checkerboard_size, *, show_progress=False):
         self.checkerboard_size = checkerboard_size
+        self.show_progress = show_progress
         self.checkerboard = self._create_checkerboard()
         self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         self.obj_points = []
@@ -21,7 +23,7 @@ class CalibrateCamera:
     def _detect_checkerboard(self, folder, show_detections=False):
         gray = None
         image_files = glob.glob(os.path.join(folder, '*.jpg'))
-        for image_file in image_files:
+        for image_file in tqdm(image_files, disable=not self.show_progress):
             image = cv2.imread(image_file)
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             ret, corners = cv2.findChessboardCorners(gray, self.checkerboard_size, None)
@@ -36,13 +38,25 @@ class CalibrateCamera:
         self.image_size = gray.shape[::-1]
         cv2.destroyAllWindows()
 
-    def _calculate_calibration(self, save_file):
+    def _calculate_calibration(self):
         _, mtx, dist, _, _ = cv2.calibrateCamera(self.obj_points, self.image_points, self.image_size, None, None)
-        np.savez(save_file, mtx=mtx, dist=dist)
+        if self.show_progress:
+            print('Matrix:', mtx)
+            print('Dist. coef:', dist)
+        return mtx, dist
+
+    def _calculate_camera_fov(self, mtx):
+        fov_x, fov_y, _, _, _ = cv2.calibrationMatrixValues(mtx, self.image_size, 1, 1)
+        if self.show_progress:
+            print('FOV_x:', fov_x)
+            print('FOV_y:', fov_y)
+        return fov_x, fov_y
 
     def __call__(self, in_folder, save_file, show_detections=False, *args, **kwargs):
         self._detect_checkerboard(in_folder, show_detections)
-        self._calculate_calibration(save_file)
+        mtx, dist = self._calculate_calibration()
+        fov_x, fov_y = self._calculate_camera_fov(mtx)
+        np.savez(save_file, mtx=mtx, dist=dist, fov_x=fov_x, fov_y=fov_y)
 
 
 class Undistort:
