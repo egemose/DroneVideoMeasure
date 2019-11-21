@@ -34,7 +34,7 @@ fabric.FrameLine.fromObject = function(object, callback) {
 };
 
 // annotate video
-class video_annotater {
+class video_annotator {
 
   constructor(image_url, toolbar_id, video_width, video_height, fps, num_frames) {
     var self = this;

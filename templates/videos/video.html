@@ -72,47 +72,47 @@
 <script src={{ url_for( 'static', filename='openseadragon-fabricjs-overlay.js' ) }}></script>
 <script src={{ url_for( 'static', filename='fabric/fabric.adapted.js' ) }}></script>
 <script src={{ url_for( 'static', filename='VideoFrame.min.js' ) }}></script>
-<script src={{ url_for( 'static', filename='video_annotater.js' ) }}></script>
+<script src={{ url_for( 'static', filename='video_annotator.js' ) }}></script>
 <script type="text/javascript">
-  var VideoAnnotater = new video_annotater("{{ url_for('static', filename='background.jpg') }}", "toolbar", {{ video_width }}, {{ video_height }}, {{ fps }}, {{ num_frames }});
+  var VideoAnnotator = new video_annotator("{{ url_for('static', filename='background.jpg') }}", "toolbar", {{ video_width }}, {{ video_height }}, {{ fps }}, {{ num_frames }});
   if ("{{ json_data }}" != "None") {
-    VideoAnnotater.load('{{ json_data | tojson | safe }}');
+    VideoAnnotator.load('{{ json_data | tojson | safe }}');
   };
   $(function() {
     $('#colorpicker').colorpicker().on('colorpickerChange', function(event) {
-      VideoAnnotater.on_color_change(event);
+      VideoAnnotator.on_color_change(event);
     });
   });
   $(function() {
     $('#colorpicker_default').colorpicker({
       format: 'auto'
     }).on('colorpickerChange', function(event) {
-      VideoAnnotater.on_default_color_change(event);
+      VideoAnnotator.on_default_color_change(event);
     });
   });
   $(document).keypress(function(e) {
     if ($("#line_width_modal").hasClass('show') && (e.key == 'Enter')) {
-      VideoAnnotater.on_line_width_done();
+      VideoAnnotator.on_line_width_done();
     }
   });
   $("#line_width_form").submit(function() {
-    VideoAnnotater.on_line_width_done();
+    VideoAnnotator.on_line_width_done();
     $('#line_width_modal').modal('toggle')
     return false;
   });
   $('#video_seek').click(function(e) {
-    VideoAnnotater.video.seekTo({
+    VideoAnnotator.video.seekTo({
       frame: (e.offsetX / this.offsetWidth) * {{ num_frames }}
     });
   });
   function jump_to_frame() {
-    if (VideoAnnotater.jump_frame != null) {
-      VideoAnnotater.video.seekTo({frame: VideoAnnotater.jump_frame});
+    if (VideoAnnotator.jump_frame != null) {
+      VideoAnnotator.video.seekTo({frame: VideoAnnotator.jump_frame});
     };
   };
 
   fabric.util.requestAnimFrame(function render() {
-    VideoAnnotater.on_new_frame()
+    VideoAnnotator.on_new_frame()
     fabric.util.requestAnimFrame(render);
   });
   function on_show_hide_plot() {
@@ -141,12 +141,12 @@
       var name = parent.text;
       var re = /Frame: (\d+)/;
       var frame = parseInt(node.text.match(re)[1]);
-      VideoAnnotater.jump_frame = frame;
+      VideoAnnotator.jump_frame = frame;
     } else {
       var name = node.text;
-      VideoAnnotater.jump_frame = null;
+      VideoAnnotator.jump_frame = null;
     }
-    VideoAnnotater.set_current_name(name);
+    VideoAnnotator.set_current_name(name);
   };
   function on_new_name() {
     $('#new_name_modal').modal('toggle');
@@ -189,7 +189,7 @@
         levels: 1,
         onNodeSelected: function(event, node) {on_selection(event, node)},
       });
-      var node = $('#tree').treeview('search', [ VideoAnnotater.current_name, {
+      var node = $('#tree').treeview('search', [ VideoAnnotator.current_name, {
         ignoreCase: false,
         exactMatch: true,
         revealResults: false,
@@ -199,6 +199,6 @@
       $('#tree').treeview('clearSearch');
     }, 'json');
   };
-  markings_modified(JSON.stringify(VideoAnnotater.overlay.fabricCanvas()));
+  markings_modified(JSON.stringify(VideoAnnotator.overlay.fabricCanvas()));
 </script>
 {% endblock %}
