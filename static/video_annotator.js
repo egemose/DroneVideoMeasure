@@ -1,5 +1,37 @@
 var current_frame = 0;
 
+// make points only on some frames
+fabric.FramePoint = fabric.util.createClass(fabric.Circle, {
+  type: 'FramePoint',
+  initialize: function(options) {
+    this.callSuper('initialize', options);
+    this.set('frame', options.frame);
+    this.set('name', options.name);
+    this.objectCaching = false;
+  },
+  toObject: function() {
+    return fabric.util.object.extend(this.callSuper('toObject'), {
+      frame: this.get('frame'),
+      name: this.get('name')
+    });
+  },
+  _render: function(ctx) {
+    if (this.get('frame') == current_frame) {
+      this.selectable = true;
+      this.evented = true;
+      this.callSuper('_render', ctx);
+    } else {
+      this.selectable = false;
+      this.evented = false;
+    }
+  }
+});
+
+fabric.FramePoint.fromObject = function(object, callback) {
+  var frame_line = new fabric.FramePoint(object);
+  callback && callback(frame_line);
+};
+
 // make lines only on some frames
 fabric.FrameLine = fabric.util.createClass(fabric.Line, {
   type: 'FrameLine',
@@ -86,6 +118,18 @@ class video_annotator {
       self.overlay.fabricCanvas().remove(self.line);
       if (self.line.width != 0 && self.line.height != 0) {
         self.overlay.fabricCanvas().add(self.line);
+      } else {
+        self.point = new fabric.FramePoint({
+          radius: 10,
+          fill: self.default_stroke,
+          left: self.start_position.x,
+          top: self.start_position.y,
+          originX: 'center', originY: 'center',
+          hasControls: false,
+          frame: current_frame,
+          name: self.current_name,
+        })
+        self.overlay.fabricCanvas().add(self.point);
       };
       self.updateModifications(true);
     });
@@ -146,6 +190,7 @@ class video_annotator {
   }
 
   play_pause() {
+    console.log('run')
     if (this.video.video.paused) {
       this.video.video.play();
       $('#play_pause').html('<i class="fas fa-pause"></i>');
@@ -174,9 +219,6 @@ class video_annotator {
     var progress = current_frame / this.num_frames * 100 + '%';
     $('#video_seek').find('.progress-bar').css('width', progress);
     $('#video_seek').find('.progress-bar').html(this.video.toTime());
-    if (this.video.video.paused) {
-      $('#play_pause').html('<i class="fas fa-play"></i>');
-    }
     this.overlay.fabricCanvas().renderAll();
   }
 

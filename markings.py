@@ -24,7 +24,12 @@ class MarkingView:
                     name = obj.get('name')
                     frame = obj.get('frame')
                     length = self._get_length(obj)
-                    string = f'Frame: {frame}, Length: {length:.2f}m'
+                    string = f'Line; Frame: {frame}, Length: {length:.2f}m'
+                    self.add_marking(name, string)
+                if obj.get('type') == 'FramePoint':
+                    name = obj.get('name')
+                    frame = obj.get('frame')
+                    string = f'Point; Frame: {frame}'
                     self.add_marking(name, string)
 
     def _get_length(self, obj):

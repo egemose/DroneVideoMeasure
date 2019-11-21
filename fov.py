@@ -1,4 +1,3 @@
-import csv
 import numpy as np
 import utm
 import cv2
@@ -14,6 +13,9 @@ class Fov:
         self.dist_coefficients = None
         self.camera_matrix = None
         self.dist_coefficients = None
+
+    def set_image_size(self, width, height):
+        self.image_size = (width, height)
 
     def set_camera_params(self, mat_file):
         mat_contents = np.load(mat_file)

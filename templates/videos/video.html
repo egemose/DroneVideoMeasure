@@ -4,6 +4,7 @@
 {{ super() }}
 <link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.css" type="text/css" />
 <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.min.js"></script>
 <script type="text/javascript">
   Bokeh.set_log_level("info");
   $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
@@ -78,6 +79,28 @@
   if ("{{ json_data }}" != "None") {
     VideoAnnotator.load('{{ json_data | tojson | safe }}');
   };
+  Mousetrap.bind('space', function(e) {
+    VideoAnnotator.play_pause();
+  });
+  Mousetrap.bind('n', function(e) {
+    VideoAnnotator.next_frame();
+  });
+  Mousetrap.bind('p', function(e) {
+    VideoAnnotator.previous_frame();
+  });
+  Mousetrap.bind('t', function(e) {
+    VideoAnnotator.toggle_draw();
+    $('#draw-mode').button('toggle')
+  });
+  Mousetrap.bind('ctrl+z', function(e) {
+    VideoAnnotator.on_undo();
+  });
+  Mousetrap.bind('ctrl+shift+z', function(e) {
+    VideoAnnotator.on_redo();
+  });
+  Mousetrap.bind('ctrl+g', function(e) {
+    VideoAnnotator.save('{{ url_for('videos.save_fabric_json', project=project, video_file=video) }}');
+  });
   $(function() {
     $('#colorpicker').colorpicker().on('colorpickerChange', function(event) {
       VideoAnnotator.on_color_change(event);
@@ -106,8 +129,13 @@
     });
   });
   function jump_to_frame() {
-    if (VideoAnnotator.jump_frame != null) {
+    if (VideoAnnotator.jump_frame != 'null') {
+      if (VideoAnnotator.jump_frame == 0) {
+        VideoAnnotator.video.seekTo({frame: 1});
+        VideoAnnotator.video.seekBackward(1);
+      } else {
       VideoAnnotator.video.seekTo({frame: VideoAnnotator.jump_frame});
+      };
     };
   };
 
@@ -144,7 +172,7 @@
       VideoAnnotator.jump_frame = frame;
     } else {
       var name = node.text;
-      VideoAnnotator.jump_frame = null;
+      VideoAnnotator.jump_frame = 'null';
     }
     VideoAnnotator.set_current_name(name);
   };
@@ -175,6 +203,7 @@
       }]);
       $('#tree').treeview('selectNode', [ node, { silent: true } ]);
       $('#tree').treeview('clearSearch');
+      VideoAnnotator.set_current_name(name);
     }, 'json');
   };
   function markings_modified(fabric_json) {

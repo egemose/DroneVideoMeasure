@@ -16,8 +16,6 @@
             <button type="button" class="btn btn-secondary" id="save" onclick="VideoAnnotator.save('{{ url_for('videos.save_fabric_json', project=project, video_file=video) }}')"><i class="fas fa-save"></i></button>
             <button type="button" class="btn btn-secondary" id="undo" onclick="VideoAnnotator.on_undo()"><i class="fas fa-undo"></i></button>
             <button type="button" class="btn btn-secondary" id="redo" onclick="VideoAnnotator.on_redo()"><i class="fas fa-redo"></i></button>
-            <!--<button type="button" class="btn btn-secondary" id="shape" data-toggle="tooltip" data-placement="bottom" title="Comming Soon!"><i class="fas fa-shapes"></i></button>
-            -->
           </div>
           <input type="hidden" class="form-control" value="rgb(255, 0, 0)" />
           <div class="input-group-append">
@@ -38,7 +36,7 @@
   <div class="row justify-content-md-center">
     <div class="col">
       <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-        <div class="btn-group my-1 ml-auto mr-2" role="group" aria-label="group1">
+        <div class="btn-group my-1 ml-auto mr-2" role="group" aria-label="group4">
           <button type="button" class="btn btn-secondary" id="previous_frame" onclick="VideoAnnotator.previous_frame()"><i class="fas fa-step-backward"></i></button>
           <button type="button" class="btn btn-secondary" id="play_pause" onclick="VideoAnnotator.play_pause()"><i class="fas fa-play"></i></button>
           <button type="button" class="btn btn-secondary" id="next_frame" onclick="VideoAnnotator.next_frame()"><i class="fas fa-step-forward"></i></button>

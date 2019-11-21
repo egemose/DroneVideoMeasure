@@ -68,6 +68,7 @@ def get_new_project_form(project_dict):
 def get_edit_project_form(project_dict):
     form = EditProjectForm()
     drones = next(os.walk(os.path.join('.', 'drones')))[2]
+    drones = [x for x in drones if x.endswith('.txt')]
     form.edit_drone.choices = [(d, d[:-4]) for d in drones]
     if form.validate_on_submit():
         project_before = form.edit_project_before.data
@@ -158,7 +159,8 @@ def save_annotations_csv(annotations, filename):
         header = ('name', 'time', 'length', 'lat', 'lon', 'east', 'north', 'zone number', 'zone letter', 'video', 'project')
         csv_writer.writerow(header)
         for annotation in annotations:
-            csv_writer.writerow(annotation)
+            if annotation:
+                csv_writer.writerow(annotation)
 
 
 def get_all_annotations(project):
@@ -181,6 +183,9 @@ def get_all_annotations(project):
                 if obj['type'] == 'FrameLine':
                     annotation = get_frame_line_data(obj)
                     annotation.extend([video_file, project])
+                elif obj['type'] == 'FramePoint':
+                    annotation = get_frame_point_data(obj)
+                    annotation.extend([video_file, project])
                 else:
                     annotation = None
                 annotations.append(annotation)
@@ -189,12 +194,19 @@ def get_all_annotations(project):
 
 def get_frame_line_data(obj):
     name = obj.get('name')
-    time, length, pos, wp, zone = _get_drone_data(obj)
+    time, length, pos, wp, zone = _get_drone_data_from_line(obj)
     annotation = [name, time, length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1]]
     return annotation
 
 
-def _get_drone_data(obj):
+def get_frame_point_data(obj):
+    name = obj.get('name')
+    time, length, pos, wp, zone = _get_drone_data_from_point(obj)
+    annotation = [name, time, length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1]]
+    return annotation
+
+
+def _get_drone_data_from_line(obj):
     log_data = drone_log.get_log_data_from_frame(obj.get('frame'))
     x1 = obj.get('x1')
     x2 = obj.get('x2')
@@ -213,6 +225,15 @@ def _get_drone_data(obj):
     pos = fov.convert_utm(wp[0], wp[1], zone)
     length = np.sqrt((wp1[0] - wp2[0]) ** 2 + (wp1[1] - wp2[1]) ** 2)
     return log_data[0], length, pos, wp, zone
+
+
+def _get_drone_data_from_point(obj):
+    log_data = drone_log.get_log_data_from_frame(obj.get('frame'))
+    x = obj.get('left')
+    y = obj.get('top')
+    wp, zone = fov.get_world_point((x, y), *log_data[1:], return_zone=True)
+    pos = fov.convert_utm(wp[0], wp[1], zone)
+    return log_data[0], 0, pos, wp, zone
 
 
 @projects_view.route('/<project>/remove')
