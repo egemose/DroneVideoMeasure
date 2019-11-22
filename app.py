@@ -17,6 +17,7 @@ def serve_projects_file(filename):
 # WTF_CSRF_SECRET_KEY = 'csrf secret key'
 # OBSCURE_SALT = some random int
 
+
 # Dropzone settings
 AppConfig.DROPZONE_UPLOAD_MULTIPLE = True
 AppConfig.DROPZONE_MAX_FILE_SIZE = 100000

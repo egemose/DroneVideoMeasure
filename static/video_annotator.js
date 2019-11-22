@@ -28,8 +28,9 @@ fabric.FramePoint = fabric.util.createClass(fabric.Circle, {
 });
 
 fabric.FramePoint.fromObject = function(object, callback) {
-  var frame_line = new fabric.FramePoint(object);
-  callback && callback(frame_line);
+  object.hasControls = false;
+  var frame_point = new fabric.FramePoint(object);
+  callback && callback(frame_point);
 };
 
 // make lines only on some frames
@@ -49,6 +50,7 @@ fabric.FrameLine = fabric.util.createClass(fabric.Line, {
   },
   _render: function(ctx) {
     if (this.get('frame') == current_frame) {
+
       this.selectable = true;
       this.evented = true;
       this.callSuper('_render', ctx);
@@ -61,6 +63,7 @@ fabric.FrameLine = fabric.util.createClass(fabric.Line, {
 
 fabric.FrameLine.fromObject = function(object, callback) {
   var points = [object.x1, object.y1, object.x2, object.y2];
+  object.hasRotatingPoint = false;
   var frame_line = new fabric.FrameLine(points, object);
   callback && callback(frame_line);
 };
@@ -190,7 +193,6 @@ class video_annotator {
   }
 
   play_pause() {
-    console.log('run')
     if (this.video.video.paused) {
       this.video.video.play();
       $('#play_pause').html('<i class="fas fa-pause"></i>');
@@ -316,8 +318,6 @@ class video_annotator {
     $('#optionsModal').modal('toggle');
     $('#default_line_width').val(this.default_line_width);
     $('#default_color').val(this.default_stroke);
-
-
   }
 
   on_default_color_change(event) {
