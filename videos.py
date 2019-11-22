@@ -3,7 +3,9 @@ import json
 import flask
 from datetime import datetime, time
 from markings import MarkingView
-from help_functions import drone_log, fov
+from drone_log_data import drone_log
+from fov import fov
+from help_functions import base_dir
 import plot_log_data
 
 
@@ -21,13 +23,13 @@ def plot_log(project):
 
 @videos_view.route('/<project>/<video_file>/annotate')
 def video(project, video_file):
-    mat_file = os.path.join('.', 'projects', project, 'drone.cam.npz')
+    mat_file = os.path.join(base_dir, 'projects', project, 'drone.cam.npz')
     fov.set_camera_params(mat_file)
     if drone_log.project != project:
         drone_log.get_log_data(project)
     drone_log.get_video_data(project, video_file)
     fov.set_image_size(*drone_log.video_size)
-    video_info_file = os.path.join('.', 'projects', project, video_file + '.txt')
+    video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
     if os.path.isfile(video_info_file):
         with open(video_info_file) as v_file:
             timestamp = v_file.read()
@@ -40,7 +42,7 @@ def video(project, video_file):
         with open(video_info_file, 'w') as v_file:
             v_file.write(str(video_start_time.timestamp()))
     plot_script, plot_div = plot_log_data.get_log_plot_with_video(drone_log.log_data(), video_start_time, drone_log.video_duration, drone_log.video_nb_frames)
-    json_filename = os.path.join('.', 'projects', project, video_file + '.json')
+    json_filename = os.path.join(base_dir, 'projects', project, video_file + '.json')
     if os.path.isfile(json_filename):
         with open(json_filename, 'r') as json_file:
             json_data = json.load(json_file)
@@ -62,7 +64,7 @@ def video(project, video_file):
 @videos_view.route('/<project>/<video_file>/save', methods=['POST'])
 def save_fabric_json(project, video_file):
     json_data = json.loads(flask.request.form.get('fabric_json'))
-    file_name = os.path.join('.', 'projects', project, video_file + '.json')
+    file_name = os.path.join(base_dir, 'projects', project, video_file + '.json')
     with open(file_name, 'w') as json_file:
         json.dump(json_data, json_file)
     return ''
@@ -85,7 +87,7 @@ def add_marking():
 def save_start_time(project, video_file):
     start_time_str = flask.request.form.get('start_time')
     start_time = time(int(start_time_str[:2]), int(start_time_str[3:5]), int(start_time_str[6:8]), int(start_time_str[9:]))
-    video_info_file = os.path.join('.', 'projects', project, video_file + '.txt')
+    video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
     with open(video_info_file) as v_file:
         timestamp = v_file.read()
         video_start_time = datetime.fromtimestamp(float(timestamp))

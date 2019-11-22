@@ -112,3 +112,6 @@ class Fov:
     def convert_utm(east, north, zone):
         lat, lon = utm.to_latlon(east, north, *zone)
         return lat, lon
+
+
+fov = Fov()

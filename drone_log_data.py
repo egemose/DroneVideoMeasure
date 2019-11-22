@@ -4,6 +4,7 @@ import re
 from datetime import datetime, timedelta
 import ffmpeg
 import numpy as np
+from help_functions import base_dir
 
 
 class DroneLog:
@@ -41,7 +42,7 @@ class DroneLog:
         is_video_idx = 'CUSTOM.isVideo'
         latitude_idx = 'OSD.latitude'
         longitude_idx = 'OSD.longitude'
-        log = os.path.join('.', 'projects', project, 'drone_log.csv')
+        log = os.path.join(base_dir, 'projects', project, 'drone_log.csv')
         remove_null_bytes(log)
         with open(log, encoding='iso8859_10') as csv_file:
             reader = csv.DictReader(csv_file)
@@ -65,7 +66,7 @@ class DroneLog:
                         continue
 
     def get_video_data(self, project, video_file):
-        file = os.path.join('.', 'projects', project, video_file)
+        file = os.path.join(base_dir, 'projects', project, video_file)
         ffprobe_res = ffmpeg.probe(file, cmd='ffprobe')
         self.video_duration = float(ffprobe_res['format']['duration'])
         self.video_nb_frames = int(ffprobe_res['streams'][0]['nb_frames'])
@@ -125,3 +126,6 @@ def get_video_ranges(is_video, time_stamp):
         last_state = k
     if last_state:
         yield video_begin, t
+
+
+drone_log = DroneLog()

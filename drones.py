@@ -7,7 +7,7 @@ import flask
 import json
 from werkzeug.utils import secure_filename
 from forms import NewDroneForm, EditDroneForm
-from help_functions import get_last_updated_time_as_string, get_last_modified_time
+from help_functions import get_last_updated_time_as_string, get_last_modified_time, base_dir
 from calibration import CalibrateCamera
 
 drones_view = flask.Blueprint('drones', __name__)
@@ -30,7 +30,7 @@ def get_drone_form(drone_dict):
         if drone_title in drone_dict:
             flask.flash('A project with that name already exist!')
         else:
-            with open(os.path.join('.', 'drones',  drone_title + '.txt'), 'w') as file:
+            with open(os.path.join(base_dir, 'drones',  drone_title + '.txt'), 'w') as file:
                 writer = csv.writer(file)
                 header = ('title', 'camera_settings')
                 writer.writerow(header)
@@ -51,8 +51,8 @@ def get_edit_drone_form(drone_dict):
         else:
             calibrated = drone_dict.get(project_before).calibrated
             drone_dict.pop(project_before, None)
-            os.rename(os.path.join('.', 'drones', project_before + '.txt'), os.path.join('.', 'drones', drone_title + '.txt'))
-            with open(os.path.join('.', 'drones', drone_title + '.txt'), 'w') as file:
+            os.rename(os.path.join(base_dir, 'drones', project_before + '.txt'), os.path.join(base_dir, 'drones', drone_title + '.txt'))
+            with open(os.path.join(base_dir, 'drones', drone_title + '.txt'), 'w') as file:
                 writer = csv.writer(file)
                 header = ('title', 'camera_settings')
                 writer.writerow(header)
@@ -64,12 +64,12 @@ def get_edit_drone_form(drone_dict):
 
 def make_drone_dict():
     drone_dict = {}
-    drones = next(os.walk(os.path.join('.', 'drones')))[2]
+    drones = next(os.walk(os.path.join(base_dir, 'drones')))[2]
     for drone_title in drones:
         if drone_title.endswith('.txt'):
             last_modified_string = get_last_modified_time('drones', drone_title)
-            calibrated = True if os.path.isfile(os.path.join('.', 'drones', drone_title[:-4] + '.cam.npz')) else False
-            with open(os.path.join('.', 'drones', drone_title), 'r') as file:
+            calibrated = True if os.path.isfile(os.path.join(base_dir, 'drones', drone_title[:-4] + '.cam.npz')) else False
+            with open(os.path.join(base_dir, 'drones', drone_title), 'r') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
                     drone = drone_tuple(row.get('title'), row.get('camera_settings'), calibrated, last_modified_string)
@@ -79,7 +79,7 @@ def make_drone_dict():
 
 @drones_view.route('/drones/<drone>/calibrate', methods=['GET', 'POST'])
 def add_calibration(drone):
-    calibration_folder = os.path.join('.', 'drones', 'calibration')
+    calibration_folder = os.path.join(base_dir, 'drones', 'calibration')
     if os.path.isdir(calibration_folder):
         shutil.rmtree(calibration_folder)
         os.mkdir(calibration_folder)
@@ -100,8 +100,8 @@ def do_calibration(drone):
     except ValueError:
         return json.dumps([{'type': 'danger', 'message': 'Error interpreting the checkerboard size.'}])
     calibrate_cam = CalibrateCamera((checkerboard_width, checkerboard_height))
-    in_folder = os.path.join('.', 'drones', 'calibration')
-    save_file = os.path.join('.', 'drones', drone + '.cam')
+    in_folder = os.path.join(base_dir, 'drones', 'calibration')
+    save_file = os.path.join(base_dir, 'drones', drone + '.cam')
     try:
         calibrate_cam(in_folder, save_file)
     except AttributeError:
@@ -111,7 +111,7 @@ def do_calibration(drone):
 
 @drones_view.route('/drones/<drone>/view_calibration')
 def view_calibration(drone):
-    cam_file = os.path.join('.', 'drones', drone + '.cam.npz')
+    cam_file = os.path.join(base_dir, 'drones', drone + '.cam.npz')
     np_file = np.load(cam_file)
     mtx = np_file['mtx']
     dist = np_file['dist']
@@ -122,6 +122,6 @@ def view_calibration(drone):
 
 @drones_view.route('/drones/<drone>/remove')
 def remove_drone(drone):
-    drone_file = os.path.join('.', 'drones', drone + '.txt')
+    drone_file = os.path.join(base_dir, 'drones', drone + '.txt')
     os.remove(drone_file)
     return flask.redirect(flask.url_for('drones.index'))
