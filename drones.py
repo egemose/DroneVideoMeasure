@@ -1,5 +1,6 @@
 import os
 import csv
+import re
 import shutil
 import numpy as np
 from collections import namedtuple
@@ -87,7 +88,8 @@ def add_calibration(drone):
         file_obj = flask.request.files
         for file in file_obj.values():
             file_location = os.path.join(calibration_folder, secure_filename(file.filename))
-            if file.mimetype == 'image/jpeg':  # todo add other mimetypes
+            image_mimetype = re.compile('image/*')
+            if image_mimetype.match(file.mimetype):
                 file.save(file_location)
     return flask.render_template('drones/calibration.html', drone=drone)
 
