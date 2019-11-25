@@ -27,6 +27,19 @@ class DroneLog:
         roll = [x[2] * 180 / np.pi for x in self.rotation]
         return self.time_stamp, self.height, yaw, pitch, roll, self.is_video
 
+    @staticmethod
+    def test_log(project):
+        indexes = ['CUSTOM.updateTime', 'GIMBAL.yaw', 'GIMBAL.pitch', 'GIMBAL.roll', 'OSD.height [m]', 'CUSTOM.isVideo', 'OSD.latitude', 'OSD.longitude']
+        log = os.path.join(base_dir, 'projects', project, 'drone_log.csv')
+        remove_null_bytes(log)
+        with open(log, encoding='iso8859_10') as csv_file:
+            reader = csv.DictReader(csv_file)
+            row = next(reader)
+            for idx in indexes:
+                if idx not in row.keys():
+                    return False
+            return True
+
     def get_log_data(self, project):
         self.project = project
         self.time_stamp = []

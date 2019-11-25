@@ -124,7 +124,13 @@ def upload(project):
 def video_gallery(project):
     videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4'))])
     random_int = random.randint(1, 10000000)
-    return flask.render_template('projects/video_gallery.html', project=project, videos=videos, random_int=random_int)
+    success = drone_log.test_log(project)
+    if success:
+        return flask.render_template('projects/video_gallery.html', project=project, videos=videos, random_int=random_int)
+    else:
+        message = 'Error interpreting the drone log file. Try and upload the log file again.'
+        flask.flash(message, 'error')
+        return flask.render_template('projects/error.html')
 
 
 @projects_view.route('/<project>/concatenate_videos')
