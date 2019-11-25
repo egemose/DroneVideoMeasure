@@ -22,8 +22,9 @@ class CalibrateCamera:
 
     def _detect_checkerboard(self, folder, show_detections=False):
         gray = None
-        image_files = glob.glob(os.path.join(folder, '*.jpg'))
-        image_files.extend(glob.glob(os.path.join(folder, '*.png')))
+        image_files = []
+        for file_format in ['*.jpg', '*.jpeg', '*.jpe', '*.bmp', '*.dib', '*.png', '*.tiff', '*.tif']:
+            image_files.extend(glob.glob(os.path.join(folder, file_format)))
         for image_file in tqdm(image_files, disable=not self.show_progress):
             image = cv2.imread(image_file)
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

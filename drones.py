@@ -81,6 +81,8 @@ def make_drone_dict():
 @drones_view.route('/drones/<drone>/calibrate', methods=['GET', 'POST'])
 def add_calibration(drone):
     calibration_folder = os.path.join(base_dir, 'drones', 'calibration')
+    if not os.path.exists(calibration_folder):
+        os.mkdir(calibration_folder)
     if os.path.isdir(calibration_folder):
         shutil.rmtree(calibration_folder)
         os.mkdir(calibration_folder)

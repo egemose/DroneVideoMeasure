@@ -1,6 +1,7 @@
 import csv
 import glob
 import os
+import re
 import shutil
 import random
 import subprocess
@@ -33,7 +34,10 @@ def index():
 
 def make_project_dict():
     project_dict = {}
-    projects = next(os.walk(os.path.join(base_dir, 'projects')))[1]
+    project_dir = os.path.join(base_dir, 'projects')
+    if not os.path.exists(project_dir):
+        os.mkdir(project_dir)
+    projects = next(os.walk(project_dir))[1]
     for project_title in projects:
         last_modified_string = get_last_modified_time('projects', project_title)
         with open(os.path.join(base_dir, 'projects', project_title, 'description.txt'), 'r') as file:
@@ -45,7 +49,10 @@ def make_project_dict():
 
 def get_new_project_form(project_dict):
     form = NewProjectForm()
-    drones = next(os.walk(os.path.join(base_dir, 'drones')))[2]
+    drone_dir = os.path.join(base_dir, 'drones')
+    if not os.path.exists(drone_dir):
+        os.mkdir(drone_dir)
+    drones = next(os.walk(drone_dir))[2]
     drones = [x for x in drones if x.endswith('.txt')]
     form.drone.choices = [(d, d[:-4]) for d in drones]
     if form.validate_on_submit():
@@ -98,22 +105,24 @@ def upload(project):
     if flask.request.method == 'POST':
         file_obj = flask.request.files
         for file in file_obj.values():
-            file_location = os.path.join(base_dir, 'projects', project, secure_filename(file.filename))
-            if file.mimetype == 'video/quicktime':
+            file_location = os.path.join(base_dir, 'projects', project, secure_filename(file.filename.rsplit('.', 1)[0] + '.mp4'))
+            video_mimetype = re.compile('video/*')
+            if video_mimetype.match(file.mimetype):
                 while True:
                     random_int = random.randint(1, 10000000)
-                    temp_file = os.path.join(base_dir, 'projects', project, secure_filename(str(random_int) + '.MOV'))
+                    file_type = '.' + file.filename.rsplit('.', 1)[1]
+                    temp_file = os.path.join(base_dir, 'projects', project, secure_filename(str(random_int) + file_type))
                     if not os.path.exists(temp_file):
                         break
                 file.save(temp_file)
-                ffmpeg.input(temp_file).filter('scale', -1, 1440).output(file_location).overwrite_output().run()
+                ffmpeg.input(temp_file).filter('scale', -1, 1440).output(file_location, movflags='faststart', crf=23, preset='ultrafast').overwrite_output().run()
                 os.remove(temp_file)
     return flask.render_template('projects/upload.html', project=project)
 
 
 @projects_view.route('/<project>/video_gallery')
 def video_gallery(project):
-    videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.MOV'))])
+    videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4'))])
     random_int = random.randint(1, 10000000)
     return flask.render_template('projects/video_gallery.html', project=project, videos=videos, random_int=random_int)
 
