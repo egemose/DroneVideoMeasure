@@ -2,7 +2,7 @@ import glob
 import os
 import time
 
-base_dir = '.'
+base_dir = os.path.join('.', 'data')
 
 
 def get_last_modified_time(m_type, name):

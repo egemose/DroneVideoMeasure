@@ -1,3 +1,4 @@
+import os
 from flask import Flask, send_from_directory
 from flask_dropzone import Dropzone
 from flask_obscure import Obscure
@@ -7,10 +8,11 @@ from videos import videos_view
 from misc import misc_view
 from drones import drones_view
 from app_config import AppConfig
+from help_functions import base_dir
 
 
 def serve_projects_file(filename):
-    return send_from_directory('projects', filename)
+    return send_from_directory(os.path.join(base_dir, 'projects'), filename)
 
 # AppConfig object holds:
 # SECRET_KEY = 'some secret'
