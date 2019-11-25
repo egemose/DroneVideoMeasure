@@ -135,7 +135,7 @@ def video_gallery(project):
 
 @projects_view.route('/<project>/concatenate_videos')
 def concat_videos(project):
-    videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.MOV'))])
+    videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4'))])
     return flask.render_template('projects/cancat_videos.html', project=project, videos=videos)
 
 
@@ -143,8 +143,8 @@ def concat_videos(project):
 def do_concat_videos(project):
     videos_json = flask.request.form.get('videos')
     output_file_name = flask.request.form.get('output_name')
-    if output_file_name[-4:] != '.MOV':
-        output_file_name += '.MOV'
+    if output_file_name[-4:] != '.mp4':
+        output_file_name += '.mp4'
     videos = json.loads(videos_json)
     video_str = ''
     for video in videos:
