@@ -1,14 +1,15 @@
 FROM jjanzic/docker-python3-opencv
+MAINTAINER Henrik Dyrberg Egemose <hesc@mmmi.sdu.dk>
+
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY . /app
-
-RUN apt-get update && \
-    apt-get install -y ffmpeg
 
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 EXPOSE 5000
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "--log-level=debug", "-k gevent", "app:app"]
-# CMD ["gunicorn", "-b", "0.0.0.0:5000", "--log-level=debug", "app:app"]
+ENTRYPOINT ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "-k", "gevent", "-t", "2000", "app:app"]

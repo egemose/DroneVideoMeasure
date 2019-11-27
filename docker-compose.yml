@@ -1,7 +1,9 @@
 version: "3.3"
 services:
-  web:
+  webapp:
     build: .
+    image: porpoisemeasure:latest
+    container_name: porpoisemeasure-container
     ports:
       - "5000:5000"
     volumes:
