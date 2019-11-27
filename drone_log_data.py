@@ -9,7 +9,6 @@ from help_functions import base_dir
 
 class DroneLog:
     def __init__(self):
-        self.project = None
         self.video_duration = None
         self.video_nb_frames = None
         self.video_size = None
@@ -41,7 +40,6 @@ class DroneLog:
             return True
 
     def get_log_data(self, project):
-        self.project = project
         self.time_stamp = []
         self.height = []
         self.rotation = []

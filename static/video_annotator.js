@@ -1,4 +1,8 @@
 var current_frame = 0;
+var horizon_fabricjs_ns = null;
+var horizon_fabricjs_ew = null;
+var horizon_fabricjs_pitch0 = null;
+var horizon_fabricjs_pitch45 = null;
 
 // make points only on some frames
 fabric.FramePoint = fabric.util.createClass(fabric.Circle, {
@@ -79,6 +83,9 @@ class video_annotator {
       zoomInButton: "zoom-in",
       zoomOutButton: "zoom-out",
       homeButton: "expand",
+      constrainDuringPan: true,
+      visibilityRatio: 1,
+      minZoomImageRatio: 1,
       maxZoomLevel: 10,
       tileSources: {
         height: video_height,
@@ -157,6 +164,7 @@ class video_annotator {
     this.viewer.gestureSettingsMouse.clickToZoom = false;
     this.navShown = true;
     this.do_draw = false;
+    this.show_horizon = false;
     this.selection = false;
     this.mouse_is_down = false;
     this.start_position = {};
@@ -217,15 +225,103 @@ class video_annotator {
   }
 
   on_new_frame() {
-    current_frame = this.video.get()
-    var progress = current_frame / this.num_frames * 100 + '%';
-    $('#video_seek').find('.progress-bar').css('width', progress);
-    $('#video_seek').find('.progress-bar').html(this.video.toTime());
+    var new_frame = this.video.get()
+    if (new_frame != current_frame) {
+      current_frame = new_frame;
+      var progress = current_frame / this.num_frames * 100 + '%';
+      $('#video_seek').find('.progress-bar').css('width', progress);
+      $('#video_seek').find('.progress-bar').html(this.video.toTime());
+      this.draw_horizon();
+    } else {
+      this.overlay.fabricCanvas().renderAll();
+    }
+  }
+
+  draw_horizon(callback) {
+    var poly_lines = this.overlay.fabricCanvas().getObjects('polyline');
+    for (let i in poly_lines) {
+      this.overlay.fabricCanvas().remove(poly_lines[i]);
+    };
+    if (this.show_horizon) {
+      $.post($SCRIPT_ROOT + '/get_horizon_fabricjs', {
+        frame: current_frame,
+      }, function(data) {
+        if (data.NS) {
+          horizon_fabricjs_ns = new fabric.Polyline(data.NS, {
+            stroke: 'red',
+            strokeWidth: 3,
+            left: data.NS_pos[0].left,
+            top: data.NS_pos[0].top,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
+          });
+        } else {
+          horizon_fabricjs_ns = null;
+        };
+        if (data.EW) {
+          horizon_fabricjs_ew = new fabric.Polyline(data.EW, {
+            stroke: 'blue',
+            strokeWidth: 3,
+            left: data.EW_pos[0].left,
+            top: data.EW_pos[0].top,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
+          });
+        } else {
+          horizon_fabricjs_ew = null;
+        };
+        if (data.pitch0) {
+          horizon_fabricjs_pitch0 = new fabric.Polyline(data.pitch0, {
+            stroke: 'green',
+            strokeWidth: 3,
+            left: data.pitch0_pos[0].left,
+            top: data.pitch0_pos[0].top,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
+          });
+        } else {
+          horizon_fabricjs_pitch0 = null;
+        };
+        if (data.pitch45) {
+          horizon_fabricjs_pitch45 = new fabric.Polyline(data.pitch45, {
+            stroke: 'green',
+            strokeWidth: 3,
+            left: data.pitch45_pos[0].left,
+            top: data.pitch45_pos[0].top,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
+          });
+        } else {
+          horizon_fabricjs_pitch45 = null;
+        };
+      }, 'json');
+      if (horizon_fabricjs_ns) {
+        this.overlay.fabricCanvas().add(horizon_fabricjs_ns);
+      };
+      if (horizon_fabricjs_ew) {
+        this.overlay.fabricCanvas().add(horizon_fabricjs_ew);
+      };
+      if (horizon_fabricjs_pitch0) {
+        this.overlay.fabricCanvas().add(horizon_fabricjs_pitch0);
+      };
+      if (horizon_fabricjs_pitch45) {
+        this.overlay.fabricCanvas().add(horizon_fabricjs_pitch45);
+      };
+    };
     this.overlay.fabricCanvas().renderAll();
   }
 
   toggle_draw() {
     this.do_draw = !this.do_draw;
+  }
+
+  toggle_horizon() {
+    this.show_horizon = !this.show_horizon;
+    this.draw_horizon();
   }
 
   save(save_url) {

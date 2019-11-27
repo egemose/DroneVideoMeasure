@@ -1,11 +1,12 @@
 import os
 import json
 import flask
+
 from datetime import datetime, time
 from markings import MarkingView
 from drone_log_data import drone_log
 from fov import fov
-from help_functions import base_dir
+from help_functions import base_dir, horizon_dict
 import plot_log_data
 
 
@@ -15,8 +16,7 @@ videos_view = flask.Blueprint('videos', __name__)
 
 @videos_view.route('/<project>/plot')
 def plot_log(project):
-    if drone_log.project != project:
-        drone_log.get_log_data(project)
+    drone_log.get_log_data(project)
     plot_script, plot_div = plot_log_data.get_log_plot(drone_log.log_data())
     return flask.render_template('videos/plot.html', plot_div=plot_div, plot_script=plot_script, project=project)
 
@@ -25,8 +25,7 @@ def plot_log(project):
 def video(project, video_file):
     mat_file = os.path.join(base_dir, 'projects', project, 'drone.cam.npz')
     fov.set_camera_params(mat_file)
-    if drone_log.project != project:
-        drone_log.get_log_data(project)
+    drone_log.get_log_data(project)
     drone_log.get_video_data(project, video_file)
     fov.set_image_size(*drone_log.video_size)
     video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
@@ -81,6 +80,14 @@ def add_marking():
         fabric_json = flask.request.form.get('fabric_json')
         marking_class = MarkingView.from_fabric_json(fabric_json, drone_log, fov)
     return flask.jsonify(marking_class.get_data())
+
+
+@videos_view.route('/get_horizon_fabricjs', methods=['POST'])
+def get_horizon_fabricjs():
+    frame = int(flask.request.form.get('frame'))
+    _, _, rotation, _ = drone_log.get_log_data_from_frame(frame)
+    horizon_points = fov.get_horizon_and_world_corners(horizon_dict, rotation)
+    return flask.jsonify(horizon_points)
 
 
 @videos_view.route('/<project>/<video_file>/save_start_time', methods=['POST'])

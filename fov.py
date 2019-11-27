@@ -59,23 +59,30 @@ class Fov:
         return zip(*[iter(iterable)] * n)
 
     def get_horizon_and_world_corners(self, world_point_dict, yaw_pitch_roll):
+        margin = 200
         image_plane_width_in_meters = np.tan(self.horizontal_fov / 2) * 2
         image_plane_height_in_meters = np.tan(self.vertical_fov / 2) * 2
         yaw_pitch_roll = (-yaw_pitch_roll[0], yaw_pitch_roll[1], yaw_pitch_roll[2])
         rotation_matrix = self.rotation(*yaw_pitch_roll)
         image_points = defaultdict(list)
         for direction, world_points in world_point_dict.items():
-            for world_point1, world_point2 in self.grouped(world_points, 2):
-                world_rotated_vector1 = np.matmul(np.transpose(rotation_matrix), world_point1)
-                world_rotated_vector2 = np.matmul(np.transpose(rotation_matrix), world_point2)
-                if world_rotated_vector1[1] >= 0 <= world_rotated_vector2[1]:
-                    image_point_par = []
-                    for vector in [world_rotated_vector1, world_rotated_vector2]:
-                        vector = vector / vector[1]
-                        image_point_x = vector[0] / image_plane_width_in_meters * self.image_size[0] + self.image_size[0]/2
-                        image_point_y = - vector[2] / image_plane_height_in_meters * self.image_size[1] + self.image_size[1]/2
-                        image_point_par.append(np.array((image_point_x, image_point_y)))
-                    image_points[direction].append(image_point_par)
+            temp_image_points_x = []
+            temp_image_points_y = []
+            for world_point in world_points:
+                world_rotated_vector = np.matmul(np.transpose(rotation_matrix), world_point)
+                if world_rotated_vector[1] >= 0:
+                    vector = world_rotated_vector / world_rotated_vector[1]
+                    image_point_x = int(vector[0] / image_plane_width_in_meters * self.image_size[0] + self.image_size[0]/2)
+                    image_point_y = int(- vector[2] / image_plane_height_in_meters * self.image_size[1] + self.image_size[1]/2)
+                    if -margin <= image_point_x <= self.image_size[0] + margin:
+                        if -margin <= image_point_y <= self.image_size[1] + margin:
+                            temp_image_points_x.append(image_point_x)
+                            temp_image_points_y.append(image_point_y)
+            left = min(temp_image_points_x, default=0)
+            top = min(temp_image_points_y, default=0)
+            for x, y in zip(temp_image_points_x, temp_image_points_y):
+                image_points[direction].append({'x': x - left, 'y': y - top})
+            image_points[direction + '_pos'].append({'top': top, 'left': left})
         return image_points
 
     def get_world_point(self, image_point, drone_height, yaw_pitch_roll, pos, return_zone=False):
