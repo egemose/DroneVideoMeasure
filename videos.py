@@ -3,14 +3,13 @@ import json
 import flask
 
 from datetime import datetime, time
-from markings import MarkingView
 from drone_log_data import drone_log
 from fov import fov
 from help_functions import base_dir, horizon_dict
+from annotations import Annotations
 import plot_log_data
 
-
-marking_class = MarkingView(drone_log, fov)
+annotation_class = Annotations(drone_log, fov)
 videos_view = flask.Blueprint('videos', __name__)
 
 
@@ -71,15 +70,15 @@ def save_fabric_json(project, video_file):
 
 @videos_view.route('/add_marking', methods=['POST'])
 def add_marking():
-    global marking_class
+    global annotation_class
     add_name = flask.request.form.get('add_name')
     if add_name == 'true':
         name = flask.request.form.get('name')
-        marking_class.add_name(name)
+        annotation_class.add_name(name)
     else:
         fabric_json = flask.request.form.get('fabric_json')
-        marking_class = MarkingView.from_fabric_json(fabric_json, drone_log, fov)
-    return flask.jsonify(marking_class.get_data())
+        annotation_class.from_fabric_json(fabric_json)
+    return flask.jsonify(annotation_class.to_json())
 
 
 @videos_view.route('/get_horizon_fabricjs', methods=['POST'])
