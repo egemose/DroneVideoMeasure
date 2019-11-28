@@ -16,7 +16,7 @@ fabric.FramePoint = fabric.util.createClass(fabric.Circle, {
   toObject: function() {
     return fabric.util.object.extend(this.callSuper('toObject'), {
       frame: this.get('frame'),
-      name: this.get('name')
+      name: this.get('name'),
     });
   },
   _render: function(ctx) {
@@ -49,7 +49,7 @@ fabric.FrameLine = fabric.util.createClass(fabric.Line, {
   toObject: function() {
     return fabric.util.object.extend(this.callSuper('toObject'), {
       frame: this.get('frame'),
-      name: this.get('name')
+      name: this.get('name'),
     });
   },
   _render: function(ctx) {
@@ -138,7 +138,7 @@ class video_annotator {
           hasControls: false,
           frame: current_frame,
           name: self.current_name,
-        })
+        });
         self.overlay.fabricCanvas().add(self.point);
       };
       self.updateModifications(true);

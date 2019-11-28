@@ -1,21 +1,21 @@
 import csv
 import glob
+import json
 import os
+import random
 import re
 import shutil
-import random
 import subprocess
-import numpy as np
 from collections import namedtuple
 import ffmpeg
 import flask
-import json
+import numpy as np
 from werkzeug.utils import secure_filename
+
+from drone_log_data import drone_log
 from forms import NewProjectForm, EditProjectForm
 from fov import fov
-from drone_log_data import drone_log
 from help_functions import get_last_modified_time, get_last_updated_time_as_string, base_dir
-
 
 project_tuple = namedtuple('project', ['title', 'description', 'last_updated'])
 projects_view = flask.Blueprint('projects', __name__)
@@ -29,7 +29,8 @@ def index():
     if res:
         return res
     edit_project_form = get_edit_project_form(project_dict)
-    return flask.render_template('projects/index.html', projects=project_dict, random_int=random_int, new_project_form=new_project_form, edit_project_form=edit_project_form)
+    arguments = {'projects': project_dict, 'random_int': random_int, 'new_project_form': new_project_form, 'edit_project_form': edit_project_form}
+    return flask.render_template('projects/index.html', **arguments)
 
 
 def make_project_dict():
@@ -95,6 +96,10 @@ def get_edit_project_form(project_dict):
             project = project_tuple(project_title, description, last_updated)
             project_dict.update({project_title: project})
             if form.edit_log_file.data:
+                video_info_files = glob.glob(os.path.join(base_dir, 'projects', project_title, '*.txt'))
+                for video_info_file in video_info_files:
+                    if video_info_file.rsplit(os.sep)[-1] != 'description.txt':
+                        os.remove(video_info_file)
                 log_file = os.path.join(base_dir, 'projects', project_title, 'drone_log.csv')
                 form.edit_log_file.data.save(log_file)
     return form
@@ -106,8 +111,8 @@ def upload(project):
         file_obj = flask.request.files
         for file in file_obj.values():
             file_location = os.path.join(base_dir, 'projects', project, secure_filename(file.filename.rsplit('.', 1)[0] + '.mp4'))
-            video_mimetype = re.compile('video/*')
-            if video_mimetype.match(file.mimetype):
+            video_mime_type = re.compile('video/*')
+            if video_mime_type.match(file.mimetype):
                 while True:
                     random_int = random.randint(1, 10000000)
                     file_type = '.' + file.filename.rsplit('.', 1)[1]
@@ -226,11 +231,7 @@ def get_frame_point_data(obj):
 
 def _get_drone_data_from_line(obj):
     log_data = drone_log.get_log_data_from_frame(obj.get('frame'))
-    x1 = obj.get('x1')
-    x2 = obj.get('x2')
-    y1 = obj.get('y1')
-    y2 = obj.get('y2')
-    direction = (x1 < 0 and y1 < 0) or (x2 < 0 and y2 < 0)
+    direction = (obj.get('x1') < 0 and obj.get('y1') < 0) or (obj.get('x2') < 0 and obj.get('y2') < 0)
     if direction:
         image_point1 = (obj.get('left'), obj.get('top'))
         image_point2 = (obj.get('left') + obj.get('width'), obj.get('top') + obj.get('height'))

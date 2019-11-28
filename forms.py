@@ -36,4 +36,4 @@ class EditDroneForm(flask_wtf.FlaskForm):
                                                                                        'Format, fps, etc. \n'
                                                                                        'Useful if Drone is used with different settings',
                                                                                        'rows': 4})
-    edit_submit = wtforms.fields.SubmitField(u'Add Drone')
+    edit_submit = wtforms.fields.SubmitField(u'Edit Drone')

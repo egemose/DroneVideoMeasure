@@ -1,13 +1,14 @@
-import os
 import json
+import os
+import re
+from datetime import datetime, time
 import flask
 
-from datetime import datetime, time
+import plot_log_data
 from drone_log_data import drone_log
 from fov import fov
 from help_functions import base_dir, horizon_dict
 from annotations import Annotations
-import plot_log_data
 
 annotation_class = Annotations(drone_log, fov)
 videos_view = flask.Blueprint('videos', __name__)
@@ -27,25 +28,16 @@ def video(project, video_file):
     drone_log.get_log_data(project)
     drone_log.get_video_data(project, video_file)
     fov.set_image_size(*drone_log.video_size)
-    video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
-    if os.path.isfile(video_info_file):
-        with open(video_info_file) as v_file:
-            timestamp = v_file.read()
-            video_start_time = datetime.fromtimestamp(float(timestamp))
-            drone_log.video_start_time = video_start_time
+    video_start_time = read_video_start_time(project, video_file)
+    if video_start_time:
+        drone_log.video_start_time = video_start_time
     else:
         video_start_time, message = drone_log.match_log_and_video()
         if message:
             flask.flash(message, 'warning')
-        with open(video_info_file, 'w') as v_file:
-            v_file.write(str(video_start_time.timestamp()))
+        write_video_start_time(project, video_file, video_start_time)
     plot_script, plot_div = plot_log_data.get_log_plot_with_video(drone_log.log_data(), video_start_time, drone_log.video_duration, drone_log.video_nb_frames)
-    json_filename = os.path.join(base_dir, 'projects', project, video_file + '.json')
-    if os.path.isfile(json_filename):
-        with open(json_filename, 'r') as json_file:
-            json_data = json.load(json_file)
-    else:
-        json_data = None
+    json_data = read_json_annotations(project, video_file)
     args = dict(project=project,
                 video=video_file,
                 json_data=json_data,
@@ -57,6 +49,16 @@ def video(project, video_file):
                 fps=drone_log.video_nb_frames / drone_log.video_duration,
                 video_start_time=video_start_time)
     return flask.render_template('videos/video.html', **args)
+
+
+def read_json_annotations(project, video_file):
+    json_filename = os.path.join(base_dir, 'projects', project, video_file + '.json')
+    if os.path.isfile(json_filename):
+        with open(json_filename, 'r') as json_file:
+            json_data = json.load(json_file)
+    else:
+        json_data = None
+    return json_data
 
 
 @videos_view.route('/<project>/<video_file>/save', methods=['POST'])
@@ -92,13 +94,36 @@ def get_horizon_fabricjs():
 @videos_view.route('/<project>/<video_file>/save_start_time', methods=['POST'])
 def save_start_time(project, video_file):
     start_time_str = flask.request.form.get('start_time')
-    start_time = time(int(start_time_str[:2]), int(start_time_str[3:5]), int(start_time_str[6:8]), int(start_time_str[9:]))
-    video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
-    with open(video_info_file) as v_file:
-        timestamp = v_file.read()
-        video_start_time = datetime.fromtimestamp(float(timestamp))
-    new_video_start_time = datetime.combine(video_start_time, start_time)
-    with open(video_info_file, 'w') as v_file:
-        v_file.write(str(new_video_start_time.timestamp()))
-    drone_log.video_start_time = new_video_start_time
+    match = re.fullmatch(r'(\d\d):(\d\d):(\d\d)\.?(\d*)', start_time_str)
+    if match:
+        start_time = time(int(match.group(1)), int(match.group(2)), int(match.group(3)), int(match.group(4) if match.group(4) else 0))
+        video_start_time = read_video_start_time(project, video_file)
+        new_video_start_time = datetime.combine(video_start_time, start_time)
+        write_video_start_time(project, video_file, new_video_start_time)
+        drone_log.video_start_time = new_video_start_time
+    elif not start_time_str:
+        video_start_time, message = drone_log.match_log_and_video()
+        if message:
+            flask.flash(message, 'warning')
+        write_video_start_time(project, video_file, video_start_time)
+    else:
+        flask.flash('Error setting the video time.', 'error')
     return ''
+
+
+def write_video_start_time(project, video_file, video_start_time):
+    video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
+    with open(video_info_file, 'w') as v_file:
+        v_file.write(str(video_start_time.timestamp()))
+
+
+def read_video_start_time(project, video_file):
+    video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
+    if os.path.isfile(video_info_file):
+        with open(video_info_file) as v_file:
+            timestamp = v_file.read()
+            video_start_time = datetime.fromtimestamp(float(timestamp))
+        return video_start_time
+    else:
+        return None
+
