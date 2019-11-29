@@ -130,7 +130,7 @@ class video_annotator {
         self.overlay.fabricCanvas().add(self.line);
       } else {
         self.point = new fabric.FramePoint({
-          radius: 10,
+          radius: self.default_point_size,
           fill: self.default_stroke,
           left: self.start_position.x,
           top: self.start_position.y,
@@ -175,6 +175,7 @@ class video_annotator {
     this.default_stroke = '#FF0000';
     this.default_color_temp = '#FF0000';
     this.default_line_width = 3;
+    this.default_point_size = 10;
     this.videoEl = document.getElementById('video');
     this.fabric_video = new fabric.Image(this.videoEl, {
       left: 0,
@@ -399,12 +400,26 @@ class video_annotator {
   on_line_width() {
     if (!this.overlay.fabricCanvas().getActiveObject()) return;
     $('#line_width_modal').modal('toggle');
-    $('#line_width_input').val(this.overlay.fabricCanvas().getActiveObject().strokeWidth);
+    var obj = this.overlay.fabricCanvas().getActiveObject();
+    if (obj.type == 'FrameLine') {
+      $('#line_width_label').text('Line stroke size:');
+      $('#model_title').text('Line Stroke Size');
+      $('#line_width_input').val(obj.strokeWidth);
+    } else if (obj.type == 'FramePoint') {
+      $('#line_width_label').text('Point size:');
+      $('#model_title').text('Point Size');
+      $('#line_width_input').val(obj.radius);
+    }
   }
 
   on_line_width_done() {
-    if (!this.overlay.fabricCanvas().getActiveObject()) return;
-    this.overlay.fabricCanvas().getActiveObject().set('strokeWidth', $('#line_width_input').val());
+    var obj = this.overlay.fabricCanvas().getActiveObject();
+    if (!obj) return;
+    if (obj.type == 'FrameLine') {
+      obj.set('strokeWidth', $('#line_width_input').val());
+    } else if (obj.type == 'FramePoint') {
+      obj.set('radius', $('#line_width_input').val());
+    }
     this.overlay.fabricCanvas().renderAll();
     this.updateModifications(true);
     $('#line_width_modal').modal('toggle');
@@ -414,6 +429,7 @@ class video_annotator {
     $('#optionsModal').modal('toggle');
     $('#default_line_width').val(this.default_line_width);
     $('#default_color').val(this.default_stroke);
+    $('#default_point_size').val(this.default_point_size);
   }
 
   on_default_color_change(event) {
@@ -423,6 +439,7 @@ class video_annotator {
   on_default_done() {
     this.default_stroke = this.default_color_temp;
     this.default_line_width = $('#default_line_width').val();
+    this.default_point_size = $('#default_point_size').val();
     $('#optionsModal').modal('toggle');
   }
 }
