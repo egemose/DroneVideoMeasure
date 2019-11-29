@@ -76,7 +76,7 @@ def add_marking():
     add_name = flask.request.form.get('add_name')
     if add_name == 'true':
         name = flask.request.form.get('name')
-        annotation_class.add_name(name)
+        annotation_class.add_parent(name)
     else:
         fabric_json = flask.request.form.get('fabric_json')
         annotation_class.from_fabric_json(fabric_json)
