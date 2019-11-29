@@ -96,7 +96,7 @@ class video_annotator {
       }
     });
     this.overlay = this.viewer.fabricjsOverlay({
-      scale: video_width
+      scale: video_width,
     });
     this.overlay.fabricCanvas().on('mouse:down', function(event) {
       if (!self.do_draw || self.selection || event.e.target.tagName != "CANVAS") return;
@@ -250,6 +250,7 @@ class video_annotator {
         if (data.NS) {
           horizon_fabricjs_ns = new fabric.Polyline(data.NS, {
             stroke: 'red',
+            fill: 'rgba(0,0,0,0)',
             strokeWidth: 3,
             left: data.NS_pos[0].left,
             top: data.NS_pos[0].top,
@@ -263,6 +264,7 @@ class video_annotator {
         if (data.EW) {
           horizon_fabricjs_ew = new fabric.Polyline(data.EW, {
             stroke: 'blue',
+            fill: 'rgba(0,0,0,0)',
             strokeWidth: 3,
             left: data.EW_pos[0].left,
             top: data.EW_pos[0].top,
@@ -276,6 +278,7 @@ class video_annotator {
         if (data.pitch0) {
           horizon_fabricjs_pitch0 = new fabric.Polyline(data.pitch0, {
             stroke: 'green',
+            fill: 'rgba(0,0,0,0)',
             strokeWidth: 3,
             left: data.pitch0_pos[0].left,
             top: data.pitch0_pos[0].top,
@@ -289,6 +292,7 @@ class video_annotator {
         if (data.pitch45) {
           horizon_fabricjs_pitch45 = new fabric.Polyline(data.pitch45, {
             stroke: 'green',
+            fill: 'rgba(0,0,0,0)',
             strokeWidth: 3,
             left: data.pitch45_pos[0].left,
             top: data.pitch45_pos[0].top,
@@ -299,7 +303,7 @@ class video_annotator {
         } else {
           horizon_fabricjs_pitch45 = null;
         };
-      }, 'json');
+      }, 'json')
       if (horizon_fabricjs_ns) {
         this.overlay.fabricCanvas().add(horizon_fabricjs_ns);
       };

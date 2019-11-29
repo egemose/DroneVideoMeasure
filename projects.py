@@ -120,7 +120,7 @@ def upload(project):
                     if not os.path.exists(temp_file):
                         break
                 file.save(temp_file)
-                ffmpeg.input(temp_file).filter('scale', -1, 1440).output(file_location, movflags='faststart', crf=23, preset='ultrafast').overwrite_output().run()
+                ffmpeg.input(temp_file).filter('scale', -2, 1440).output(file_location, movflags='faststart', crf=23, preset='ultrafast').overwrite_output().run()
                 os.remove(temp_file)
     return flask.render_template('projects/upload.html', project=project)
 
