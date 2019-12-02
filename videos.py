@@ -26,7 +26,7 @@ def video(project, video_file):
     mat_file = os.path.join(base_dir, 'projects', project, 'drone.cam.npz')
     fov.set_camera_params(mat_file)
     drone_log.get_log_data(project)
-    drone_log.get_video_data(project, video_file)
+    drone_log.get_video_data_from_data_file(project, video_file)
     fov.set_image_size(*drone_log.video_size)
     video_start_time = read_video_start_time(project, video_file)
     if video_start_time:

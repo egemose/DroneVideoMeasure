@@ -88,6 +88,38 @@ class DroneLog:
         if match:
             self.video_pos = (float(match.group(1)), float(match.group(2)))
 
+    @staticmethod
+    def save_video_data_to_file(project, video_file_name):
+        print(project, video_file_name)
+        video_file = os.path.join(base_dir, 'projects', project, video_file_name)
+        video_data_file = os.path.join(base_dir, 'projects', project, video_file_name + '_data.txt')
+        ffprobe_res = ffmpeg.probe(video_file, cmd='ffprobe')
+        video_duration = float(ffprobe_res['format']['duration'])
+        video_nb_frames = int(ffprobe_res['streams'][0]['nb_frames'])
+        video_size = (int(ffprobe_res['streams'][0]['width']), int(ffprobe_res['streams'][0]['height']))
+        location_string = ffprobe_res['format']['tags']['location']
+        match = re.match(r'([-+]\d+.\d+)([-+]\d+.\d+)([-+]\d+.\d+)', location_string)
+        video_pos = (None, None)
+        if match:
+            video_pos = (float(match.group(1)), float(match.group(2)))
+        with open(video_data_file, 'w', newline='') as data_file:
+            csv_writer = csv.writer(data_file)
+            csv_writer.writerow(['duration', 'nb_frames', 'width', 'height', 'lat', 'long'])
+            csv_writer.writerow([video_duration, video_nb_frames, video_size[0], video_size[1], video_pos[0], video_pos[1]])
+
+    def get_video_data_from_data_file(self, project, video_file):
+        video_data_file = os.path.join(base_dir, 'projects', project, video_file + '_data.txt')
+        with open(video_data_file, 'r', newline='') as data_file:
+            reader = csv.DictReader(data_file)
+            for row in reader:
+                self.video_duration = float(row['duration'])
+                self.video_nb_frames = int(row['nb_frames'])
+                self.video_size = (int(row['width']), int(row['height']))
+                if row['lat']:
+                    self.video_pos = (float(row['lat']), float(row['long']))
+                else:
+                    self.video_pos = None
+
     def match_log_and_video(self):
         message = None
         video_ranges = list(get_video_ranges(self.is_video, self.time_stamp))

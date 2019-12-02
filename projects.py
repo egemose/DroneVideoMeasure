@@ -110,7 +110,8 @@ def upload(project):
     if flask.request.method == 'POST':
         file_obj = flask.request.files
         for file in file_obj.values():
-            file_location = os.path.join(base_dir, 'projects', project, secure_filename(file.filename.rsplit('.', 1)[0] + '.mp4'))
+            video_file = secure_filename(file.filename.rsplit('.', 1)[0] + '.mp4')
+            file_location = os.path.join(base_dir, 'projects', project, video_file)
             video_mime_type = re.compile('video/*')
             if video_mime_type.match(file.mimetype):
                 while True:
@@ -122,6 +123,7 @@ def upload(project):
                 file.save(temp_file)
                 ffmpeg.input(temp_file).filter('scale', -2, 1440).output(file_location, movflags='faststart', crf=23, preset='ultrafast').overwrite_output().run()
                 os.remove(temp_file)
+                drone_log.save_video_data_to_file(project, video_file)
     return flask.render_template('projects/upload.html', project=project)
 
 
@@ -199,7 +201,7 @@ def get_all_annotations(project, pro_version):
             json_data = json.load(fp)
         objects = json_data['objects']
         video_file = file.split(os.sep)[-1][:-5]
-        drone_log.get_video_data(project, video_file)
+        drone_log.get_video_data_from_data_file(project, video_file)
         fov.set_image_size(*drone_log.video_size)
         drone_log.match_log_and_video()
         if objects:
