@@ -1,12 +1,7 @@
 version: "3.3"
 services:
   webapp:
-    build: .
-    image: porpoisemeasure:latest
-    container_name: porpoisemeasure-container
+    image: unocifra/porpoise:latest
+    container_name: porpoise-container
     ports:
       - "5000:5000"
-    volumes:
-      - type: bind
-        source: ./data
-        target: /app/data

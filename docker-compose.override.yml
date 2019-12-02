@@ -1,0 +1,6 @@
+version: "3.3"
+webapp:
+  volumes:
+    - type: bind
+      source: ./data
+      target: /app/data

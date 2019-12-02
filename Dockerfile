@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 COPY . /app
+RUN mkdir data
 
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
