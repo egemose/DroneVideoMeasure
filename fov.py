@@ -2,10 +2,14 @@ import numpy as np
 import utm
 import cv2
 from collections import defaultdict
+import logging
+
+logger = logging.getLogger('app.' + __name__)
 
 
 class Fov:
     def __init__(self):
+        logger.debug(f'Creating instance of Fov {self}')
         self.image_size = None
         self.horizontal_fov = None
         self.vertical_fov = None
@@ -18,6 +22,7 @@ class Fov:
         self.image_size = (width, height)
 
     def set_camera_params(self, mat_file):
+        logger.debug(f'Setting camera params')
         mat_contents = np.load(mat_file)
         self.camera_matrix = np.transpose(mat_contents['mtx'])
         self.dist_coefficients = mat_contents['dist']
@@ -53,10 +58,6 @@ class Fov:
         z = - image_point_from_center[1] / self.image_size[1] * image_plane_height_in_meters
         vector = np.array([x, y, z])
         return vector
-
-    @staticmethod
-    def grouped(iterable, n):
-        return zip(*[iter(iterable)] * n)
 
     def get_horizon_and_world_corners(self, world_point_dict, yaw_pitch_roll):
         margin = 200

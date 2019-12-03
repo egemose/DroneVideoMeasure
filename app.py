@@ -1,4 +1,6 @@
 import os
+import logging
+import logging.handlers
 from flask import Flask, send_from_directory
 from flask_dropzone import Dropzone
 from flask_obscure import Obscure
@@ -9,6 +11,17 @@ from misc import misc_view
 from drones import drones_view
 from app_config import AppConfig
 from help_functions import base_dir
+
+logger = logging.getLogger('app')
+logger.setLevel(logging.DEBUG)
+log_dir = os.path.join(base_dir, 'logs')
+log_file = os.path.join(log_dir, 'python.log')
+if not os.path.exists(log_dir):
+    os.mkdir(log_dir)
+fh = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', backupCount=2)
+formatter = logging.Formatter('{asctime} | {name:<20} | {levelname:<8} - {message}', style='{')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
 
 def serve_projects_file(filename):
@@ -50,4 +63,5 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    logger.debug(f'App started with args: {args}')
     app.run(host='0.0.0.0', debug=args.debug)

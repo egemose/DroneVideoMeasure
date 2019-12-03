@@ -5,10 +5,14 @@ from datetime import datetime, timedelta
 import ffmpeg
 import numpy as np
 from help_functions import base_dir
+import logging
+
+logger = logging.getLogger('app.' + __name__)
 
 
 class DroneLog:
     def __init__(self):
+        logger.debug(f'Creating DroneLog instance {self}')
         self.video_duration = None
         self.video_nb_frames = None
         self.video_size = None
@@ -21,6 +25,7 @@ class DroneLog:
         self.is_video = None
 
     def log_data(self):
+        logger.debug(f'Getting log data')
         yaw = [x[0] * 180 / np.pi for x in self.rotation]
         pitch = [x[1] * 180 / np.pi for x in self.rotation]
         roll = [x[2] * 180 / np.pi for x in self.rotation]
@@ -31,6 +36,7 @@ class DroneLog:
         indexes = ['CUSTOM.updateTime', 'GIMBAL.yaw', 'GIMBAL.pitch', 'GIMBAL.roll', 'OSD.height [m]', 'CUSTOM.isVideo', 'OSD.latitude', 'OSD.longitude']
         log = os.path.join(base_dir, 'projects', project, 'drone_log.csv')
         remove_null_bytes(log)
+        logger.debug(f'Opening log to test for {project}')
         with open(log, encoding='iso8859_10') as csv_file:
             reader = csv.DictReader(csv_file)
             row = next(reader)
@@ -40,6 +46,7 @@ class DroneLog:
             return True
 
     def get_log_data(self, project):
+        logger.debug(f'Getting log data for {project}')
         self.time_stamp = []
         self.height = []
         self.rotation = []
@@ -74,9 +81,11 @@ class DroneLog:
                         self.pos.append((latitude, longitude))
                         self.is_video.append(True if row[is_video_idx] else False)
                     except ValueError:
+                        logger.debug(f'Row skipped because of value error.')
                         continue
 
     def get_video_data(self, project, video_file):
+        logger.debug(f'Reading video data for video {video_file} in {project}')
         file = os.path.join(base_dir, 'projects', project, video_file)
         ffprobe_res = ffmpeg.probe(file, cmd='ffprobe')
         self.video_duration = float(ffprobe_res['format']['duration'])
@@ -90,7 +99,7 @@ class DroneLog:
 
     @staticmethod
     def save_video_data_to_file(project, video_file_name):
-        print(project, video_file_name)
+        logger.debug(f'Reading video data for video {video_file_name} in {project}')
         video_file = os.path.join(base_dir, 'projects', project, video_file_name)
         video_data_file = os.path.join(base_dir, 'projects', project, video_file_name + '_data.txt')
         ffprobe_res = ffmpeg.probe(video_file, cmd='ffprobe')
@@ -103,11 +112,13 @@ class DroneLog:
         if match:
             video_pos = (float(match.group(1)), float(match.group(2)))
         with open(video_data_file, 'w', newline='') as data_file:
+            logger.debug(f'Saving video data to {video_data_file}')
             csv_writer = csv.writer(data_file)
             csv_writer.writerow(['duration', 'nb_frames', 'width', 'height', 'lat', 'long'])
             csv_writer.writerow([video_duration, video_nb_frames, video_size[0], video_size[1], video_pos[0], video_pos[1]])
 
     def get_video_data_from_data_file(self, project, video_file):
+        logger.debug(f'Reading video data from data file for video {video_file} from {project}')
         video_data_file = os.path.join(base_dir, 'projects', project, video_file + '_data.txt')
         with open(video_data_file, 'r', newline='') as data_file:
             reader = csv.DictReader(data_file)
@@ -121,6 +132,7 @@ class DroneLog:
                     self.video_pos = None
 
     def match_log_and_video(self):
+        logger.debug(f'Matching video and log file')
         message = None
         video_ranges = list(get_video_ranges(self.is_video, self.time_stamp))
         if self.video_pos is not None:
@@ -136,10 +148,12 @@ class DroneLog:
             minimum = min([(abs((x[1] - x[0]).total_seconds() - self.video_duration), x[0]) for x in video_ranges], key=lambda y: y[0])
             if minimum[0] > 5:
                 message = f'Warning: Video duration and Drone Log video duration differs by {minimum[0]} seconds.'
+        logger.debug(f'Matching message: {message}')
         self.video_start_time = minimum[1]
         return minimum[1], message
 
     def get_log_data_from_frame(self, frame):
+        logger.debug(f'Getting log data for frame {frame}')
         delta_time = timedelta(seconds=frame / self.video_nb_frames * self.video_duration)
         time = self.video_start_time + delta_time
         idx = self.get_time_idx(time)
@@ -151,6 +165,7 @@ class DroneLog:
 
 
 def remove_null_bytes(log):
+    logger.debug(f'Removing null bytes from log: {log}')
     with open(log, 'rb') as fi:
         data = fi.read()
     with open(log, 'wb') as fo:

@@ -4,9 +4,13 @@ from bokeh.layouts import gridplot
 from bokeh.models import DatetimeTickFormatter, BoxAnnotation, Span, CustomJS
 from bokeh.plotting import figure
 from drone_log_data import get_video_ranges
+import logging
+
+logger = logging.getLogger('app.' + __name__)
 
 
 def get_log_plot(log_data):
+    logger.debug(f'Getting log plot')
     height_plot, yaw_plot, pitch_plot, roll_plot = _get_log_plots(log_data)
     grid = gridplot([[height_plot, yaw_plot], [pitch_plot, roll_plot]])
     script, div = components(grid)
@@ -14,6 +18,7 @@ def get_log_plot(log_data):
 
 
 def get_log_plot_with_video(log_data, video_start, video_duration, video_frames):
+    logger.debug(f'Getting log plot with video')
     height_plot, yaw_plot, pitch_plot, roll_plot = _get_log_plots(log_data)
     video_end_time = datetime.fromtimestamp(video_start.timestamp()+video_duration)
     video_box = BoxAnnotation(left=video_start, right=video_end_time, top=1, fill_color='#00cc00')

@@ -6,10 +6,14 @@ import numpy as np
 from collections import namedtuple
 import flask
 import json
+import logging
 from werkzeug.utils import secure_filename
 from forms import NewDroneForm, EditDroneForm
 from help_functions import get_last_updated_time_as_string, get_last_modified_time, base_dir
 from calibration import CalibrateCamera
+
+logger = logging.getLogger('app.' + __name__)
+
 
 drones_view = flask.Blueprint('drones', __name__)
 drone_tuple = namedtuple('drone', ['title', 'camera_settings', 'calibrated', 'last_updated'])
@@ -20,6 +24,7 @@ def index():
     drone_dict = make_drone_dict()
     drone_form = get_drone_form(drone_dict)
     edit_drone_form = get_edit_drone_form(drone_dict)
+    logger.debug(f'Render drone index')
     return flask.render_template('drones/index.html', drones=drone_dict, new_drone_form=drone_form, edit_drone_form=edit_drone_form)
 
 
@@ -82,9 +87,12 @@ def make_drone_dict():
 def add_calibration(drone):
     calibration_folder = os.path.join(base_dir, 'drones', 'calibration')
     if not os.path.exists(calibration_folder):
+        logger.debug(f'Creating calibration folder')
         os.mkdir(calibration_folder)
     if os.path.isdir(calibration_folder):
+        logger.debug(f'Removing calibration folder')
         shutil.rmtree(calibration_folder)
+        logger.debug(f'Creating calibration folder')
         os.mkdir(calibration_folder)
     if flask.request.method == 'POST':
         file_obj = flask.request.files
@@ -93,15 +101,19 @@ def add_calibration(drone):
             image_mimetype = re.compile('image/*')
             if image_mimetype.match(file.mimetype):
                 file.save(file_location)
+                logger.debug(f'Saving file: {file_location}')
+    logger.debug(f'Render drone calibration for {flask.request.method} request')
     return flask.render_template('drones/calibration.html', drone=drone)
 
 
 @drones_view.route('/dones/<drone>/do_calibration', methods=['POST'])
 def do_calibration(drone):
+    logger.debug(f'do_calibration is called for drone {drone}')
     try:
         checkerboard_width = int(flask.request.form.get('checkerboard_width'))
         checkerboard_height = int(flask.request.form.get('checkerboard_height'))
     except ValueError:
+        logger.debug(f'Wrong value for checkerboard supplied.')
         return json.dumps([{'type': 'danger', 'message': 'Error interpreting the checkerboard size.'}])
     calibrate_cam = CalibrateCamera((checkerboard_width, checkerboard_height))
     in_folder = os.path.join(base_dir, 'drones', 'calibration')
@@ -109,6 +121,7 @@ def do_calibration(drone):
     try:
         calibrate_cam(in_folder, save_file)
     except AttributeError:
+        logger.debug(f'calibrate_cam throws an Attribute Error')
         return json.dumps([{'type': 'danger', 'message': 'Error loading images.'}])
     return 'true'
 
@@ -121,11 +134,13 @@ def view_calibration(drone):
     dist = np_file['dist']
     fov_x = np_file['fov_x']
     fov_y = np_file['fov_y']
+    logger.debug(f'Render view_calibration')
     return flask.render_template('drones/view_calibration.html', mtx=np.around(mtx, 1), dist=np.around(dist, 5), fov_x=np.round(fov_x, 2), fov_y=np.round(fov_y, 2))
 
 
 @drones_view.route('/drones/<drone>/remove')
 def remove_drone(drone):
+    logger.debug(f'Removing drone {drone}')
     drone_file = os.path.join(base_dir, 'drones', drone + '.txt')
     os.remove(drone_file)
     return flask.redirect(flask.url_for('drones.index'))

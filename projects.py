@@ -6,16 +6,18 @@ import random
 import re
 import shutil
 import subprocess
+import logging
 from collections import namedtuple
 import ffmpeg
 import flask
 import numpy as np
 from werkzeug.utils import secure_filename
-
 from drone_log_data import drone_log
 from forms import NewProjectForm, EditProjectForm
 from fov import fov
 from help_functions import get_last_modified_time, get_last_updated_time_as_string, base_dir
+
+logger = logging.getLogger('app.' + __name__)
 
 project_tuple = namedtuple('project', ['title', 'description', 'last_updated'])
 projects_view = flask.Blueprint('projects', __name__)
@@ -30,10 +32,12 @@ def index():
         return res
     edit_project_form = get_edit_project_form(project_dict)
     arguments = {'projects': project_dict, 'random_int': random_int, 'new_project_form': new_project_form, 'edit_project_form': edit_project_form}
+    logger.debug(f'Render index')
     return flask.render_template('projects/index.html', **arguments)
 
 
 def make_project_dict():
+    logger.debug(f'Finding all projects')
     project_dict = {}
     project_dir = os.path.join(base_dir, 'projects')
     if not os.path.exists(project_dir):
@@ -58,6 +62,7 @@ def get_new_project_form(project_dict):
     form.drone.choices = [(d, d[:-4]) for d in drones]
     if form.validate_on_submit():
         project_title = form.name.data
+        logger.debug(f'Creating a new project with name {project_title}')
         description = form.description.data
         drone = form.drone.data
         if project_title in project_dict:
@@ -66,7 +71,6 @@ def get_new_project_form(project_dict):
             os.mkdir(os.path.join(base_dir, 'projects', project_title))
             with open(os.path.join(base_dir, 'projects', project_title, 'description.txt'), 'w') as file:
                 file.write(description)
-            print(os.path.join(base_dir, 'drones', drone[:-4] + '.cam.npz'))
             shutil.copyfile(os.path.join(base_dir, 'drones', drone[:-4] + '.cam.npz'), os.path.join(base_dir, 'projects', project_title, 'drone.cam.npz'))
             log_file = os.path.join(base_dir, 'projects', project_title, 'drone_log.csv')
             form.log_file.data.save(log_file)
@@ -84,6 +88,7 @@ def get_edit_project_form(project_dict):
         description = form.edit_description.data
         project_title = form.edit_name.data
         drone = form.edit_drone.data
+        logger.debug(f'Editing project {project_before} with new name {project_title}')
         if project_title in project_dict and not project_title == project_before:
             flask.flash('A project with that name already exist!')
         else:
@@ -120,10 +125,15 @@ def upload(project):
                     temp_file = os.path.join(base_dir, 'projects', project, secure_filename(str(random_int) + file_type))
                     if not os.path.exists(temp_file):
                         break
+                logger.debug(f'Uploading file: {file_location}')
                 file.save(temp_file)
+                logger.debug(f'Upload done for file: {file_location}')
+                logger.debug(f'Converting file: {file_location}')
                 ffmpeg.input(temp_file).filter('scale', -2, 1440).output(file_location, movflags='faststart', crf=23, preset='ultrafast').overwrite_output().run()
                 os.remove(temp_file)
+                logger.debug(f'Converting done for file: {file_location}')
                 drone_log.save_video_data_to_file(project, video_file)
+    logger.debug(f'Render upload after a {flask.request.method} request')
     return flask.render_template('projects/upload.html', project=project)
 
 
@@ -133,17 +143,20 @@ def video_gallery(project):
     random_int = random.randint(1, 10000000)
     success = drone_log.test_log(project)
     if success:
+        logger.debug(f'Render video_gallery for {project}')
         return flask.render_template('projects/video_gallery.html', project=project, videos=videos, random_int=random_int)
     else:
         message = 'Error interpreting the drone log file. Try and upload the log file again.'
         flask.flash(message, 'error')
+        logger.debug(f'Render drone log error page for {project}')
         return flask.render_template('projects/error.html')
 
 
 @projects_view.route('/<project>/concatenate_videos')
 def concat_videos(project):
     videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4'))])
-    return flask.render_template('projects/cancat_videos.html', project=project, videos=videos)
+    logger.debug(f'Render concat_videos for {project}')
+    return flask.render_template('projects/concat_videos.html', project=project, videos=videos)
 
 
 @projects_view.route('/<project>/concatenating', methods=['POST'])
@@ -161,8 +174,11 @@ def do_concat_videos(project):
         file.write(video_str)
     output_file = os.path.join(base_dir, 'projects', project, output_file_name)
     cmd = 'ffmpeg -y -f concat -safe 0 -i ' + concat_file + ' -c copy ' + output_file
-    res = subprocess.run(cmd, shell=True)
+    logger.debug(f'Calling subprocess with command: {cmd}')
+    res = subprocess.run(cmd, shell=True, capture_output=True)
+    logger.debug(f'Subprocess finished with code: {res.returncode}')
     if res.returncode != 0:
+        logger.error(f'subprocess failed! stdout: {res.stdout} stderr: {res.stderr}')
         return json.dumps([{'type': 'error', 'message': 'Error when concatenating videos.'}])
     else:
         return 'true'
@@ -175,10 +191,12 @@ def download(project):
     filename = os.path.join(base_dir, 'projects', project, 'annotations.csv')
     annotations = get_all_annotations(project, pro_version)
     save_annotations_csv(annotations, filename)
+    logger.debug(f'Sending annotations.csv to user.')
     return flask.send_file(filename, as_attachment=True, attachment_filename='annotations.csv')
 
 
 def save_annotations_csv(annotations, filename):
+    logger.debug(f'Saving annotations in {filename}')
     with open(filename, 'w') as fp:
         csv_writer = csv.writer(fp, delimiter=',')
         header = ('name', 'time', 'length', 'lat', 'lon', 'east', 'north', 'zone number', 'zone letter',
@@ -190,6 +208,7 @@ def save_annotations_csv(annotations, filename):
 
 
 def get_all_annotations(project, pro_version):
+    logger.debug(f'Getting all annotations')
     annotations = []
     mat_file = os.path.join(base_dir, 'projects', project, 'drone.cam.npz')
     fov.set_camera_params(mat_file)
@@ -210,6 +229,7 @@ def get_all_annotations(project, pro_version):
                     annotation = get_frame_obj_data(obj)
                     annotation.extend([video_file, project, pro_version])
                 else:
+                    logger.debug(f'Unknown annotation found of type: {obj["type"]}')
                     annotation = None
                 annotations.append(annotation)
     return annotations
@@ -244,5 +264,6 @@ def get_frame_obj_data(obj):
 
 @projects_view.route('/<project>/remove')
 def remove_project(project):
+    logger.debug(f'Removing project {project}')
     shutil.rmtree('./projects/' + project)
     return flask.redirect(flask.url_for('projects.index'))

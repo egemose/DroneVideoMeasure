@@ -1,5 +1,8 @@
 import json
 import numpy as np
+import logging
+
+logger = logging.getLogger('app.' + __name__)
 
 
 class Annotation:
@@ -10,15 +13,18 @@ class Annotation:
 
 class Annotations:
     def __init__(self, drone_log, fov):
+        logger.debug(f'Creating Annotations instance: {self}')
         self.drone_log = drone_log
         self.fov = fov
         self.parents = []
 
     def add_parent(self, name):
+        logger.debug(f'Adding parent: {name} to {self}')
         parent = Annotation(name)
         self.parents.append(parent)
 
     def add_node(self, text, parent_name):
+        logger.debug(f'Adding node: {text} to parent: {parent_name} of {self}')
         p = self.get_parent(parent_name)
         node = Annotation(text)
         p.nodes.append(node)

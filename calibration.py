@@ -3,6 +3,9 @@ import numpy as np
 import cv2
 import glob
 from tqdm import tqdm
+import logging
+
+logger = logging.getLogger('app.' + __name__)
 
 
 class CalibrateCamera:
@@ -55,6 +58,7 @@ class CalibrateCamera:
         return fov_x, fov_y
 
     def __call__(self, in_folder, save_file, show_detections=False, *args, **kwargs):
+        logger.debug(f'Calibrating camera')
         self._detect_checkerboard(in_folder, show_detections)
         mtx, dist = self._calculate_calibration()
         fov_x, fov_y = self._calculate_camera_fov(mtx)
