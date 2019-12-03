@@ -6,6 +6,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - type: bind
-        source: ./data
-        target: /app/data
+      - appmedia:/app/data
+
+volumes:
+  appmedia:
