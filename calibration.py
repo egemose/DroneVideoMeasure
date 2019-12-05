@@ -2,89 +2,92 @@ import os
 import numpy as np
 import cv2
 import glob
-from tqdm import tqdm
 import logging
+from corner_detector import ChessBoardCornerDetector
 
 logger = logging.getLogger('app.' + __name__)
 
 
 class CalibrateCamera:
-    def __init__(self, checkerboard_size, *, show_progress=False):
-        self.checkerboard_size = checkerboard_size
-        self.show_progress = show_progress
-        self.checkerboard = self._create_checkerboard()
-        self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-        self.obj_points = []
-        self.image_points = []
-        self.image_size = None
+    def __init__(self):
+        self.min_percentage_coverage = 50
+        self.detector = ChessBoardCornerDetector()
 
-    def _create_checkerboard(self):
-        obj_p = np.zeros((self.checkerboard_size[0] * self.checkerboard_size[1], 3), np.float32)
-        obj_p[:, :2] = np.mgrid[0:self.checkerboard_size[0], 0:self.checkerboard_size[1]].T.reshape(-1, 2)
-        return obj_p
+    def detect_calibration_pattern_in_image(self, img):
+        corners, coverage = self.detector.detect_chess_board_corners(img)
+        obj_points = []
+        img_points = []
+        for key in corners.keys():
+            for inner_key in corners[key].keys():
+                obj_points.append(np.array([key, inner_key, 0]))
+                img_points.append(corners[key][inner_key])
+        return np.array(obj_points, dtype=np.float32), np.array(img_points, dtype=np.float32), coverage
 
-    def _detect_checkerboard(self, folder, show_detections=False):
-        gray = None
-        image_files = []
-        for file_format in ['*.jpg', '*.jpeg', '*.jpe', '*.bmp', '*.dib', '*.png', '*.tiff', '*.tif']:
-            image_files.extend(glob.glob(os.path.join(folder, file_format)))
-        for image_file in tqdm(image_files, disable=not self.show_progress):
-            image = cv2.imread(image_file)
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            ret, corners = cv2.findChessboardCorners(gray, self.checkerboard_size, None)
-            if ret:
-                self.obj_points.append(self.checkerboard)
-                new_corners = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), self.criteria)
-                self.image_points.append(new_corners)
-                if show_detections:
-                    cv2.drawChessboardCorners(image, self.checkerboard_size, new_corners, ret)
-                    cv2.imshow('img', image)
-                    cv2.waitKey(500)
-        self.image_size = gray.shape[::-1]
-        cv2.destroyAllWindows()
+    def calibrate_camera_from_images(self, image_files):
+        obj_points_list = []
+        img_points_list = []
+        image_size = None
+        for image_file in image_files:
+            img = cv2.imread(image_file)
+            image_size = (img.shape[1], img.shape[0])
+            obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(img)
+            if coverage > self.min_percentage_coverage:
+                obj_points_list.append(obj_points)
+                img_points_list.append(img_points)
+        if obj_points_list:
+            _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
+            return mtx, dist, image_size
+        else:
+            return None, None, None
 
-    def _calculate_calibration(self):
-        _, mtx, dist, _, _ = cv2.calibrateCamera(self.obj_points, self.image_points, self.image_size, None, None)
-        if self.show_progress:
-            print('Matrix:', mtx)
-            print('Dist. coef:', dist)
-        return mtx, dist
-
-    def _calculate_camera_fov(self, mtx):
-        fov_x, fov_y, _, _, _ = cv2.calibrationMatrixValues(mtx, self.image_size, 1, 1)
-        if self.show_progress:
-            print('FOV_x:', fov_x)
-            print('FOV_y:', fov_y)
-        return fov_x, fov_y
-
-    def __call__(self, in_folder, save_file, show_detections=False, *args, **kwargs):
-        logger.debug(f'Calibrating camera')
-        self._detect_checkerboard(in_folder, show_detections)
-        mtx, dist = self._calculate_calibration()
-        fov_x, fov_y = self._calculate_camera_fov(mtx)
-        np.savez(save_file, mtx=mtx, dist=dist, fov_x=fov_x, fov_y=fov_y)
-
-
-class Undistort:
-    def __init__(self, calibration_file):
-        self.mtx, self.dist = self._read_calibration(calibration_file)
+    def calibrate_camera_from_video(self, video_files):
+        obj_points_list = []
+        img_points_list = []
+        image_size = None
+        for video_file in video_files:
+            cap = cv2.VideoCapture(video_file)
+            count = 0
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if ret:
+                    image_size = (frame.shape[1], frame.shape[0])
+                    obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(frame)
+                    if coverage > self.min_percentage_coverage:
+                        obj_points_list.append(obj_points)
+                        img_points_list.append(img_points)
+                        count += 30
+                        cap.set(1, count)
+                else:
+                    break
+            cap.release()
+        if obj_points_list:
+            _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
+            return mtx, dist, image_size
+        else:
+            return None, None, None
 
     @staticmethod
-    def _read_calibration(file):
-        np_file = np.load(file)
-        mtx = np_file['mtx']
-        dist = np_file['dist']
-        return mtx, dist
+    def calculate_camera_fov(mtx, image_size):
+        fov_x, fov_y, _, _, _ = cv2.calibrationMatrixValues(mtx, image_size, 1, 1)
+        return fov_x, fov_y
 
-    def __call__(self, image, crop=False, *args, **kwargs):
-        height, width = image.shape[:2]
-        size = (width, height)
-        new_camera_mtx, roi = cv2.getOptimalNewCameraMatrix(self.mtx, self.dist, size, 1, size)
-        dst = cv2.undistort(image, self.mtx, self.dist, None, new_camera_mtx)
-        if crop:
-            x, y, w, h = roi
-            dst = dst[y:y + h, x:x + w]
-        return dst
-
-
-
+    def __call__(self, in_folder, save_file, *args, **kwargs):
+        logger.debug(f'Calibrating camera')
+        image_files = []
+        for file_format in ['*.jpg', '*.jpeg', '*.jpe', '*.bmp', '*.dib', '*.png', '*.tiff', '*.tif']:
+            image_files.extend(glob.glob(os.path.join(in_folder, file_format)))
+        video_files = []
+        for file_format in ['*.mp4', '*.m4a', '*.m4v', '*.f4v', '*.f4a', '*.m4b', '*.m4r', '*.f4b', '*.mov', '*.wmv', '*.wma', '*.webm']:
+            video_files.extend(glob.glob(os.path.join(in_folder, file_format)))
+        if image_files:
+            mtx, dist, image_size = self.calibrate_camera_from_images(image_files)
+        elif video_files:
+            mtx, dist, image_size = self.calibrate_camera_from_video(video_files)
+        else:
+            return
+        if mtx is not None:
+            fov_x, fov_y = self.calculate_camera_fov(mtx, image_size)
+            np.savez(save_file, mtx=mtx, dist=dist, fov_x=fov_x, fov_y=fov_y)
+            return True
+        else:
+            return -1

@@ -99,7 +99,8 @@ def add_calibration(drone):
         for file in file_obj.values():
             file_location = os.path.join(calibration_folder, secure_filename(file.filename))
             image_mimetype = re.compile('image/*')
-            if image_mimetype.match(file.mimetype):
+            video_mimetype = re.compile('video/*')
+            if image_mimetype.match(file.mimetype) or video_mimetype.match(file.mimetype):
                 file.save(file_location)
                 logger.debug(f'Saving file: {file_location}')
     logger.debug(f'Render drone calibration for {flask.request.method} request')
@@ -109,20 +110,18 @@ def add_calibration(drone):
 @drones_view.route('/dones/<drone>/do_calibration', methods=['POST'])
 def do_calibration(drone):
     logger.debug(f'do_calibration is called for drone {drone}')
-    try:
-        checkerboard_width = int(flask.request.form.get('checkerboard_width'))
-        checkerboard_height = int(flask.request.form.get('checkerboard_height'))
-    except ValueError:
-        logger.debug(f'Wrong value for checkerboard supplied.')
-        return json.dumps([{'type': 'danger', 'message': 'Error interpreting the checkerboard size.'}])
-    calibrate_cam = CalibrateCamera((checkerboard_width, checkerboard_height))
+    calibrate_cam = CalibrateCamera()
     in_folder = os.path.join(base_dir, 'drones', 'calibration')
     save_file = os.path.join(base_dir, 'drones', drone + '.cam')
     try:
-        calibrate_cam(in_folder, save_file)
+        success = calibrate_cam(in_folder, save_file)
+        if success == -1:
+            return json.dumps([{'type': 'danger', 'message': 'Error finding checkerboard during calibration! Please try again with new images or new video by reloading the page.'}])
+        if not success:
+            return json.dumps([{'type': 'danger', 'message': 'Error no video or images found! Please try again by reloading the page.'}])
     except AttributeError:
         logger.debug(f'calibrate_cam throws an Attribute Error')
-        return json.dumps([{'type': 'danger', 'message': 'Error loading images.'}])
+        return json.dumps([{'type': 'danger', 'message': 'Error loading images or video. Please try again by reloading the page.'}])
     return 'true'
 
 

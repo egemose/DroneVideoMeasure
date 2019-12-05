@@ -18,7 +18,6 @@
 {% endblock %}
 
 {% block content %}
-{% include 'drones/calibration_modal.html' %}
     <div class="jumbotron">
       <div class="row justify-content-between">
         <div class="col-auto mx-auto text-center">
@@ -29,7 +28,7 @@
       {{ dropzone.config() }}
       <div class="row justify-content-end">
         <div class="col">
-          <button type="button" class="btn btn-primary float-right" id="calibrate_btn" data-toggle="modal" data-target="#calibration_modal"><i class="fas fa-camera"></i> Calibrate Camera</button>
+          <button type="button" class="btn btn-primary float-right" id="calibrate_btn" onclick="calibrate()"><i class="fas fa-camera"></i> Calibrate Camera</button>
         </div>
       </div>
     </div>
@@ -51,20 +50,17 @@ var flashMessage = function(data){
   return html;
 };
 function calibrate() {
-  var checkerboard_width = $('#checkerboard_width').val();
-  var checkerboard_height = $('#checkerboard_height').val();
-  $('#calibration_modal').modal('toggle');
-  $('#calibrate_btn').prop('disabled', true)
+  $('#calibrate_btn').prop('disabled', true);
   $('#calibrate_btn').html('<i class="fas fa-spinner fa-spin"></i> Calibrating');
   $.post('{{ url_for("drones.do_calibration", drone=drone) }}', {
-    checkerboard_width: checkerboard_width,
-    checkerboard_height: checkerboard_height,
   }, function(data) {
     if (data == 'true') {
       window.location.href = '{{ url_for("drones.index") }}';
     }
     else {
       $('#flash').append(flashMessage(JSON.parse(data)));
+      $('#calibrate_btn').prop('disabled', false);
+      $('#calibrate_btn').html('Calibrate');
     }
   });
 };
