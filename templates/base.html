@@ -5,18 +5,18 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+    <script src="https://kit.fontawesome.com/1133c68e8b.js" crossorigin="anonymous"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32">
 {% endblock %}
 
-{% block title %}Porpoise Meassure{% endblock %}
+{% block title %}Drone Video Meassure{% endblock %}
 
 {% block navbar %}
 <header>
   <!-- Fixed navbar -->
   <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
     <div class="container">
-    <a class="navbar-brand" href={{ url_for('projects.index') }}>Porpoise Measure</a>
+    <a class="navbar-brand" href={{ url_for('projects.index') }}>Drone Video Measure</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>

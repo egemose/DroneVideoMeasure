@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.9.16/html5sortable.min.js" integrity="sha256-pQqGgYa7h89mF5HkKkM+WbgEdI59Ktr91ADiRogW+KU=" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block add_navbar %}
+<li class="nav-item active">
+  <a class="nav-link" href="{{ url_for('projects.video_gallery', project=project) }}"><i class="fas fa-file-video"></i> Video gallery</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="container flashed-messages">
+  <div class="row">
+    <div id="flash" class="col-md-12">
+    </div>
+  </div>
+</div>
+{% include 'projects/concat_modal.html' %}
+<div class="row p-3">
+  <div class="col">
+    <h2>Drag videos</h2>
+    <ul class="list-group p-3 js-sortable-copy border border-primary rounded-0" aria-dropeffect="move">
+      {% for video in videos %}
+      <li class="list-group-item list-group-item-action list-group-item-dark rounded" draggable="true" role="option" aria-grabbed="false">{{ video }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="col">
+    <h2>Drop videos and sort</h2>
+    <ul class="list-group p-3 js-sortable-copy-target border border-primary rounded-0" aria-dropeffect="move">
+    </ul>
+  </div>
+</div>
+<div class="row p-3">
+  <div class="col">
+    <button type="button" class="btn btn-primary float-right" id="concat" data-toggle="modal" data-target="#concat_modal"><i class="fas fa-file-video"></i> Concatenate videos</button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+sortable('.js-sortable-copy', {
+  forcePlaceholderSize: true,
+  placeholderClass: 'list-group-item',
+  copy: true,
+  acceptFrom: false,
+});
+sortable('.js-sortable-copy-target', {
+  forcePlaceholderSize: true,
+  placeholderClass: 'list-group-item',
+  copy: false,
+  acceptFrom: '.js-sortable-copy,.js-sortable-copy-target',
+});
+var flashMessage = function(data){
+  html = '';
+  for (i=0; i<data.length; i++) {
+    html += '<div class="alert alert-' + data[i]['type'] + ' alert-dismissible", role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + data[i].message + '</div>';
+  }
+  return html;
+};
+function concat() {
+  var output_name = $('#concat_input').val();
+  $('#concat_modal').modal('toggle');
+  $('#concat').prop('disabled', true)
+  $('#concat').html('<i class="fas fa-spinner fa-spin"></i>');
+  var obj = sortable('.js-sortable-copy-target', 'serialize')[0];
+  var data = [];
+  $.each(obj.items, function(index, value) {
+    data.push(value.node.innerText);
+  });
+  $.post('{{ url_for("projects.do_concat_videos", project=project) }}', {
+    videos: JSON.stringify(data),
+    output_name: output_name,
+  }, function(data) {
+    if (data == 'true') {
+      window.location.href = '{{ url_for("projects.video_gallery", project=project) }}';
+    }
+    else {
+      $('#flash').append(flashMessage(JSON.parse(data)));
+    }
+  });
+};
+</script>
+{% endblock %}

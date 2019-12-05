@@ -68,10 +68,10 @@
 {% block scripts %}
 {{ super() }}
 {{ plot_script | safe }}
-<script type="text/javascript" src="{{ url_for('static', filename='bootstrap_tree/bootstrap-treeview.min.js') }}"></script>
-<script src={{ url_for( 'static', filename='openseadragon/openseadragon.min.js' ) }}></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.4.1/openseadragon.min.js"></script>
 <script src={{ url_for( 'static', filename='openseadragon-fabricjs-overlay.js' ) }}></script>
-<script src={{ url_for( 'static', filename='fabric/fabric.adapted.js' ) }}></script>
+<script src={{ url_for( 'static', filename='fabric.adapted.js' ) }}></script>
 <script src={{ url_for( 'static', filename='VideoFrame.min.js' ) }}></script>
 <script src={{ url_for( 'static', filename='video_annotator.js' ) }}></script>
 <script type="text/javascript">
