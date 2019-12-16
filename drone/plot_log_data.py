@@ -3,7 +3,7 @@ from bokeh.embed import components
 from bokeh.layouts import gridplot
 from bokeh.models import DatetimeTickFormatter, BoxAnnotation, Span, CustomJS
 from bokeh.plotting import figure
-from drone_log_data import get_video_ranges
+from drone.drone_log_data import get_video_ranges
 import logging
 
 logger = logging.getLogger('app.' + __name__)

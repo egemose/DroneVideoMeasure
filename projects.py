@@ -12,9 +12,9 @@ import ffmpeg
 import flask
 import numpy as np
 from werkzeug.utils import secure_filename
-from drone_log_data import drone_log
+from drone.drone_log_data import drone_log
 from forms import NewProjectForm, EditProjectForm
-from fov import fov
+from drone.fov import fov
 from help_functions import get_last_modified_time, get_last_updated_time_as_string, base_dir
 
 logger = logging.getLogger('app.' + __name__)

@@ -3,24 +3,24 @@ import numpy as np
 import cv2
 import glob
 import logging
-from corner_detector import ChessBoardCornerDetector
+from calibration.corner_detector import ChessBoardCornerDetector
 
 logger = logging.getLogger('app.' + __name__)
 
 
 class CalibrateCamera:
     def __init__(self):
-        self.min_percentage_coverage = 50
+        self.min_percentage_coverage = 15
         self.detector = ChessBoardCornerDetector()
 
     def detect_calibration_pattern_in_image(self, img):
-        corners, coverage = self.detector.detect_chess_board_corners(img)
+        corners, coverage, _ = self.detector.detect_chess_board_corners(img)
         obj_points = []
         img_points = []
-        for key in corners.keys():
-            for inner_key in corners[key].keys():
+        for key, val in corners.items():
+            for inner_key, inner_val in val.items():
                 obj_points.append(np.array([key, inner_key, 0]))
-                img_points.append(corners[key][inner_key])
+                img_points.append(inner_val)
         return np.array(obj_points, dtype=np.float32), np.array(img_points, dtype=np.float32), coverage
 
     def calibrate_camera_from_images(self, image_files):
@@ -34,10 +34,14 @@ class CalibrateCamera:
             if coverage > self.min_percentage_coverage:
                 obj_points_list.append(obj_points)
                 img_points_list.append(img_points)
+            else:
+                logger.debug(f'{image_file} only has {coverage}% coverage minimum set to {self.min_percentage_coverage}')
         if obj_points_list:
+            logger.debug(f'Using {len(obj_points_list)} images to calibrate')
             _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
             return mtx, dist, image_size
         else:
+            logger.debug(f'No usable images found')
             return None, None, None
 
     def calibrate_camera_from_video(self, video_files):
@@ -46,6 +50,8 @@ class CalibrateCamera:
         image_size = None
         for video_file in video_files:
             cap = cv2.VideoCapture(video_file)
+            num_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+            num_images = 15
             count = 0
             while cap.isOpened():
                 ret, frame = cap.read()
@@ -55,15 +61,17 @@ class CalibrateCamera:
                     if coverage > self.min_percentage_coverage:
                         obj_points_list.append(obj_points)
                         img_points_list.append(img_points)
-                        count += 30
+                        count += int(num_frames / num_images)
                         cap.set(1, count)
                 else:
                     break
             cap.release()
         if obj_points_list:
+            logger.debug(f'Using {len(obj_points_list)} images from video to calibrate')
             _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
             return mtx, dist, image_size
         else:
+            logger.debug(f'No usable images found in the video')
             return None, None, None
 
     @staticmethod

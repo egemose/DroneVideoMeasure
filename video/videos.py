@@ -4,11 +4,11 @@ import re
 from datetime import datetime, time
 import flask
 import logging
-import plot_log_data
-from drone_log_data import drone_log
-from fov import fov
+from drone import plot_log_data
+from drone.drone_log_data import drone_log
+from drone.fov import fov
 from help_functions import base_dir, horizon_dict
-from annotations import Annotations
+from video.annotations import Annotations
 
 logger = logging.getLogger('app.' + __name__)
 

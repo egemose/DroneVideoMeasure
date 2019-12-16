@@ -10,7 +10,7 @@ import logging
 from werkzeug.utils import secure_filename
 from forms import NewDroneForm, EditDroneForm
 from help_functions import get_last_updated_time_as_string, get_last_modified_time, base_dir
-from calibration import CalibrateCamera
+from calibration.calibration import CalibrateCamera
 
 logger = logging.getLogger('app.' + __name__)
 
