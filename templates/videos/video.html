@@ -44,8 +44,8 @@
     <div class="col-2">
       <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
         <div class="btn-group my-1 mr-2" role="group" aria-label="group">
-          <button type="button" class="btn btn-secondary" id="new-name" onclick="on_new_name()"><i class="fas fa-plus"></i></button>
-          <button type="button" class="btn btn-secondary" id="jump-to-frame" onclick="jump_to_frame()"><i class="fas fa-level-down-alt"></i></button>
+          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Add a new name for the annotations" id="new-name" onclick="on_new_name()"><i class="fas fa-plus"></i></button>
+          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump in the video to the frame of the selected annotation" vid="jump-to-frame" onclick="jump_to_frame()"><i class="fas fa-level-down-alt"></i></button>
         </div>
       </div>
       <div id="tree" class="tree"></div>
@@ -102,14 +102,16 @@
     VideoAnnotator.save('{{ url_for('videos.save_fabric_json', project=project, video_file=video) }}');
   });
   $(function() {
-    $('#colorpicker').colorpicker().on('colorpickerChange', function(event) {
+    $('#colorpicker').colorpicker();
+    $('#colorpicker').on('colorpickerChange', function(event) {
       VideoAnnotator.on_color_change(event);
     });
   });
   $(function() {
     $('#colorpicker_default').colorpicker({
       format: 'auto'
-    }).on('colorpickerChange', function(event) {
+    });
+    $('#colorpicker_default').on('colorpickerChange', function(event) {
       VideoAnnotator.on_default_color_change(event);
     });
   });

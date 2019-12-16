@@ -13,7 +13,7 @@
 
 {% block add_navbar %}
 <li class="nav-item active">
-  <a class="nav-link" href="{{ url_for('drones.index') }}"><i class="fas fa-plane"></i> Drones</a>
+  <a class="nav-link" data-toggle="tooltip" title="Return to Home" href="{{ url_for('drones.index') }}"><i class="fas fa-plane"></i> Drones</a>
 </li>
 <li class="nav-item active">
   <a class="nav-link" href="#" data-toggle="modal" data-target="#create_new_project_modal"><i class="fas fa-plus"></i> Add Project</a>
@@ -21,7 +21,7 @@
 {% endblock %}
 {% block navbar_end %}
 <form class="form-inline mt-2 mt-md-0">
-  <input id="filter_projects" class="form-control" type="text" placeholder="Search" aria-label="Search">
+  <input id="filter_projects" data-toggle="tooltip" title="Search for a project by title" class="form-control" type="text" placeholder="Search" aria-label="Search">
 </form>
 {% endblock %}
 
@@ -41,12 +41,12 @@
       <div class="card-body text-right">
         <p class="card-text text-left">{{ project.description }}</p>
         <div class="btn-group">
-          <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('projects.video_gallery', project=project.title) }}'"><i class="far fa-folder-open"></i> Open</button>
+          <button type="button" data-toggle="tooltip" title="Open the project" class="btn btn-primary" onclick="window.location.href='{{ url_for('projects.video_gallery', project=project.title) }}'"><i class="far fa-folder-open"></i> Open</button>
           <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
           <div class="dropdown-menu">
-            <a class="dropdown-item" href="{{ url_for('projects.download', project=project.title, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
+            <a class="dropdown-item" data-toggle="tooltip" title="Download all annotations" href="{{ url_for('projects.download', project=project.title, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
             <a class="dropdown-item" data-toggle="modal" data-target="#edit_project_modal" data-project="{{ project.title }}" data-description="{{ project.description }}" href="#"><i class="far fa-edit"></i> Edit</a>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" data-toggle="modal" data-target="#remove_project_modal" data-project="{{ project.title }}" data-link="{{ url_for('projects.remove_project', project=project.title) }}" href="#"><i class="far fa-trash-alt"></i>
@@ -55,7 +55,7 @@
         </div>
       </div>
       <div class="card-footer text-muted">
-        <p class="card-text"><small>{{ project.last_updated }}</small></p>
+        <p class="card-text" data-toggle="tooltip" title="When the project was last updated"><small>{{ project.last_updated }}</small></p>
       </div>
     </div>
   </div>

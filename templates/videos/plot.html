@@ -11,7 +11,7 @@
 
 {% block add_navbar %}
 <li class="nav-item active">
-  <a class="nav-link" href="{{ url_for('projects.video_gallery', project=project) }}" ><i class="fas fa-images"></i>Video gallery</a>
+  <a class="nav-link" data-toggle="tooltip" title="Return to Video Gallery" href="{{ url_for('projects.video_gallery', project=project) }}" ><i class="fas fa-images"></i>Video gallery</a>
 </li>
 {% endblock %}
 

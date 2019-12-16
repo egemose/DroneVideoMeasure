@@ -2,21 +2,21 @@
 
 {% block add_navbar %}
 <li class="nav-item active">
-  <a class="nav-link" href="{{ url_for('projects.upload', project=project) }}"><i class="fas fa-plus"></i> Upload</a>
+  <a class="nav-link" data-toggle="tooltip" title="Upload more videos" ref="{{ url_for('projects.upload', project=project) }}"><i class="fas fa-plus"></i> Upload</a>
 </li>
 <li class="nav-item active">
-  <a class="nav-link" href="{{ url_for( 'projects.download', project=project, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download</a>
+  <a class="nav-link" data-toggle="tooltip" title="Download all annotation for the project" href="{{ url_for( 'projects.download', project=project, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download</a>
 </li>
 <li class="nav-item active">
-  <a class="nav-link" href="{{ url_for( 'videos.plot_log', project=project) }}"><i class="fas fa-chart-area"></i> Plot Log file</a>
+  <a class="nav-link" data-toggle="tooltip" title="Show a plot of the drone log" href="{{ url_for( 'videos.plot_log', project=project) }}"><i class="fas fa-chart-area"></i> Plot Log file</a>
 </li>
 <li class="nav-item active">
-  <a class="nav-link" href="{{ url_for( 'projects.concat_videos', project=project) }}"><i class="fas fa-file-video"></i> Concatenate videos</a>
+  <a class="nav-link" data-toggle="tooltip" title="Concatenate videos if the drone has split it into multiple files" href="{{ url_for( 'projects.concat_videos', project=project) }}"><i class="fas fa-file-video"></i> Concatenate videos</a>
 </li>
 {% endblock %}
 {% block navbar_end %}
 <form class="form-inline mt-2 mt-md-0">
-  <input id="filter_videos" class="form-control" type="text" placeholder="Search" aria-label="Search">
+  <input id="filter_videos" data-toggle="tooltip" title="Search by name for a video" class="form-control" type="text" placeholder="Search" aria-label="Search">
 </form>
 {% endblock %}
 
