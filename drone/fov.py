@@ -24,7 +24,7 @@ class Fov:
     def set_camera_params(self, mat_file):
         logger.debug(f'Setting camera params')
         mat_contents = np.load(mat_file)
-        self.camera_matrix = np.transpose(mat_contents['mtx'])
+        self.camera_matrix = mat_contents['mtx']
         self.dist_coefficients = mat_contents['dist']
         self.horizontal_fov = mat_contents['fov_x'] * np.pi / 180
         self.vertical_fov = mat_contents['fov_y'] * np.pi / 180

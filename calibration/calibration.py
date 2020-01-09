@@ -84,9 +84,11 @@ class CalibrateCamera:
         image_files = []
         for file_format in ['*.jpg', '*.jpeg', '*.jpe', '*.bmp', '*.dib', '*.png', '*.tiff', '*.tif']:
             image_files.extend(glob.glob(os.path.join(in_folder, file_format)))
+            image_files.extend(glob.glob(os.path.join(in_folder, file_format.upper())))
         video_files = []
         for file_format in ['*.mp4', '*.m4a', '*.m4v', '*.f4v', '*.f4a', '*.m4b', '*.m4r', '*.f4b', '*.mov', '*.wmv', '*.wma', '*.webm']:
             video_files.extend(glob.glob(os.path.join(in_folder, file_format)))
+            video_files.extend(glob.glob(os.path.join(in_folder, file_format.upper())))
         if image_files:
             mtx, dist, image_size = self.calibrate_camera_from_images(image_files)
         elif video_files:
