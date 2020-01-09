@@ -125,15 +125,15 @@ def save_start_time(project, video_file):
 def write_video_start_time(project, video_file, video_start_time):
     video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
     with open(video_info_file, 'w') as v_file:
-        v_file.write(str(video_start_time.timestamp()))
+        v_file.write(str(video_start_time.strftime('%Y/%m/%d %H:%M:%S.%f')))
 
 
 def read_video_start_time(project, video_file):
     video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
     if os.path.isfile(video_info_file):
         with open(video_info_file) as v_file:
-            timestamp = v_file.read()
-            video_start_time = datetime.fromtimestamp(float(timestamp))
+            date_time = v_file.read()
+            video_start_time = datetime.strptime(date_time, '%Y/%m/%d %H:%M:%S.%f')
         return video_start_time
     else:
         return None
