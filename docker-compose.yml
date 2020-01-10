@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   webapp:
-    image: unocifra/porpoise:latest
+    build: .
     container_name: drone-video-measure-container
     ports:
       - "5000:5000"
