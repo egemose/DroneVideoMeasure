@@ -26,11 +26,6 @@ logger.addHandler(fh)
 def serve_projects_file(filename):
     return send_from_directory(os.path.join(base_dir, 'projects'), filename)
 
-# AppConfig object holds:
-# SECRET_KEY = 'some secret'
-# WTF_CSRF_SECRET_KEY = 'csrf secret key'
-# OBSCURE_SALT = some random int
-
 
 # Dropzone settings
 AppConfig.DROPZONE_UPLOAD_MULTIPLE = True
