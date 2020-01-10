@@ -265,5 +265,5 @@ def get_frame_obj_data(obj):
 @projects_view.route('/<project>/remove')
 def remove_project(project):
     logger.debug(f'Removing project {project}')
-    shutil.rmtree('./projects/' + project)
+    shutil.rmtree(os.path.join(base_dir, 'projects', project))
     return flask.redirect(flask.url_for('projects.index'))
