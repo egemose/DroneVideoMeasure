@@ -13,7 +13,7 @@ Developed to measure and track marine mammals in the surface of the ocean.
 * From Powershell (windows) or command line (Mac / Linux), type:
 ```bash
 git clone https://github.com/egemose/DroneVideoMeasure.git
-cd folder
+cd DroneVideoMeasure
 ./dvm.sh start
 ```
 
@@ -42,7 +42,7 @@ cd folder
   - Videos from that flight are uploaded.
   - Videos can then be viewed and annotated
 
-A demo data is available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3604005.svg)](https://doi.org/10.5281/zenodo.3604005) including a video demo of how to use the program.
+Demo data is available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3604005.svg)](https://doi.org/10.5281/zenodo.3604005) including a video demo of how to use the program.
 
 ## Author
 
