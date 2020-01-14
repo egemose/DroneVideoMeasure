@@ -50,4 +50,4 @@ Written by Henrik Dyrberg Egemose (hesc@mmmi.sdu.dk) as part of the InvaDrone an
 
 ## License
 
-This project is licensed under the 3-Clause BSD License - see the [LICENSE](LICENSE.md) file for details.
+This project is licensed under the 3-Clause BSD License - see the [LICENSE](LICENSE) file for details.
