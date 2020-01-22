@@ -17,7 +17,7 @@ cd DroneVideoMeasure
 ./dvm.sh start
 ```
 
-* Open a Web Browser to `http://localhost:5000`
+* Open a Web Browser at `http://localhost:5000`
   - If Drone Video Measure appears all is set and up and running.
 
 * To stop Drone Video Measure press CTRL+C and run:
@@ -33,6 +33,8 @@ cd DroneVideoMeasure
 ## Usage
 
 * First and drone need to be registered and calibrated under the "Drone" menu.
+  - A video of a checkerboard (like this [checkerboard.png](checkerboard.png)) is captured with the drone from different angles.
+  - Uploading the video and the drones camera is automatically calibrated.
 * Then a project can be created.
   - The drone used is selected.
   - One project correspond to one flight i.e one drone log file.
@@ -40,7 +42,7 @@ cd DroneVideoMeasure
   Can be done here: [PhantomHelp](https://www.phantomhelp.com/LogViewer/Upload/)
   and Downloading the verbose csv.
   - Videos from that flight are uploaded.
-  - Videos can then be viewed and annotated
+  - Videos can be viewed and annotated
 
 Demo data is available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3604005.svg)](https://doi.org/10.5281/zenodo.3604005) including a video demo of how to use the program.
 
