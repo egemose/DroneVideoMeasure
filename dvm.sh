@@ -13,7 +13,7 @@ esac
 if [[ $platform = "Windows" ]]; then
 	command="docker-compose -f docker-compose.windows.yml"
 else
-	command="docker-compose -f docker-compose.yml"
+	command="mkdir -p data && docker-compose -f docker-compose.yml"
 fi
 
 if [[ $1 = "start" ]]; then
