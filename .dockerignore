@@ -4,3 +4,7 @@
 .idea
 *.pyc
 /data/
+/example-data/
+/paper/
+checkerboard.png
+dvm.sh
