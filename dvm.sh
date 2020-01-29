@@ -63,7 +63,7 @@ get_docker_image_rm(){
 }
 
 get_docker_volume_rm(){
-	local docker_rm_volume="docker volume rm appmedia"
+	local docker_rm_volume="docker volume rm dronevideomeasure_appmedia"
 	docker_rm_volume="$(add_sudo "$docker_rm_volume")"
 	echo "$docker_rm_volume"
 }
@@ -101,7 +101,7 @@ remove(){
 	run "$docker_rm_image"
 	if [[ $platform = "Windows" ]]; then
 		echo "Removing docker volume"
-		local docker_rm_volume="$(get_docker_image_rm)"
+		local docker_rm_volume="$(get_docker_volume_rm)"
 		run "$docker_rm_volume"
 	fi
 	echo "Removed docker content DVM directory can now be removed"
