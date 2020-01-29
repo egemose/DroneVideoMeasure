@@ -4,7 +4,7 @@ A tool to measure and track things on a planar surface.
 Developed to measure and track marine mammals in the surface of the ocean.
 
 * [Getting Started](#getting-started)
-  - [Using a Docker-hub image](#using-a-docker-hub-image)
+  - [Using a Docker-hub image](#using-a-docker-hub-image-the-easy-way)
   - [Manual install](#manual-install)
   - [Usage](#usage)
   - [Author](#author)
