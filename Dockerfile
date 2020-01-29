@@ -13,4 +13,4 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 EXPOSE 5000
 
-ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "-k", "gevent", "-t", "2000", "app:app"]
+ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "-k", "gevent", "-t", "10000", "app:app"]
