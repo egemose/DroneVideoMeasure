@@ -10,21 +10,20 @@ case $uname in
 	;;
 esac
 
-command=""
 if [[ $platform = "Linux" ]]; then
 	eval "mkdir -p data"
 	if groups $USER | grep &>/dev/null '\bdocker\b'; then
 		echo "User in docker group. no need for sudo"
+		command="docker-compose -f docker-compose.yml"
 	else
 		echo "User not in docker group. Using sudo!"
-	    	command="$command sudo"
+		command="sudo docker-compose -f docker-compose.yml"
 	fi
-fi
-
-if [[ $platform = "Windows" ]]; then
-	command="$command docker-compose -f docker-compose.windows.yml"
-else
-	command="$command docker-compose -f docker-compose.yml"
+elif [[ $platform = "MacOS / OSX" ]]; then
+	eval "mkdir -p data"
+	command="docker-compose -f docker-compose.yml"
+elif [[ $platform = "Windows" ]]; then
+	command="docker-compose -f docker-compose.windows.yml"
 fi
 
 if [[ $1 = "start" ]]; then
