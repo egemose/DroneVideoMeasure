@@ -16,7 +16,6 @@ Developed to measure and track marine mammals in the surface of the ocean.
 
 * Install the following applications:
   - [Docker](https://www.docker.com/)
-  - [Docker-compose](https://docs.docker.com/compose/install/) (only on Linux)
 
 * From Powershell (windows) or command line (Mac / Linux), type:
 ```bash
