@@ -85,17 +85,7 @@ docker volume rm appmedia
 
 ## Usage
 
-* First and drone need to be registered and calibrated under the "Drone" menu.
-  - A video of a checkerboard (like this [checkerboard.png](checkerboard.png)) is captured with the drone from different angles.
-  - Uploading the video and the drones camera is automatically calibrated.
-* Then a project can be created.
-  - The drone used is selected.
-  - One project correspond to one flight i.e one drone log file.
-  - A DJI drone log converted to csv is needed.
-  Can be done here: [PhantomHelp](https://www.phantomhelp.com/LogViewer/Upload/)
-  and Downloading the verbose csv.
-  - Videos from that flight are uploaded.
-  - Videos can be viewed and annotated
+A detailed description of how to use the program can be found here: [Manual](manual/manual.md)
 
 Demo data is available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3604005.svg)](https://doi.org/10.5281/zenodo.3604005) including a video demo of how to use the program.
 
