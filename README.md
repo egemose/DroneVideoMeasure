@@ -89,6 +89,12 @@ A detailed description of how to use the program can be found here: [Manual](man
 
 Demo data is available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3604005.svg)](https://doi.org/10.5281/zenodo.3604005) including a video demo of how to use the program.
 
+## Supported Drones
+
+* DJI
+
+Currently only flight logs from DJI drones are suppored. If you what support for other drones please create a issue with a flight log attached.
+
 ## Author
 
 Written by Henrik Dyrberg Egemose (hesc@mmmi.sdu.dk) as part of the InvaDrone and Back2Nature projects, research projects by the University of Southern Denmark UAS Center (SDU UAS Center).

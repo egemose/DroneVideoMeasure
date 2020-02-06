@@ -1,6 +1,5 @@
 ---
-title: Using drones to quantify the
-  length of marine animals
+title: DroneVideoMeasure: Using drones to quantify the length of marine animals
 authors:
 - affiliation: 1
   name: Henrik Dyrberg Egemose
