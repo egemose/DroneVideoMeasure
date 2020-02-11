@@ -6,7 +6,7 @@ from collections import defaultdict
 from celery import Celery
 from app_config import AppConfig
 
-base_dir = os.path.join('.', 'data')
+base_dir = os.path.abspath('data')
 
 
 def get_last_modified_time(m_type, name):
