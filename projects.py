@@ -112,26 +112,26 @@ def get_edit_project_form(project_dict):
 @projects_view.route('/<project>/upload', methods=['GET', 'POST'])
 def upload(project):
     if flask.request.method == 'POST':
-        file_obj = flask.request.files
-        for file in file_obj.values():
-            video_file = secure_filename(file.filename.rsplit('.', 1)[0] + '.mp4')
-            file_location = os.path.join(base_dir, 'projects', project, video_file)
-            video_mime_type = re.compile('video/*')
-            if video_mime_type.match(file.mimetype):
-                while True:
-                    random_int = random.randint(1, 10000000)
-                    file_type = '.' + file.filename.rsplit('.', 1)[1]
-                    temp_file = os.path.join(base_dir, 'projects', project, secure_filename(str(random_int) + file_type))
-                    if not os.path.exists(temp_file):
-                        break
-                logger.debug(f'Uploading file: {file_location}')
-                file.save(temp_file)
-                logger.debug(f'Upload done for file: {file_location}')
-                logger.debug(f'Calling celery to convert file: {temp_file} and save as {file_location}')
-                task = convert_after_upload_task.apply_async(args=(temp_file, file_location, project, video_file))
-                task_dict = {'function': convert_after_upload_task, 'video': video_file}
-                tasks.update({task.id: task_dict})
-                return flask.jsonify({}), 202
+        for key, file in flask.request.files.items():
+            if key.startswith('file'):
+                video_file = secure_filename(file.filename.rsplit('.', 1)[0] + '.mp4')
+                file_location = os.path.join(base_dir, 'projects', project, video_file)
+                video_mime_type = re.compile('video/*')
+                if video_mime_type.match(file.mimetype):
+                    while True:
+                        random_int = random.randint(1, 10000000)
+                        file_type = '.' + file.filename.rsplit('.', 1)[1]
+                        temp_file = os.path.join(base_dir, 'projects', project, secure_filename(str(random_int) + file_type))
+                        if not os.path.exists(temp_file):
+                            break
+                    logger.debug(f'Uploading file: {file_location}')
+                    file.save(temp_file)
+                    logger.debug(f'Upload done for file: {file_location}')
+                    logger.debug(f'Calling celery to convert file: {temp_file} and save as {file_location}')
+                    task = convert_after_upload_task.apply_async(args=(temp_file, file_location, project, video_file))
+                    task_dict = {'function': convert_after_upload_task, 'video': video_file}
+                    tasks.update({task.id: task_dict})
+                    return flask.jsonify({}), 202
     logger.debug(f'Render upload after a GET request')
     return flask.render_template('projects/upload.html', project=project)
 
