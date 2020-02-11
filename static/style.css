@@ -66,3 +66,10 @@ code {
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
 }
+
+.plot {
+  position: relative;
+  top: 80px;
+  margin-bottom: 150px;
+  width: 100%;
+}

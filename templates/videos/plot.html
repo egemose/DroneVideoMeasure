@@ -1,24 +1,32 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    {{ super() }}
-    <link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.css" type="text/css" />
-    <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.js"></script>
-    <script type="text/javascript">
-        Bokeh.set_log_level("info");
-    </script>
+{{ super() }}
+<link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.css" type="text/css" />
+<script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.js"></script>
+<script type="text/javascript">
+  Bokeh.set_log_level("info");
+</script>
 {% endblock %}
 
 {% block add_navbar %}
 <li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Return to Video Gallery" href="{{ url_for('projects.video_gallery', project=project) }}" ><i class="fas fa-images"></i>Video gallery</a>
+  <a class="nav-link" data-toggle="tooltip" title="Return to Video Gallery" href="{{ url_for('projects.video_gallery', project=project) }}"><i class="fas fa-images"></i>Video gallery</a>
 </li>
 {% endblock %}
 
+{% block before_content %}
+{% endblock before_content %}
+
 {% block content %}
-
-{{ plot_div | safe }}
-
+<div class="container-fluid">
+  <div class="plot d-flex justify-content-center">
+    {{ plot_div | safe }}
+  </div>
+</div>
 {{ plot_script | safe }}
 
 {% endblock %}
+
+{% block after_content %}
+{% endblock after_content %}
