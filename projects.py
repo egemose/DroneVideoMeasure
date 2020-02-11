@@ -144,7 +144,7 @@ def convert_after_upload_task(self, temp_file, file_location, project, video_fil
     os.remove(temp_file)
     drone_log.save_video_data_to_file(project, video_file)
     cmd = ['ffmpeg', '-i', r'{}'.format(file_location), '-vframes', '1', '-an', '-s', '300x200', '-ss', '0', r'{}.jpg'.format(file_location)]
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,  shell=True)
+    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 @celery.task(bind=True)
