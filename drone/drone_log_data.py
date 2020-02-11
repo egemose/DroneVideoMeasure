@@ -153,7 +153,7 @@ class DroneLog:
         else:
             minimum = min([(abs((x[1] - x[0]).total_seconds() - self.video_duration), x[0]) for x in video_ranges], key=lambda y: y[0])
             if minimum[0] > 5:
-                message = f'Warning: Video duration and Drone Log video duration differs by {minimum[0]} seconds.'
+                message = f'Warning: Video duration and Drone Log video duration differs by {minimum[0]:.2f} seconds.'
         logger.debug(f'Matching message: {message}')
         self.video_start_time = minimum[1]
         return minimum[1], message
