@@ -2,11 +2,24 @@ version: "3.3"
 services:
   webapp:
     build: .
-    image: drone-video-measure
-    container_name: drone-video-measure-container
+    image: dvm
+    container_name: dvm_app
+    command: gunicorn -b 0.0.0.0:5000 -k gevent -t 10000 "app:app"
     ports:
       - "5000:5000"
     volumes:
       - type: bind
         source: ./data
         target: /app/data
+    depends_on:
+      - redis
+  worker:
+    build: .
+    container_name: dvm_worker
+    command: celery worker -A app.celery --loglevel=warn -c 1
+    restart: always
+    depends_on:
+      - redis
+  redis:
+    image: redis:alpine
+    container_name: dvm_redis

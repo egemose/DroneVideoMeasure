@@ -53,3 +53,16 @@ code {
 .clickable-row {
   cursor: pointer;
 }
+
+.card-no-image {
+  padding-top: 66%;
+  position: relative;
+}
+
+.card-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}

@@ -29,8 +29,25 @@
         <div class="card-body">
           <h5 class="card-title">{{ video[:-4] }}</h5>
         </div>
+        <img src="{{ url_for('projects_folder', filename = project + '/' + video + '.jpg') }}" class="card-img-top">
       </div>
     </a>
+  </div>
+  {% endfor %}
+  {% for task, task_dict in tasks.items() %}
+  <div class="collapse show">
+    <div class="card text-white bg-dark task-status" data-task-id="{{ task }}" data-video-link="{{ url_for('videos.video', project=project, video_file=task_dict['video']) }}"
+      data-image-link="{{ url_for('projects_folder', filename = project + '/' + task_dict['video'] + '.jpg') }}">
+      <div class="card-body">
+        <h5 class="card-title">{{ task_dict['video'][:-4] }}</h5>
+      </div>
+      <div class="card-no-image">
+        <div class="card-center">
+          <div class="status-spinner" style="width: 5rem; height: 5rem;" role="status"></div>
+          <p class="status-text"></p>
+        </div>
+      </div>
+    </div>
   </div>
   {% endfor %}
 </div>
@@ -38,18 +55,21 @@
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript">
+  $("img").on("error", function() {
+    $(this).attr("src", "{{ url_for('static', filename='missing.png') }}");
+  });
   $('#filter_videos').on('input', function(event) {
-    var input = $(this)
-    var text = input.val()
-    var regex = RegExp(text)
+    var input = $(this);
+    var text = input.val();
+    var regex = RegExp(text);
     $('.card').each(function() {
-      project = $(this).find('.card-title').text()
+      project = $(this).find('.card-title').text();
       if (regex.test(project)) {
-        $(this).parent().collapse('show')
+        $(this).parent().collapse('show');
       } else {
-        $(this).parent().collapse('hide')
+        $(this).parent().collapse('hide');
       }
-    })
+    });
   });
   $(document).keypress(function(event) {
     if (event.key == 'Enter') {
@@ -58,5 +78,45 @@
       }
     }
   });
+  $('.task-status').each(function() {
+    task_id = $(this).data('task-id');
+    status_url = '/status/' + task_id;
+    update_progress(status_url, this);
+  });
+
+  function update_progress(status_url, status_div) {
+    $.getJSON(status_url, function(data) {
+      if (data['state'] != 'PENDING' && data['state'] != 'PROCESSING') {
+        if (data['state'] == 'SUCCESS') {
+          video_link = $(status_div).data('video-link');
+          image_link = $(status_div).data('image-link');
+          $(status_div).wrap(function() {
+            return '<a href="' + video_link + '"></a>';
+          });
+          image_place = $(status_div).find('.card-no-image');
+          $(image_place).remove();
+          $(status_div).append(function() {
+            return '<img src="' + image_link + '" class="card-img-top">';
+          });
+        }
+      } else {
+        status_spinner = $(status_div).find('.status-spinner');
+        status_text = $(status_div).find('.status-text');
+        if (data['state'] == 'PENDING') {
+          $(status_spinner).removeClass('spinner-border');
+          $(status_spinner).addClass('spinner-grow');
+          $(status_text).text('Pending...');
+        } else if (data['state'] == 'PROCESSING') {
+          $(status_spinner).removeClass('spinner-grow');
+          $(status_spinner).addClass('spinner-border');
+          $(status_text).text('Processing...');
+        }
+        // rerun in 2 seconds
+        setTimeout(function() {
+          update_progress(status_url, status_div);
+        }, 2000);
+      }
+    });
+  }
 </script>
 {% endblock %}

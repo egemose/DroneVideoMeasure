@@ -24,6 +24,7 @@ display_help() {
     echo "   update               Get the latest version of DVM from github"
 		echo "   remove               Remove Docker images and volumes belonging to DVM"
 		echo
+		echo "   --dev                Run DVM in development mode"
 		echo "   -h, --help           Show this help message"
 }
 
@@ -69,9 +70,16 @@ get_docker_volume_rm(){
 }
 
 start(){
-	echo "Starting DVM"
+	if [[ $dev_mode = true ]]; then
+		echo "Starting DVM in development mode..."
+	else
+		echo "Starting DVM"
+	fi
 	create_data_dir
 	local docker_compose="$(get_docker_compose)"
+	if [[ $dev_mode = true ]]; then
+		docker_compose="$docker_compose -f docker-compose-dev.yml"
+	fi
 	run "$docker_compose up"
 }
 
@@ -107,9 +115,15 @@ remove(){
 	echo "Removed docker content DVM directory can now be removed"
 }
 
-while :
+POSITIONAL=()
+while [[ $# -gt 0 ]]
 do
 	case "$1" in
+		--dev)
+			echo "devmode"
+	    dev_mode=true
+	    shift # past argument
+	    ;;
 		-h | --help)
 			display_help
 			exit 0
@@ -119,11 +133,13 @@ do
 			display_help
 			exit 1
 			;;
-		*)
-			break
-			;;
+		*)    # unknown option
+			POSITIONAL+=("$1") # save it in an array for later
+		  shift # past argument
+		  ;;
 	esac
 done
+set -- "${POSITIONAL[@]}" # restore positional parameter
 
 case "$1" in
 	start)

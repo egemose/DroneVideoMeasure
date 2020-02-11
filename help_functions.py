@@ -3,6 +3,8 @@ import os
 import time
 import numpy as np
 from collections import defaultdict
+from celery import Celery
+from app_config import AppConfig
 
 base_dir = os.path.join('.', 'data')
 
@@ -63,3 +65,6 @@ def get_horizon_dict():
 
 
 horizon_dict = get_horizon_dict()
+
+celery = Celery(__name__, broker=AppConfig.CELERY_BROKER_URL, backend=AppConfig.CELERY_RESULT_BACKEND)
+tasks = {}

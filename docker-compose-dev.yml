@@ -1,0 +1,13 @@
+version: "3.3"
+services:
+  webapp:
+    command: python app.py --debug
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+  worker:
+    volumes:
+      - type: bind
+        source: .
+        target: /app

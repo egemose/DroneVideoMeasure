@@ -8,14 +8,13 @@ import shutil
 import subprocess
 import logging
 from collections import namedtuple
-import ffmpeg
 import flask
 import numpy as np
 from werkzeug.utils import secure_filename
 from drone.drone_log_data import drone_log
 from forms import NewProjectForm, EditProjectForm
 from drone.fov import fov
-from help_functions import get_last_modified_time, get_last_updated_time_as_string, base_dir
+from help_functions import get_last_modified_time, get_last_updated_time_as_string, base_dir, celery, tasks
 
 logger = logging.getLogger('app.' + __name__)
 
@@ -128,23 +127,62 @@ def upload(project):
                 logger.debug(f'Uploading file: {file_location}')
                 file.save(temp_file)
                 logger.debug(f'Upload done for file: {file_location}')
-                logger.debug(f'Converting file: {file_location}')
-                ffmpeg.input(temp_file).filter('scale', -2, 1440).output(file_location, movflags='faststart', crf=23, preset='ultrafast').overwrite_output().run()
-                os.remove(temp_file)
-                logger.debug(f'Converting done for file: {file_location}')
-                drone_log.save_video_data_to_file(project, video_file)
-    logger.debug(f'Render upload after a {flask.request.method} request')
+                logger.debug(f'Calling celery to convert file: {temp_file} and save as {file_location}')
+                task = convert_after_upload_task.apply_async(args=(temp_file, file_location, project, video_file))
+                task_dict = {'function': convert_after_upload_task, 'video': video_file}
+                tasks.update({task.id: task_dict})
+                return flask.jsonify({}), 202
+    logger.debug(f'Render upload after a GET request')
     return flask.render_template('projects/upload.html', project=project)
+
+
+@celery.task(bind=True)
+def convert_after_upload_task(self, temp_file, file_location, project, video_file):
+    self.update_state(state='PROCESSING')
+    cmd = f'ffmpeg -i {temp_file} -preset ultrafast -tune zerolatency -an -loglevel 24 -movflags +faststart -y {file_location}'
+    subprocess.run(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    os.remove(temp_file)
+    drone_log.save_video_data_to_file(project, video_file)
+    cmd = f'ffmpeg -i {file_location} -vframes 1 -an -s 300x200 -ss 0 {file_location}.jpg'
+    subprocess.run(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+@celery.task(bind=True)
+def concat_videos_task(self, concat_file, output_file, project, video_file, first_video_file):
+    self.update_state(state='PROCESSING')
+    cmd = f'ffmpeg -y -f concat -safe 0 -i {concat_file} -c copy {output_file}'
+    subprocess.run(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    drone_log.save_video_data_to_file(project, video_file)
+    print(drone_log)
+    cmd = f'ffmpeg -i {output_file} -vframes 1 -an -s 300x200 -ss 0 {output_file}.jpg'
+    subprocess.run(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+@projects_view.route('/status/<task_id>')
+def task_status(task_id):
+    task = tasks[task_id]['function'].AsyncResult(task_id)
+    if task.state == 'PENDING':
+        response = {'state': task.state, 'status': 'Pending'}
+    elif task.state == 'SUCCESS':
+        response = {'state': task.state, 'status': 'Done'}
+        tasks.pop(task_id, None)
+    elif task.state != 'FAILURE':
+        response = {'state': task.state, 'status': 'Processing'}
+    else:
+        response = {'state': task.state, 'status': str(task.info)}
+    return flask.jsonify(response)
 
 
 @projects_view.route('/<project>/video_gallery')
 def video_gallery(project):
-    videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4'))])
+    videos_temp = [x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4'))]
+    video_data = [x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4_data.txt'))]
+    videos = sorted([x for x in videos_temp if x + '_data.txt' in video_data])
     random_int = random.randint(1, 10000000)
     success = drone_log.test_log(project)
     if success:
         logger.debug(f'Render video_gallery for {project}')
-        return flask.render_template('projects/video_gallery.html', project=project, videos=videos, random_int=random_int)
+        return flask.render_template('projects/video_gallery.html', project=project, videos=videos, tasks=tasks, random_int=random_int)
     else:
         message = 'Error interpreting the drone log file. Try and upload the log file again.'
         flask.flash(message, 'error')
@@ -173,15 +211,12 @@ def do_concat_videos(project):
     with open(concat_file, 'w') as file:
         file.write(video_str)
     output_file = os.path.join(base_dir, 'projects', project, output_file_name)
-    cmd = 'ffmpeg -y -f concat -safe 0 -i ' + concat_file + ' -c copy ' + output_file
-    logger.debug(f'Calling subprocess with command: {cmd}')
-    res = subprocess.run(cmd, shell=True, capture_output=True)
-    logger.debug(f'Subprocess finished with code: {res.returncode}')
-    if res.returncode != 0:
-        logger.error(f'subprocess failed! stdout: {res.stdout} stderr: {res.stderr}')
-        return json.dumps([{'type': 'error', 'message': 'Error when concatenating videos.'}])
-    else:
-        return 'true'
+    logger.debug(f'Calling celery task for concat')
+    print(project, output_file_name)
+    task = concat_videos_task.apply_async(args=(concat_file, output_file, project, output_file_name, videos[0]))
+    task_dict = {'function': concat_videos_task, 'video': output_file_name}
+    tasks.update({task.id: task_dict})
+    return flask.jsonify({}), 202
 
 
 @projects_view.route('/<project>/download')

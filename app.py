@@ -9,7 +9,7 @@ from video.videos import videos_view
 from misc import misc_view
 from drone.drones import drones_view
 from app_config import AppConfig
-from help_functions import base_dir
+from help_functions import base_dir, celery
 
 logger = logging.getLogger('app')
 logger.setLevel(logging.DEBUG)
@@ -27,33 +27,36 @@ def serve_projects_file(filename):
     return send_from_directory(os.path.join(base_dir, 'projects'), filename)
 
 
-# Dropzone settings
-AppConfig.DROPZONE_UPLOAD_MULTIPLE = True
-AppConfig.DROPZONE_MAX_FILE_SIZE = 100000
-AppConfig.DROPZONE_PARALLEL_UPLOADS = 20
-AppConfig.DROPZONE_TIMEOUT = 1800000
+dropzone = Dropzone()
+obscure = Obscure()
 
-app = Flask(__name__)
-app.config.from_object(AppConfig)
-app.add_url_rule('/projects/<path:filename>', endpoint='projects_folder', view_func=serve_projects_file)
-dropzone = Dropzone(app)
-obscure = Obscure(app)
 
-app.register_blueprint(projects_view)
-app.register_blueprint(videos_view)
-app.register_blueprint(misc_view)
-app.register_blueprint(drones_view)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(AppConfig)
+    app.config.update(CELERY_BROKER_URL='redis://redis:6379/0', CELERY_RESULT_BACKEND='redis://redis:6379/0')
+    app.add_url_rule('/projects/<path:filename>', endpoint='projects_folder', view_func=serve_projects_file)
+    dropzone.init_app(app)
+    obscure.init_app(app)
+    celery.conf.update(app.config)
+    app.register_blueprint(projects_view)
+    app.register_blueprint(videos_view)
+    app.register_blueprint(misc_view)
+    app.register_blueprint(drones_view)
+    return app
 
 
 def parse_args():
     with open('version.txt') as version_file:
         version = version_file.read()
-    parser = argparse.ArgumentParser(description='Drone Footage Measure', prog='DFM')
+    parser = argparse.ArgumentParser(description='Drone Video Measure', prog='DVM')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
     parser.add_argument('--version', action='version', version='%(prog)s ' + version)
     arguments = parser.parse_args()
     return arguments
 
+
+app = create_app()
 
 if __name__ == '__main__':
     args = parse_args()

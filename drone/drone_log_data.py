@@ -98,7 +98,7 @@ class DroneLog:
             self.video_pos = (float(match.group(1)), float(match.group(2)))
 
     @staticmethod
-    def save_video_data_to_file(project, video_file_name):
+    def save_video_data_to_file(project, video_file_name, location_video_file=None):
         logger.debug(f'Reading video data for video {video_file_name} in {project}')
         video_file = os.path.join(base_dir, 'projects', project, video_file_name)
         video_data_file = os.path.join(base_dir, 'projects', project, video_file_name + '_data.txt')
@@ -106,11 +106,19 @@ class DroneLog:
         video_duration = float(ffprobe_res['format']['duration'])
         video_nb_frames = int(ffprobe_res['streams'][0]['nb_frames'])
         video_size = (int(ffprobe_res['streams'][0]['width']), int(ffprobe_res['streams'][0]['height']))
-        location_string = ffprobe_res['format']['tags']['location']
-        match = re.match(r'([-+]\d+.\d+)([-+]\d+.\d+)([-+]\d+.\d+)', location_string)
+        try:
+            location_string = ffprobe_res['format']['tags']['location']
+        except KeyError:
+            if location_video_file:
+                ffprobe_res = ffmpeg.probe(location_video_file, cmd='ffprobe')
+                location_string = ffprobe_res['format']['tags']['location']
+            else:
+                location_string = None
         video_pos = (None, None)
-        if match:
-            video_pos = (float(match.group(1)), float(match.group(2)))
+        if location_string:
+            match = re.match(r'([-+]\d+.\d+)([-+]\d+.\d+)([-+]\d+.\d+)', location_string)
+            if match:
+                video_pos = (float(match.group(1)), float(match.group(2)))
         with open(video_data_file, 'w', newline='') as data_file:
             logger.debug(f'Saving video data to {video_data_file}')
             csv_writer = csv.writer(data_file)
