@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+import utm
 from datetime import datetime, timedelta
 import ffmpeg
 import numpy as np
@@ -114,7 +115,7 @@ class DroneLog:
                 location_string = ffprobe_res['format']['tags']['location']
             else:
                 location_string = None
-        video_pos = (None, None)
+        video_pos = ('', '')
         if location_string:
             match = re.match(r'([-+]\d+.\d+)([-+]\d+.\d+)([-+]\d+.\d+)', location_string)
             if match:
@@ -144,14 +145,11 @@ class DroneLog:
         message = None
         video_ranges = list(get_video_ranges(self.is_video, self.time_stamp))
         if self.video_pos is not None:
-            start_pos = [self.pos[self.time_stamp.index(y[0])] for y in video_ranges]
-            minimum = min([(abs(self.video_pos[0] - x[0]) + abs(self.video_pos[1] - x[1]), y[0]) for x, y in zip(start_pos, video_ranges)], key=lambda z: z[0])
-            if minimum[0] > 0.00001:
-                message = 'Warning: Video position and Drone Log position differs by more then 1 meter.'
-            if minimum[0] > 0.0001:
-                message = 'Warning: Video position and Drone Log position differs by more then 10 meter.'
-            if minimum[0] > 0.001:
-                message = 'Warning: Video position and Drone Log position differs by more then 100 meter.'
+            video_utm_pos = utm.from_latlon(*self.video_pos)
+            start_utm_pos = [utm.from_latlon(*self.pos[self.time_stamp.index(y[0])]) for y in video_ranges]
+            minimum = min([(abs(video_utm_pos[0] - x[0]) + abs(video_utm_pos[1] - x[1]), y[0]) for x, y in zip(start_utm_pos, video_ranges)], key=lambda z: z[0])
+            if minimum[0] > 1:
+                message = f'Warning: Video position and Drone Log position differs by {minimum[0]:.2f} meter.'
         else:
             minimum = min([(abs((x[1] - x[0]).total_seconds() - self.video_duration), x[0]) for x in video_ranges], key=lambda y: y[0])
             if minimum[0] > 5:
