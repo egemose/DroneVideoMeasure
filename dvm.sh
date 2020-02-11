@@ -16,16 +16,16 @@ run(){
 }
 
 display_help() {
-    echo "Usage: $0 [options] {start|stop|rebuild|update|remove}" >&2
-    echo
-    echo "   start                Start DVM"
-    echo "   stop                 Stop DVM"
-		echo "   rebuild              Rebuild the Docker image if changes where made to the code"
-    echo "   update               Get the latest version of DVM from github"
-		echo "   remove               Remove Docker images and volumes belonging to DVM"
-		echo
-		echo "   --dev                Run DVM in development mode"
-		echo "   -h, --help           Show this help message"
+	echo "Usage: $0 [options] {start|stop|rebuild|update|remove}" >&2
+	echo
+	echo "   start                Start DVM"
+	echo "   stop                 Stop DVM"
+	echo "   rebuild              Rebuild the Docker image if changes where made to the code"
+    	echo "   update               Get the latest version of DVM from github"
+	echo "   remove               Remove Docker images and volumes belonging to DVM"
+	echo
+	echo "   --dev                Run DVM in development mode"
+	echo "   -h, --help           Show this help message"
 }
 
 create_data_dir(){
@@ -80,7 +80,11 @@ start(){
 	if [[ $dev_mode = true ]]; then
 		docker_compose="$docker_compose -f docker-compose-dev.yml"
 	fi
-	run "$docker_compose up"
+	docker_compose="$docker_compose up"
+	if [[ $attach != true ]] && [[ $dev_mode != true ]]; then
+		docker_compose="$docker_compose -d"
+	fi
+	run "$docker_compose"
 }
 
 stop(){
@@ -121,9 +125,14 @@ do
 	case "$1" in
 		--dev)
 			echo "devmode"
-	    dev_mode=true
-	    shift # past argument
-	    ;;
+			dev_mode=true
+			shift # past argument
+	    		;;
+		--attach)
+			echo "Attaching to the docker containers"
+			attach=true
+			shift # past argument
+			;;
 		-h | --help)
 			display_help
 			exit 0
@@ -135,8 +144,8 @@ do
 			;;
 		*)    # unknown option
 			POSITIONAL+=("$1") # save it in an array for later
-		  shift # past argument
-		  ;;
+		  	shift # past argument
+		  	;;
 	esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameter
