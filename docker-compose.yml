@@ -17,6 +17,10 @@ services:
     build: .
     container_name: dvm_worker
     command: celery worker -A app.celery --loglevel=warn -c 1
+    volumes:
+      - type: bind
+        source: ./data
+        target: /app/data
     depends_on:
       - redis
   redis:
