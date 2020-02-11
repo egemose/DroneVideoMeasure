@@ -139,23 +139,23 @@ def upload(project):
 @celery.task(bind=True)
 def convert_after_upload_task(self, temp_file, file_location, project, video_file):
     self.update_state(state='PROCESSING')
-    cmd = f'ffmpeg -i {temp_file} -preset ultrafast -tune zerolatency -an -loglevel 24 -movflags +faststart -y {file_location}'
-    subprocess.run(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = ['ffmpeg', '-i', r'{}'.format(temp_file), '-preset', 'ultrafast', '-tune', 'zerolatency', '-an', '-loglevel', '24', '-movflags', '+faststart', '-y', r'{}'.format(file_location)]
+    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     os.remove(temp_file)
     drone_log.save_video_data_to_file(project, video_file)
-    cmd = f'ffmpeg -i {file_location} -vframes 1 -an -s 300x200 -ss 0 {file_location}.jpg'
-    subprocess.run(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = ['ffmpeg', '-i', r'{}'.format(file_location), '-vframes', '1', '-an', '-s', '300x200', '-ss', '0', r'{}.jpg'.format(file_location)]
+    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,  shell=True)
 
 
 @celery.task(bind=True)
 def concat_videos_task(self, concat_file, output_file, project, video_file, first_video_file):
     self.update_state(state='PROCESSING')
-    cmd = f'ffmpeg -y -f concat -safe 0 -i {concat_file} -c copy {output_file}'
-    subprocess.run(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', r'{}'.format(concat_file), '-c', 'copy', r'{}'.format(output_file)]
+    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     drone_log.save_video_data_to_file(project, video_file)
     print(drone_log)
-    cmd = f'ffmpeg -i {output_file} -vframes 1 -an -s 300x200 -ss 0 {output_file}.jpg'
-    subprocess.run(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = ['ffmpeg', '-i', r'{}'.format(output_file), '-vframes', '1', '-an', '-s', '300x200', '-ss', '0', r'{}.jpg'.format(output_file)]
+    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 @projects_view.route('/status/<task_id>')
