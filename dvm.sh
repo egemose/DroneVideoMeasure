@@ -58,13 +58,13 @@ get_docker_compose(){
 }
 
 get_docker_image_rm(){
-	local docker_rm_image="docker image rm jjanzic/docker-python3-opencv drone-video-measure"
+	local docker_rm_image="docker image rm  python:3.6 redis:alpine dvm dvm_worker"
 	docker_rm_image="$(add_sudo "$docker_rm_image")"
 	echo "$docker_rm_image"
 }
 
 get_docker_volume_rm(){
-	local docker_rm_volume="docker volume rm dronevideomeasure_appmedia"
+	local docker_rm_volume="docker volume rm dvm_appmedia"
 	docker_rm_volume="$(add_sudo "$docker_rm_volume")"
 	echo "$docker_rm_volume"
 }
