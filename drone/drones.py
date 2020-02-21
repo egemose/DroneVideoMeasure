@@ -73,7 +73,7 @@ def make_drone_dict():
     drones = next(os.walk(os.path.join(base_dir, 'drones')))[2]
     for drone_title in drones:
         if drone_title.endswith('.txt'):
-            last_modified_string = get_last_modified_time('drones', drone_title)
+            last_modified_string = get_last_modified_time('drones')
             calibrated = True if os.path.isfile(os.path.join(base_dir, 'drones', drone_title[:-4] + '.cam.npz')) else False
             with open(os.path.join(base_dir, 'drones', drone_title), 'r') as file:
                 reader = csv.DictReader(file)

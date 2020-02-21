@@ -9,8 +9,12 @@ from app_config import AppConfig
 base_dir = os.path.abspath('data')
 
 
-def get_last_modified_time(m_type, name):
-    all_files = glob.glob(os.path.join('.', m_type, name, '*'))
+def get_last_modified_time(m_type, name=None):
+    if name:
+        all_files = glob.glob(os.path.join(base_dir, m_type, name, '*'))
+    else:
+        all_files = glob.glob(os.path.join(base_dir, m_type, '*'))
+    print(all_files)
     last_m_time = 0
     m_time = 0
     for file in all_files:
