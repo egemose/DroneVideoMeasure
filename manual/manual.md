@@ -48,7 +48,7 @@ The program uses projects for organization. A project will correspond to one fli
 
 ![uploading video](pic/dvm_uploading_video.png)
 
-* When upload and conversion is done, the videos can be viewed by clicking on "Video gallery"
+* When upload is done, the videos can be viewed by clicking on "Video gallery". Videos are converted in the background and the status is showed in Video Gallery.
 
 ![video gallery](pic/dvm_video_gallery.png)
 
