@@ -12,32 +12,6 @@ Developed to measure and track marine mammals in the surface of the ocean.
 
 ## Getting Started
 
-### Using a Docker-hub image (The easy way)
-
-* Install the following applications:
-  - [Docker](https://www.docker.com/)
-
-* From Powershell (windows) or command line (Mac / Linux), type:
-```bash
-docker run --rm -p 5000:5000 -v appmedia:/app/data egemose/drone-video-measure
-```
-
-* To update Drone Video Measure, type:
-```bash
-docker pull egemose/drone-video-measure
-```
-
-* To uninstall Drone Video Measure, type:
-```bash
-docker rmi egemose/drone-video-Measure
-docker volume rm appmedia
-```
-
-* Data is stored in a Docker volume and will persist even when DVM is closed. To remove the data, type:
-```bash
-docker volume rm appmedia
-```
-
 ### Manual install
 
 * Install the following applications:
