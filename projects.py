@@ -153,7 +153,6 @@ def concat_videos_task(self, concat_file, output_file, project, video_file, firs
     cmd = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', r'{}'.format(concat_file), '-c', 'copy', r'{}'.format(output_file)]
     subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     drone_log.save_video_data_to_file(project, video_file)
-    print(drone_log)
     cmd = ['ffmpeg', '-i', r'{}'.format(output_file), '-vframes', '1', '-an', '-s', '300x200', '-ss', '0', r'{}.jpg'.format(output_file)]
     subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -212,7 +211,6 @@ def do_concat_videos(project):
         file.write(video_str)
     output_file = os.path.join(base_dir, 'projects', project, output_file_name)
     logger.debug(f'Calling celery task for concat')
-    print(project, output_file_name)
     task = concat_videos_task.apply_async(args=(concat_file, output_file, project, output_file_name, videos[0]))
     task_dict = {'function': concat_videos_task, 'video': output_file_name}
     tasks.update({task.id: task_dict})
