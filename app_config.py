@@ -22,7 +22,7 @@ class AppConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-base_dir = os.path.abspath('data')
+data_dir = os.path.abspath('data')
 
 celery = Celery(__name__, broker=AppConfig.CELERY_BROKER_URL, backend=AppConfig.CELERY_RESULT_BACKEND)
 tasks = {}

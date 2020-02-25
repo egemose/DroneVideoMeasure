@@ -5,13 +5,13 @@ from projects import projects_view
 from video.videos import videos_view
 from misc import misc_view
 from drone.drones import drones_view
-from app_config import AppConfig, base_dir, dropzone, obscure, celery, db, migrate
+from app_config import AppConfig, data_dir, dropzone, obscure, celery, db, migrate
 from flask_script import Manager
 from flask_migrate import MigrateCommand
 
 logger = logging.getLogger('app')
 logger.setLevel(logging.DEBUG)
-log_dir = os.path.join(base_dir, 'logs')
+log_dir = os.path.join(data_dir, 'logs')
 log_file = os.path.join(log_dir, 'python.log')
 if not os.path.exists(log_dir):
     os.mkdir(log_dir)
@@ -22,7 +22,7 @@ logger.addHandler(fh)
 
 
 def serve_projects_file(filename):
-    return send_from_directory(os.path.join(base_dir, 'projects'), filename)
+    return send_from_directory(os.path.join(data_dir, 'projects'), filename)
 
 
 def create_app():

@@ -2,7 +2,7 @@ import os
 import flask
 import logging
 from zipfile import ZipFile
-from app_config import base_dir
+from app_config import data_dir
 
 logger = logging.getLogger('app.' + __name__)
 
@@ -20,9 +20,9 @@ def version():
 @misc_view.route('/download_logs')
 def download_logs():
     logger.debug(f'Downloading logs')
-    log_dir = os.path.join(base_dir, 'logs')
+    log_dir = os.path.join(data_dir, 'logs')
     file_paths = get_all_file_paths(log_dir)
-    log_zip = os.path.join(base_dir, 'logs.zip')
+    log_zip = os.path.join(data_dir, 'logs.zip')
     with ZipFile(log_zip, 'w') as zip_file:
         for file in file_paths:
             zip_file.write(file)

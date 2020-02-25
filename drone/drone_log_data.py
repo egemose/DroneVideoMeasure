@@ -5,7 +5,7 @@ import utm
 from datetime import datetime, timedelta
 import ffmpeg
 import numpy as np
-from app_config import base_dir
+from app_config import data_dir
 import logging
 
 logger = logging.getLogger('app.' + __name__)
@@ -35,7 +35,7 @@ class DroneLog:
     @staticmethod
     def test_log(project):
         indexes = ['CUSTOM.updateTime', 'GIMBAL.yaw', 'GIMBAL.pitch', 'GIMBAL.roll', 'OSD.height [m]', 'CUSTOM.isVideo', 'OSD.latitude', 'OSD.longitude']
-        log = os.path.join(base_dir, 'projects', project, 'drone_log.csv')
+        log = os.path.join(data_dir, 'projects', project, 'drone_log.csv')
         remove_null_bytes(log)
         logger.debug(f'Opening log to test for {project}')
         with open(log, encoding='iso8859_10') as csv_file:
@@ -61,7 +61,7 @@ class DroneLog:
         is_video_idx = 'CUSTOM.isVideo'
         latitude_idx = 'OSD.latitude'
         longitude_idx = 'OSD.longitude'
-        log = os.path.join(base_dir, 'projects', project, 'drone_log.csv')
+        log = os.path.join(data_dir, 'projects', project, 'drone_log.csv')
         remove_null_bytes(log)
         with open(log, encoding='iso8859_10') as csv_file:
             reader = csv.DictReader(csv_file)
@@ -87,7 +87,7 @@ class DroneLog:
 
     def get_video_data(self, project, video_file):
         logger.debug(f'Reading video data for video {video_file} in {project}')
-        file = os.path.join(base_dir, 'projects', project, video_file)
+        file = os.path.join(data_dir, 'projects', project, video_file)
         ffprobe_res = ffmpeg.probe(file, cmd='ffprobe')
         self.video_duration = float(ffprobe_res['format']['duration'])
         self.video_nb_frames = int(ffprobe_res['streams'][0]['nb_frames'])
@@ -101,8 +101,8 @@ class DroneLog:
     @staticmethod
     def save_video_data_to_file(project, video_file_name, location_video_file=None):
         logger.debug(f'Reading video data for video {video_file_name} in {project}')
-        video_file = os.path.join(base_dir, 'projects', project, video_file_name)
-        video_data_file = os.path.join(base_dir, 'projects', project, video_file_name + '_data.txt')
+        video_file = os.path.join(data_dir, 'projects', project, video_file_name)
+        video_data_file = os.path.join(data_dir, 'projects', project, video_file_name + '_data.txt')
         ffprobe_res = ffmpeg.probe(video_file, cmd='ffprobe')
         video_duration = float(ffprobe_res['format']['duration'])
         video_nb_frames = int(ffprobe_res['streams'][0]['nb_frames'])
@@ -128,7 +128,7 @@ class DroneLog:
 
     def get_video_data_from_data_file(self, project, video_file):
         logger.debug(f'Reading video data from data file for video {video_file} from {project}')
-        video_data_file = os.path.join(base_dir, 'projects', project, video_file + '_data.txt')
+        video_data_file = os.path.join(data_dir, 'projects', project, video_file + '_data.txt')
         with open(video_data_file, 'r', newline='') as data_file:
             reader = csv.DictReader(data_file)
             for row in reader:

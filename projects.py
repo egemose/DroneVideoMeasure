@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 from drone.drone_log_data import drone_log
 from forms import NewProjectForm, EditProjectForm
 from drone.fov import fov
-from app_config import base_dir, celery, tasks
+from app_config import data_dir, celery, tasks
 
 logger = logging.getLogger('app.' + __name__)
 
@@ -38,13 +38,13 @@ def index():
 def make_project_dict():
     logger.debug(f'Finding all projects')
     project_dict = {}
-    project_dir = os.path.join(base_dir, 'projects')
+    project_dir = os.path.join(data_dir, 'projects')
     if not os.path.exists(project_dir):
         os.mkdir(project_dir)
     projects = next(os.walk(project_dir))[1]
     for project_title in projects:
         last_modified_string = ''
-        with open(os.path.join(base_dir, 'projects', project_title, 'description.txt'), 'r') as file:
+        with open(os.path.join(data_dir, 'projects', project_title, 'description.txt'), 'r') as file:
             description = flask.Markup(file.read())
         project = project_tuple(project_title, description, last_modified_string)
         project_dict.update({project_title: project})
@@ -53,7 +53,7 @@ def make_project_dict():
 
 def get_new_project_form(project_dict):
     form = NewProjectForm()
-    drone_dir = os.path.join(base_dir, 'drones')
+    drone_dir = os.path.join(data_dir, 'drones')
     if not os.path.exists(drone_dir):
         os.mkdir(drone_dir)
     drones = next(os.walk(drone_dir))[2]
@@ -67,11 +67,11 @@ def get_new_project_form(project_dict):
         if project_title in project_dict:
             flask.flash('A project with that name already exist!')
         else:
-            os.mkdir(os.path.join(base_dir, 'projects', project_title))
-            with open(os.path.join(base_dir, 'projects', project_title, 'description.txt'), 'w') as file:
+            os.mkdir(os.path.join(data_dir, 'projects', project_title))
+            with open(os.path.join(data_dir, 'projects', project_title, 'description.txt'), 'w') as file:
                 file.write(description)
-            shutil.copyfile(os.path.join(base_dir, 'drones', drone[:-4] + '.cam.npz'), os.path.join(base_dir, 'projects', project_title, 'drone.cam.npz'))
-            log_file = os.path.join(base_dir, 'projects', project_title, 'drone_log.csv')
+            shutil.copyfile(os.path.join(data_dir, 'drones', drone[:-4] + '.cam.npz'), os.path.join(data_dir, 'projects', project_title, 'drone.cam.npz'))
+            log_file = os.path.join(data_dir, 'projects', project_title, 'drone_log.csv')
             form.log_file.data.save(log_file)
             return flask.redirect(flask.url_for('projects.upload', project=project_title)), form
     return None, form
@@ -79,7 +79,7 @@ def get_new_project_form(project_dict):
 
 def get_edit_project_form(project_dict):
     form = EditProjectForm()
-    drones = next(os.walk(os.path.join(base_dir, 'drones')))[2]
+    drones = next(os.walk(os.path.join(data_dir, 'drones')))[2]
     drones = [x for x in drones if x.endswith('.txt')]
     form.edit_drone.choices = [(d, d[:-4]) for d in drones]
     if form.validate_on_submit():
@@ -92,19 +92,19 @@ def get_edit_project_form(project_dict):
             flask.flash('A project with that name already exist!')
         else:
             project_dict.pop(project_before, None)
-            shutil.copyfile(os.path.join(base_dir, 'drones', drone[:-4] + '.cam.npz'), os.path.join(base_dir, 'projects', project_title, 'drone.cam.npz'))
-            os.rename(os.path.join(base_dir, 'projects', project_before), os.path.join(base_dir, 'projects', project_title))
-            with open(os.path.join(base_dir, 'projects', project_title, 'description.txt'), 'w') as file:
+            shutil.copyfile(os.path.join(data_dir, 'drones', drone[:-4] + '.cam.npz'), os.path.join(data_dir, 'projects', project_title, 'drone.cam.npz'))
+            os.rename(os.path.join(data_dir, 'projects', project_before), os.path.join(data_dir, 'projects', project_title))
+            with open(os.path.join(data_dir, 'projects', project_title, 'description.txt'), 'w') as file:
                 file.write(description)
             last_updated = ''
             project = project_tuple(project_title, description, last_updated)
             project_dict.update({project_title: project})
             if form.edit_log_file.data:
-                video_info_files = glob.glob(os.path.join(base_dir, 'projects', project_title, '*.txt'))
+                video_info_files = glob.glob(os.path.join(data_dir, 'projects', project_title, '*.txt'))
                 for video_info_file in video_info_files:
                     if video_info_file.rsplit(os.sep)[-1] != 'description.txt':
                         os.remove(video_info_file)
-                log_file = os.path.join(base_dir, 'projects', project_title, 'drone_log.csv')
+                log_file = os.path.join(data_dir, 'projects', project_title, 'drone_log.csv')
                 form.edit_log_file.data.save(log_file)
     return form
 
@@ -115,13 +115,13 @@ def upload(project):
         for key, file in flask.request.files.items():
             if key.startswith('file'):
                 video_file = secure_filename(file.filename.rsplit('.', 1)[0] + '.mp4')
-                file_location = os.path.join(base_dir, 'projects', project, video_file)
+                file_location = os.path.join(data_dir, 'projects', project, video_file)
                 video_mime_type = re.compile('video/*')
                 if video_mime_type.match(file.mimetype):
                     while True:
                         random_int = random.randint(1, 10000000)
                         file_type = '.' + file.filename.rsplit('.', 1)[1]
-                        temp_file = os.path.join(base_dir, 'projects', project, secure_filename(str(random_int) + file_type))
+                        temp_file = os.path.join(data_dir, 'projects', project, secure_filename(str(random_int) + file_type))
                         if not os.path.exists(temp_file):
                             break
                     logger.debug(f'Uploading file: {file_location}')
@@ -174,8 +174,8 @@ def task_status(task_id):
 
 @projects_view.route('/<project>/video_gallery')
 def video_gallery(project):
-    videos_temp = [x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4'))]
-    video_data = [x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4_data.txt'))]
+    videos_temp = [x.split(os.sep)[-1] for x in glob.glob(os.path.join(data_dir, 'projects', project, '*.mp4'))]
+    video_data = [x.split(os.sep)[-1] for x in glob.glob(os.path.join(data_dir, 'projects', project, '*.mp4_data.txt'))]
     videos = sorted([x for x in videos_temp if x + '_data.txt' in video_data])
     random_int = random.randint(1, 10000000)
     success = drone_log.test_log(project)
@@ -191,7 +191,7 @@ def video_gallery(project):
 
 @projects_view.route('/<project>/concatenate_videos')
 def concat_videos(project):
-    videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(base_dir, 'projects', project, '*.mp4'))])
+    videos = sorted([x.split(os.sep)[-1] for x in glob.glob(os.path.join(data_dir, 'projects', project, '*.mp4'))])
     logger.debug(f'Render concat_videos for {project}')
     return flask.render_template('projects/concat_videos.html', project=project, videos=videos)
 
@@ -206,10 +206,10 @@ def do_concat_videos(project):
     video_str = ''
     for video in videos:
         video_str += 'file ' + video + '\n'
-    concat_file = os.path.join(base_dir, 'projects', project, 'concat.txt')
+    concat_file = os.path.join(data_dir, 'projects', project, 'concat.txt')
     with open(concat_file, 'w') as file:
         file.write(video_str)
-    output_file = os.path.join(base_dir, 'projects', project, output_file_name)
+    output_file = os.path.join(data_dir, 'projects', project, output_file_name)
     logger.debug(f'Calling celery task for concat')
     task = concat_videos_task.apply_async(args=(concat_file, output_file, project, output_file_name, videos[0]))
     task_dict = {'function': concat_videos_task, 'video': output_file_name}
@@ -221,7 +221,7 @@ def do_concat_videos(project):
 def download(project):
     with open('version.txt') as version_file:
         pro_version = version_file.read()
-    filename = os.path.join(base_dir, 'projects', project, 'annotations.csv')
+    filename = os.path.join(data_dir, 'projects', project, 'annotations.csv')
     annotations = get_all_annotations(project, pro_version)
     save_annotations_csv(annotations, filename)
     logger.debug(f'Sending annotations.csv to user.')
@@ -243,9 +243,9 @@ def save_annotations_csv(annotations, filename):
 def get_all_annotations(project, pro_version):
     logger.debug(f'Getting all annotations')
     annotations = []
-    mat_file = os.path.join(base_dir, 'projects', project, 'drone.cam.npz')
+    mat_file = os.path.join(data_dir, 'projects', project, 'drone.cam.npz')
     fov.set_camera_params(mat_file)
-    reg_files = os.path.join(base_dir, 'projects', project, '*.json')
+    reg_files = os.path.join(data_dir, 'projects', project, '*.json')
     files = glob.glob(reg_files)
     drone_log.get_log_data(project)
     for file in files:
@@ -298,5 +298,5 @@ def get_frame_obj_data(obj):
 @projects_view.route('/<project>/remove')
 def remove_project(project):
     logger.debug(f'Removing project {project}')
-    shutil.rmtree(os.path.join(base_dir, 'projects', project))
+    shutil.rmtree(os.path.join(data_dir, 'projects', project))
     return flask.redirect(flask.url_for('projects.index'))

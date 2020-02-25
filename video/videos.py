@@ -9,7 +9,7 @@ import logging
 from drone import plot_log_data
 from drone.drone_log_data import drone_log
 from drone.fov import fov
-from app_config import base_dir
+from app_config import data_dir
 from video.annotations import Annotations
 
 logger = logging.getLogger('app.' + __name__)
@@ -49,7 +49,7 @@ def plot_log(project):
 @videos_view.route('/<project>/<video_file>/annotate')
 def video(project, video_file):
     logger.debug(f'Video called with video: {video_file} and project: {project}')
-    mat_file = os.path.join(base_dir, 'projects', project, 'drone.cam.npz')
+    mat_file = os.path.join(data_dir, 'projects', project, 'drone.cam.npz')
     fov.set_camera_params(mat_file)
     drone_log.get_log_data(project)
     drone_log.get_video_data_from_data_file(project, video_file)
@@ -80,7 +80,7 @@ def video(project, video_file):
 
 def read_json_annotations(project, video_file):
     logger.debug(f'Reading json annotations for {video_file} from {project}')
-    json_filename = os.path.join(base_dir, 'projects', project, video_file + '.json')
+    json_filename = os.path.join(data_dir, 'projects', project, video_file + '.json')
     if os.path.isfile(json_filename):
         with open(json_filename, 'r') as json_file:
             json_data = json.load(json_file)
@@ -93,7 +93,7 @@ def read_json_annotations(project, video_file):
 def save_fabric_json(project, video_file):
     logger.debug(f'Saving annotations to json file for {video_file} from {project}')
     json_data = json.loads(flask.request.form.get('fabric_json'))
-    file_name = os.path.join(base_dir, 'projects', project, video_file + '.json')
+    file_name = os.path.join(data_dir, 'projects', project, video_file + '.json')
     with open(file_name, 'w') as json_file:
         json.dump(json_data, json_file)
     return ''
@@ -145,13 +145,13 @@ def save_start_time(project, video_file):
 
 
 def write_video_start_time(project, video_file, video_start_time):
-    video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
+    video_info_file = os.path.join(data_dir, 'projects', project, video_file + '.txt')
     with open(video_info_file, 'w') as v_file:
         v_file.write(str(video_start_time.strftime('%Y/%m/%d %H:%M:%S.%f')))
 
 
 def read_video_start_time(project, video_file):
-    video_info_file = os.path.join(base_dir, 'projects', project, video_file + '.txt')
+    video_info_file = os.path.join(data_dir, 'projects', project, video_file + '.txt')
     if os.path.isfile(video_info_file):
         with open(video_info_file) as v_file:
             date_time = v_file.read()
