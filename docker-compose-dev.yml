@@ -1,7 +1,7 @@
-version: "3.3"
+version: '3.3'
 services:
   webapp:
-    command: python app.py --debug
+    command: python app.py runserver --host 0.0.0.0 --debug
     volumes:
       - type: bind
         source: .
@@ -11,3 +11,9 @@ services:
       - type: bind
         source: .
         target: /app
+  adminer:
+    image: adminer
+    container_name: dvm_adminer
+    restart: always
+    ports:
+      - 8080:8080

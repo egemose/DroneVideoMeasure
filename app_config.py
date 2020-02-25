@@ -3,6 +3,8 @@ import random
 from celery import Celery
 from flask_dropzone import Dropzone
 from flask_obscure import Obscure
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 
 class AppConfig:
@@ -16,6 +18,8 @@ class AppConfig:
     DROPZONE_TIMEOUT = 1800000
     CELERY_BROKER_URL = 'redis://redis:6379/0'
     CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:example@db:5432/postgres'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 base_dir = os.path.abspath('data')
@@ -25,3 +29,5 @@ tasks = {}
 
 dropzone = Dropzone()
 obscure = Obscure()
+db = SQLAlchemy()
+migrate = Migrate()

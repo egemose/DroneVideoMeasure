@@ -1,12 +1,13 @@
 import os
 import logging.handlers
 from flask import Flask, send_from_directory
-import argparse
 from projects import projects_view
 from video.videos import videos_view
 from misc import misc_view
 from drone.drones import drones_view
 from app_config import AppConfig, base_dir, dropzone, obscure, celery, db, migrate
+from flask_script import Manager
+from flask_migrate import MigrateCommand
 
 logger = logging.getLogger('app')
 logger.setLevel(logging.DEBUG)
@@ -32,26 +33,18 @@ def create_app():
     dropzone.init_app(app)
     obscure.init_app(app)
     celery.conf.update(app.config)
+    db.init_app(app)
+    migrate.init_app(app, db)
     app.register_blueprint(projects_view)
     app.register_blueprint(videos_view)
     app.register_blueprint(misc_view)
     app.register_blueprint(drones_view)
-    return app
+    manager = Manager(app)
+    manager.add_command('db', MigrateCommand)
+    return manager
 
 
-def parse_args():
-    with open('version.txt') as version_file:
-        version = version_file.read()
-    parser = argparse.ArgumentParser(description='Drone Video Measure', prog='DVM')
-    parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
-    parser.add_argument('--version', action='version', version='%(prog)s ' + version)
-    arguments = parser.parse_args()
-    return arguments
-
-
-app = create_app()
+manager = create_app()
 
 if __name__ == '__main__':
-    args = parse_args()
-    logger.debug(f'App started with args: {args}')
-    app.run(host='0.0.0.0', debug=args.debug)
+    manager.run()

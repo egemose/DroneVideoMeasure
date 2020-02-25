@@ -1,4 +1,4 @@
-version: "3.3"
+version: '3.3'
 services:
   webapp:
     build: .
@@ -13,6 +13,8 @@ services:
         target: /app/data
     depends_on:
       - redis
+      - worker
+      - db
   worker:
     build: .
     image: dvm_worker
@@ -27,3 +29,16 @@ services:
   redis:
     image: redis:alpine
     container_name: dvm_redis
+  db:
+    image: postgres:alpine
+    container_name: dvm_db
+    volumes:
+      - type: volume
+        source: dbdata
+        target: /var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+
+volumes:
+  dbdata:
