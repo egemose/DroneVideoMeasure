@@ -2,7 +2,7 @@ import os
 import flask
 import logging
 from zipfile import ZipFile
-from help_functions import base_dir
+from app_config import base_dir
 
 logger = logging.getLogger('app.' + __name__)
 

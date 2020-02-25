@@ -9,7 +9,7 @@ import json
 import logging
 from werkzeug.utils import secure_filename
 from forms import NewDroneForm, EditDroneForm
-from help_functions import get_last_updated_time_as_string, get_last_modified_time, base_dir
+from app_config import base_dir
 from calibration.calibration import CalibrateCamera
 
 logger = logging.getLogger('app.' + __name__)
@@ -41,7 +41,7 @@ def get_drone_form(drone_dict):
                 header = ('title', 'camera_settings')
                 writer.writerow(header)
                 writer.writerow((drone_title, camera_settings))
-            drone = drone_tuple(drone_title, camera_settings, False, get_last_updated_time_as_string(0))
+            drone = drone_tuple(drone_title, camera_settings, False, '')
             drone_dict.update({drone.title: drone})
     return form
 
@@ -63,7 +63,7 @@ def get_edit_drone_form(drone_dict):
                 header = ('title', 'camera_settings')
                 writer.writerow(header)
                 writer.writerow((drone_title, camera_settings))
-            drone = drone_tuple(drone_title, camera_settings, calibrated, get_last_updated_time_as_string(0))
+            drone = drone_tuple(drone_title, camera_settings, calibrated, '')
             drone_dict.update({drone.title: drone})
     return form
 
@@ -73,7 +73,7 @@ def make_drone_dict():
     drones = next(os.walk(os.path.join(base_dir, 'drones')))[2]
     for drone_title in drones:
         if drone_title.endswith('.txt'):
-            last_modified_string = get_last_modified_time('drones')
+            last_modified_string = ''
             calibrated = True if os.path.isfile(os.path.join(base_dir, 'drones', drone_title[:-4] + '.cam.npz')) else False
             with open(os.path.join(base_dir, 'drones', drone_title), 'r') as file:
                 reader = csv.DictReader(file)

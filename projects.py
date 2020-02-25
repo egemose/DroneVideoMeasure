@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 from drone.drone_log_data import drone_log
 from forms import NewProjectForm, EditProjectForm
 from drone.fov import fov
-from help_functions import get_last_modified_time, get_last_updated_time_as_string, base_dir, celery, tasks
+from app_config import base_dir, celery, tasks
 
 logger = logging.getLogger('app.' + __name__)
 
@@ -43,7 +43,7 @@ def make_project_dict():
         os.mkdir(project_dir)
     projects = next(os.walk(project_dir))[1]
     for project_title in projects:
-        last_modified_string = get_last_modified_time('projects', project_title)
+        last_modified_string = ''
         with open(os.path.join(base_dir, 'projects', project_title, 'description.txt'), 'r') as file:
             description = flask.Markup(file.read())
         project = project_tuple(project_title, description, last_modified_string)
@@ -96,7 +96,7 @@ def get_edit_project_form(project_dict):
             os.rename(os.path.join(base_dir, 'projects', project_before), os.path.join(base_dir, 'projects', project_title))
             with open(os.path.join(base_dir, 'projects', project_title, 'description.txt'), 'w') as file:
                 file.write(description)
-            last_updated = get_last_updated_time_as_string(0)
+            last_updated = ''
             project = project_tuple(project_title, description, last_updated)
             project_dict.update({project_title: project})
             if form.edit_log_file.data:

@@ -1,15 +1,12 @@
 import os
 import logging.handlers
 from flask import Flask, send_from_directory
-from flask_dropzone import Dropzone
-from flask_obscure import Obscure
 import argparse
 from projects import projects_view
 from video.videos import videos_view
 from misc import misc_view
 from drone.drones import drones_view
-from app_config import AppConfig
-from help_functions import base_dir, celery
+from app_config import AppConfig, base_dir, dropzone, obscure, celery, db, migrate
 
 logger = logging.getLogger('app')
 logger.setLevel(logging.DEBUG)
@@ -25,10 +22,6 @@ logger.addHandler(fh)
 
 def serve_projects_file(filename):
     return send_from_directory(os.path.join(base_dir, 'projects'), filename)
-
-
-dropzone = Dropzone()
-obscure = Obscure()
 
 
 def create_app():

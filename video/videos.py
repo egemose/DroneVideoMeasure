@@ -1,19 +1,41 @@
 import json
 import os
 import re
+import numpy as np
+from collections import defaultdict
 from datetime import datetime, time
 import flask
 import logging
 from drone import plot_log_data
 from drone.drone_log_data import drone_log
 from drone.fov import fov
-from help_functions import base_dir, horizon_dict
+from app_config import base_dir
 from video.annotations import Annotations
 
 logger = logging.getLogger('app.' + __name__)
 
 annotation_class = Annotations(drone_log, fov)
 videos_view = flask.Blueprint('videos', __name__)
+
+
+def get_horizon_dict():
+    world_points = defaultdict(list)
+    for x in np.linspace(-np.pi, np.pi, 100):
+        point = (0, np.cos(x), np.sin(x))
+        world_points['NS'].append(point)
+    for x in np.linspace(-np.pi, np.pi, 100):
+        point = (np.cos(x), 0, np.sin(x))
+        world_points['EW'].append(point)
+    for x in np.linspace(-np.pi, np.pi, 100):
+        point = (np.cos(x), np.sin(x), 0)
+        world_points['pitch0'].append(point)
+    for x in np.linspace(-np.pi, np.pi, 100):
+        point = (np.cos(x) / np.sqrt(2), np.sin(x) / np.sqrt(2), -1 / np.sqrt(2))
+        world_points['pitch45'].append(point)
+    return world_points
+
+
+horizon_dict = get_horizon_dict()
 
 
 @videos_view.route('/<project>/plot')
@@ -137,4 +159,3 @@ def read_video_start_time(project, video_file):
         return video_start_time
     else:
         return None
-
