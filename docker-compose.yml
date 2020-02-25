@@ -4,7 +4,7 @@ services:
     build: .
     image: dvm
     container_name: dvm_app
-    command: gunicorn -b 0.0.0.0:5000 -k gevent -t 10000 "app:app"
+    command: /app/entrypoint.sh
     ports:
       - "5000:5000"
     volumes:
@@ -34,11 +34,11 @@ services:
     container_name: dvm_db
     volumes:
       - type: volume
-        source: dbdata
+        source: dvm_dbdata
         target: /var/lib/postgresql/data
     restart: always
     environment:
       POSTGRES_PASSWORD: example
 
 volumes:
-  dbdata:
+  dvm_dbdata:

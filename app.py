@@ -41,10 +41,10 @@ def create_app():
     app.register_blueprint(drones_view)
     manager = Manager(app)
     manager.add_command('db', MigrateCommand)
-    return manager
+    return manager, app
 
 
-manager = create_app()
+manager, app = create_app()
 
 if __name__ == '__main__':
     manager.run()

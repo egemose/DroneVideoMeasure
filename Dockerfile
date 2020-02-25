@@ -8,6 +8,7 @@ COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install -r requirements.txt
 COPY . /app
+RUN chmod u+x ./entrypoint.sh
 RUN mkdir data
 
 EXPOSE 5000

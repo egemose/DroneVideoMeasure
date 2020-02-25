@@ -21,7 +21,8 @@ display_help() {
 	echo "   start                Start DVM"
 	echo "   stop                 Stop DVM"
 	echo "   rebuild              Rebuild the Docker image if changes where made to the code"
-    	echo "   update               Get the latest version of DVM from github"
+  echo "   update               Get the latest version of DVM from github"
+	echo "   shell                Start a bash shell inside the docker container"
 	echo "   remove               Remove Docker images and volumes belonging to DVM"
 	echo
 	echo "   --dev                Run DVM in development mode"
@@ -58,13 +59,13 @@ get_docker_compose(){
 }
 
 get_docker_image_rm(){
-	local docker_rm_image="docker image rm  python:3.6 redis:alpine dvm dvm_worker"
+	local docker_rm_image="docker image rm  python:3.6 redis:alpine dvm dvm_worker postgres:alpine"
 	docker_rm_image="$(add_sudo "$docker_rm_image")"
 	echo "$docker_rm_image"
 }
 
 get_docker_volume_rm(){
-	local docker_rm_volume="docker volume rm dvm_appmedia"
+	local docker_rm_volume="docker volume rm dvm_appmedia dvm_dbdata"
 	docker_rm_volume="$(add_sudo "$docker_rm_volume")"
 	echo "$docker_rm_volume"
 }
@@ -90,10 +91,11 @@ start(){
 stop(){
 	echo "Stopping DVM"
 	local docker_compose="$(get_docker_compose)"
+	docker_compose="$docker_compose -f docker-compose-dev.yml"
 	run "$docker_compose down"
 }
 
-rebuild(){
+build(){
 	echo "Rebuilding DVM docker image"
 	local docker_compose="$(get_docker_compose)"
 	run "$docker_compose build"
@@ -106,16 +108,24 @@ update(){
 	echo "You can start DVM now"
 }
 
+shell(){
+	local docker_compose="$(get_docker_compose)"
+	if [[ $dev_mode = true ]]; then
+		docker_compose="$docker_compose -f docker-compose-dev.yml"
+	fi
+	docker_compose="$docker_compose run webapp /bin/bash"
+	run "$docker_compose"
+}
+
 remove(){
 	stop
 	echo "Removing docker image"
 	local docker_rm_image="$(get_docker_image_rm)"
 	run "$docker_rm_image"
-	if [[ $platform = "Windows" ]]; then
-		echo "Removing docker volume"
-		local docker_rm_volume="$(get_docker_volume_rm)"
-		run "$docker_rm_volume"
-	fi
+	echo "Removing docker volume"
+	local docker_rm_volume="$(get_docker_volume_rm)"
+	run "$docker_rm_volume"
+
 	echo "Removed docker content DVM directory can now be removed"
 }
 
@@ -157,11 +167,14 @@ case "$1" in
 	stop)
 		stop
 		;;
-	rebuild)
-		rebuild
+	build)
+		build
 		;;
 	update)
 		update
+		;;
+	shell)
+		shell
 		;;
 	remove)
 		remove

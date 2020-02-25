@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   webapp:
-    command: python app.py runserver --host 0.0.0.0 --debug
+    command: /app/entrypoint.sh --dev
     volumes:
       - type: bind
         source: .
