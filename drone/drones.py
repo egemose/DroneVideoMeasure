@@ -1,91 +1,77 @@
 import os
-import csv
 import re
 import shutil
 import numpy as np
-from collections import namedtuple
 import flask
 import json
 import logging
+from datetime import datetime
 from werkzeug.utils import secure_filename
 from forms import NewDroneForm, EditDroneForm
-from app_config import base_dir
+from app_config import data_dir, db
 from calibration.calibration import CalibrateCamera
 
 logger = logging.getLogger('app.' + __name__)
-
-
 drones_view = flask.Blueprint('drones', __name__)
-drone_tuple = namedtuple('drone', ['title', 'camera_settings', 'calibrated', 'last_updated'])
+
+
+class Drone(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), unique=True, nullable=False)
+    description = db.Column(db.Text())
+    calibration = db.Column(db.PickleType())
+    last_update = db.Column(db.DateTime())
+
+    def __repr__(self):
+        return f'<Drone {self.name}>'
 
 
 @drones_view.route('/drones', methods=['GET', 'POST'])
 def index():
-    drone_dict = make_drone_dict()
-    drone_form = get_drone_form(drone_dict)
-    edit_drone_form = get_edit_drone_form(drone_dict)
+    drone_form = get_drone_form()
+    edit_drone_form = get_edit_drone_form()
+    drones = Drone.query.all()
     logger.debug(f'Render drone index')
-    return flask.render_template('drones/index.html', drones=drone_dict, new_drone_form=drone_form, edit_drone_form=edit_drone_form)
+    return flask.render_template('drones/index.html', drones=drones, new_drone_form=drone_form, edit_drone_form=edit_drone_form)
 
 
-def get_drone_form(drone_dict):
+def get_drone_form():
+    drones = Drone.query.all()
     form = NewDroneForm()
     if form.validate_on_submit():
-        drone_title = form.name.data
+        drone_name = form.name.data
         camera_settings = form.camera_settings.data
-        if drone_title in drone_dict:
-            flask.flash('A project with that name already exist!')
+        if drone_name in [x.name for x in drones]:
+            flask.flash('A drone with that name already exist!')
         else:
-            with open(os.path.join(base_dir, 'drones',  drone_title + '.txt'), 'w') as file:
-                writer = csv.writer(file)
-                header = ('title', 'camera_settings')
-                writer.writerow(header)
-                writer.writerow((drone_title, camera_settings))
-            drone = drone_tuple(drone_title, camera_settings, False, '')
-            drone_dict.update({drone.title: drone})
+            drone = Drone(name=drone_name, description=camera_settings, last_update=datetime.now())
+            db.session.add(drone)
+            db.session.commit()
     return form
 
 
-def get_edit_drone_form(drone_dict):
+def get_edit_drone_form():
+    drones = Drone.query.all()
     form = EditDroneForm()
     if form.validate_on_submit():
-        project_before = form.edit_drone_before.data
-        drone_title = form.edit_name.data
-        camera_settings = form.edit_camera_settings.data
-        if drone_title in drone_dict and not drone_title == project_before:
-            flask.flash('A project with that name already exist!')
+        drone_id = form.edit_drone_id.data
+        drone_name_before = form.edit_drone_before.data
+        new_drone_name = form.edit_name.data
+        new_camera_settings = form.edit_camera_settings.data
+        drone = Drone.query.get_or_404(drone_id)
+        if drone.name in [x.name for x in drones] and not drone.name == drone_name_before:
+            flask.flash('A drone with that name already exist!')
         else:
-            calibrated = drone_dict.get(project_before).calibrated
-            drone_dict.pop(project_before, None)
-            os.rename(os.path.join(base_dir, 'drones', project_before + '.txt'), os.path.join(base_dir, 'drones', drone_title + '.txt'))
-            with open(os.path.join(base_dir, 'drones', drone_title + '.txt'), 'w') as file:
-                writer = csv.writer(file)
-                header = ('title', 'camera_settings')
-                writer.writerow(header)
-                writer.writerow((drone_title, camera_settings))
-            drone = drone_tuple(drone_title, camera_settings, calibrated, '')
-            drone_dict.update({drone.title: drone})
+            drone.name = new_drone_name
+            drone.description = new_camera_settings
+            drone.last_update = datetime.now()
+            db.session.commit()
     return form
 
 
-def make_drone_dict():
-    drone_dict = {}
-    drones = next(os.walk(os.path.join(base_dir, 'drones')))[2]
-    for drone_title in drones:
-        if drone_title.endswith('.txt'):
-            last_modified_string = ''
-            calibrated = True if os.path.isfile(os.path.join(base_dir, 'drones', drone_title[:-4] + '.cam.npz')) else False
-            with open(os.path.join(base_dir, 'drones', drone_title), 'r') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    drone = drone_tuple(row.get('title'), row.get('camera_settings'), calibrated, last_modified_string)
-                    drone_dict.update({drone.title: drone})
-    return drone_dict
-
-
-@drones_view.route('/drones/<drone>/calibrate', methods=['GET', 'POST'])
-def add_calibration(drone):
-    calibration_folder = os.path.join(base_dir, 'drones', 'calibration')
+@drones_view.route('/drones/<drone_id>/calibrate', methods=['GET', 'POST'])
+def add_calibration(drone_id):
+    calibration_folder = os.path.join(data_dir, 'calibration')
     if not os.path.exists(calibration_folder):
         logger.debug(f'Creating calibration folder')
         os.mkdir(calibration_folder)
@@ -104,42 +90,43 @@ def add_calibration(drone):
                 file.save(file_location)
                 logger.debug(f'Saving file: {file_location}')
     logger.debug(f'Render drone calibration for {flask.request.method} request')
-    return flask.render_template('drones/calibration.html', drone=drone)
+    return flask.render_template('drones/calibration.html', drone=drone_id)
 
 
-@drones_view.route('/dones/<drone>/do_calibration', methods=['POST'])
-def do_calibration(drone):
-    logger.debug(f'do_calibration is called for drone {drone}')
+@drones_view.route('/dones/<drone_id>/do_calibration', methods=['POST'])
+def do_calibration(drone_id):
+    logger.debug(f'do_calibration is called for drone {drone_id}')
     calibrate_cam = CalibrateCamera()
-    in_folder = os.path.join(base_dir, 'drones', 'calibration')
-    save_file = os.path.join(base_dir, 'drones', drone + '.cam')
+    in_folder = os.path.join(data_dir, 'calibration')
     try:
-        success = calibrate_cam(in_folder, save_file)
-        if success == -1:
+        result = calibrate_cam(in_folder)
+        if result == -1:
             return json.dumps([{'type': 'danger', 'message': 'Error finding checkerboard during calibration! Please try again with new images or new video by reloading the page.'}])
-        if not success:
+        if not result:
             return json.dumps([{'type': 'danger', 'message': 'Error no video or images found! Please try again by reloading the page.'}])
+        drone = Drone.query.get_or_404(drone_id)
+        drone.calibration = result
+        drone.last_update = datetime.now()
+        db.session.commit()
     except AttributeError:
         logger.debug(f'calibrate_cam throws an Attribute Error')
         return json.dumps([{'type': 'danger', 'message': 'Error loading images or video. Please try again by reloading the page.'}])
     return 'true'
 
 
-@drones_view.route('/drones/<drone>/view_calibration')
-def view_calibration(drone):
-    cam_file = os.path.join(base_dir, 'drones', drone + '.cam.npz')
-    np_file = np.load(cam_file)
-    mtx = np_file['mtx']
-    dist = np_file['dist']
-    fov_x = np_file['fov_x']
-    fov_y = np_file['fov_y']
+@drones_view.route('/drones/<drone_id>/view_calibration')
+def view_calibration(drone_id):
+    drone = Drone.query.get_or_404(drone_id)
+    mtx, dist, fov_x, fov_y = drone.calibration
     logger.debug(f'Render view_calibration')
     return flask.render_template('drones/view_calibration.html', mtx=np.around(mtx, 1), dist=np.around(dist, 5), fov_x=np.round(fov_x, 2), fov_y=np.round(fov_y, 2))
 
 
-@drones_view.route('/drones/<drone>/remove')
-def remove_drone(drone):
-    logger.debug(f'Removing drone {drone}')
-    drone_file = os.path.join(base_dir, 'drones', drone + '.txt')
-    os.remove(drone_file)
+@drones_view.route('/drones/<drone_id>/remove')
+def remove_drone(drone_id):
+    logger.debug(f'Removing drone {drone_id}')
+    drone = Drone.query.get_or_404(drone_id)
+    os.remove(drone.cal_file)
+    db.session.delete(drone)
+    db.session.commit()
     return flask.redirect(flask.url_for('drones.index'))

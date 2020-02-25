@@ -16,33 +16,33 @@
 {% include 'drones/edit_drone_modal.html' %}
 {% include 'drones/remove_drone_modal.html' %}
 <div class="card-columns">
-  {% for drone in drones.values() %}
+  {% for drone in drones %}
   <div class="collapse show">
     <div class="card border-dark mb-3">
       <div class="card-header">
-          <h5 class="card-title">{{ drone.title }}</h5>
+          <h5 class="card-title">{{ drone.name }}</h5>
       </div>
       <div class="card-body text-right">
-        <p class="card-text text-left">{{ drone.camera_settings }}</p>
-        {% if drone.calibrated %}
-        <a class="btn btn-primary" data-toggle="tooltip" title="View camera calibration" href="{{ url_for('drones.view_calibration', drone=drone.title) }}"><i class="fas fa-check-square"></i> View Calibration</a>
+        <p class="card-text text-left">{{ drone.description }}</p>
+        {% if drone.calibration %}
+        <a class="btn btn-primary" data-toggle="tooltip" title="View camera calibration" href="{{ url_for('drones.view_calibration', drone_id=drone.id) }}"><i class="fas fa-check-square"></i> View Calibration</a>
         {% else %}
-        <a class="btn btn-primary" data-toggle="tooltip" title="Calibrate camera to complete drone setup" href="{{ url_for('drones.add_calibration', drone=drone.title) }}"><i class="fas fa-camera"></i> Calibrate Camera</a>
+        <a class="btn btn-primary" data-toggle="tooltip" title="Calibrate camera to complete drone setup" href="{{ url_for('drones.add_calibration', drone_id=drone.id) }}"><i class="fas fa-camera"></i> Calibrate Camera</a>
         {% endif %}
         <div class="btn-group">
-          <a class="btn btn-primary" data-toggle="modal" data-target="#edit_drone_modal" data-drone="{{ drone.title }}" data-camera_settings="{{ drone.camera_settings }}" href="#"><i class="far fa-edit"></i> Edit</a>
+          <a class="btn btn-primary" data-toggle="modal" data-target="#edit_drone_modal" data-drone="{{ drone.name }}" data-drone_id="{{ drone.id }}" data-camera_settings="{{ drone.description }}" href="#"><i class="far fa-edit"></i> Edit</a>
           <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
           <div class="dropdown-menu">
-            <a data-toggle="tooltip" title="Redo the camera calibration with new data" class="dropdown-item" href="{{ url_for('drones.add_calibration', drone=drone.title) }}"><i class="fas fa-camera"></i> Redo Camera Calibration</a>
+            <a data-toggle="tooltip" title="Redo the camera calibration with new data" class="dropdown-item" href="{{ url_for('drones.add_calibration', drone_id=drone.id) }}"><i class="fas fa-camera"></i> Redo Camera Calibration</a>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" data-toggle="modal" data-target="#remove_drone_modal" data-drone="{{ drone.title }}" data-link="{{ url_for('drones.remove_drone', drone=drone.title) }}" href="#"><i class="far fa-trash-alt"></i>Remove</a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#remove_drone_modal" data-drone="{{ drone.name }}" data-link="{{ url_for('drones.remove_drone', drone_id=drone.id) }}" href="#"><i class="far fa-trash-alt"></i>Remove</a>
           </div>
         </div>
       </div>
       <div class="card-footer text-muted">
-        <p data-toggle="tooltip" title="Last time the drone was updated" class="card-text"><small>{{ drone.last_updated }}</small></p>
+        <p data-toggle="tooltip" title="Last time the drone was updated" class="card-text"><small>{{ drone.last_update }}</small></p>
       </div>
     </div>
   </div>
@@ -65,12 +65,14 @@
   $('#edit_drone_modal').on('show.bs.modal', function(event) {
     var button = $(event.relatedTarget) // Button that triggered the modal
     var drone = button.data('drone') // Extract info from data-* attributes
+    var drone_id = button.data('drone_id')
     var camera_settings = button.data('camera_settings')
     var modal = $(this)
     modal.find('.modal-title').text('Edit ' + drone)
     $('#edit_name').attr('value', drone)
     $('#edit_camera_settings').text(camera_settings)
     $('#edit_drone_before').attr('value', drone)
+    $('#edit_drone_id').attr('value', drone_id)
   });
   $('#filter_drones').on('input', function(event) {
     var input = $(this)

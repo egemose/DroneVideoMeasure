@@ -31,6 +31,7 @@ class NewDroneForm(flask_wtf.FlaskForm):
 
 class EditDroneForm(flask_wtf.FlaskForm):
     edit_drone_before = wtforms.fields.HiddenField()
+    edit_drone_id = wtforms.fields.HiddenField()
     edit_name = wtforms.fields.StringField(u'Drone Name', validators=[wtforms.validators.DataRequired()])
     edit_camera_settings = wtforms.fields.TextAreaField(u'Camera Settings', render_kw={'placeholder': 'Optional description of camera settings used. \n'
                                                                                        'Format, fps, etc. \n'

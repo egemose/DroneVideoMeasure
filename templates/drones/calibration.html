@@ -24,7 +24,7 @@
           <h1>Upload images/video with a checkerboard</h1>
         </div>
       </div>
-      {{ dropzone.create(action=url_for('drones.add_calibration', drone=drone)) }}
+      {{ dropzone.create(action=url_for('drones.add_calibration', drone_id=drone)) }}
       {{ dropzone.config() }}
       <div class="row justify-content-end">
         <div class="col">
@@ -52,7 +52,7 @@ var flashMessage = function(data){
 function calibrate() {
   $('#calibrate_btn').prop('disabled', true);
   $('#calibrate_btn').html('<i class="fas fa-spinner fa-spin"></i> Calibrating');
-  $.post('{{ url_for("drones.do_calibration", drone=drone) }}', {
+  $.post('{{ url_for("drones.do_calibration", drone_id=drone) }}', {
   }, function(data) {
     if (data == 'true') {
       window.location.href = '{{ url_for("drones.index") }}';

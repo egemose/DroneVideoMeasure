@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import glob
 import logging
+from collections import namedtuple
 from calibration.corner_detector import ChessBoardCornerDetector
 
 logger = logging.getLogger('app.' + __name__)
@@ -79,7 +80,7 @@ class CalibrateCamera:
         fov_x, fov_y, _, _, _ = cv2.calibrationMatrixValues(mtx, image_size, 1, 1)
         return fov_x, fov_y
 
-    def __call__(self, in_folder, save_file, *args, **kwargs):
+    def __call__(self, in_folder, *args, **kwargs):
         logger.debug(f'Calibrating camera')
         image_files = []
         for file_format in ['*.jpg', '*.jpeg', '*.jpe', '*.bmp', '*.dib', '*.png', '*.tiff', '*.tif']:
@@ -97,7 +98,6 @@ class CalibrateCamera:
             return
         if mtx is not None:
             fov_x, fov_y = self.calculate_camera_fov(mtx, image_size)
-            np.savez(save_file, mtx=mtx, dist=dist, fov_x=fov_x, fov_y=fov_y)
-            return True
+            return mtx, dist, fov_x, fov_y
         else:
             return -1
