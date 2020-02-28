@@ -5,7 +5,7 @@ from projects import projects_view
 from video.videos import videos_view
 from misc import misc_view
 from drone.drones import drones_view
-from app_config import AppConfig, data_dir, dropzone, obscure, celery, db, migrate
+from app_config import AppConfig, data_dir, dropzone, obscure, make_celery, db, migrate
 from flask_script import Manager
 from flask_migrate import MigrateCommand
 
@@ -21,18 +21,17 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 
 
-def serve_projects_file(filename):
-    return send_from_directory(os.path.join(data_dir, 'projects'), filename)
+def serve_data_file(filename):
+    return send_from_directory(os.path.join('data'), filename)
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(AppConfig)
-    app.config.update(CELERY_BROKER_URL='redis://redis:6379/0', CELERY_RESULT_BACKEND='redis://redis:6379/0')
-    app.add_url_rule('/projects/<path:filename>', endpoint='projects_folder', view_func=serve_projects_file)
+    app.add_url_rule('/data/<path:filename>', endpoint='data', view_func=serve_data_file)
     dropzone.init_app(app)
     obscure.init_app(app)
-    celery.conf.update(app.config)
+    celery = make_celery(app)
     db.init_app(app)
     migrate.init_app(app, db)
     app.register_blueprint(projects_view)
@@ -41,10 +40,10 @@ def create_app():
     app.register_blueprint(drones_view)
     manager = Manager(app)
     manager.add_command('db', MigrateCommand)
-    return manager, app
+    return manager, app, celery
 
 
-manager, app = create_app()
+manager, app, celery = create_app()
 
 if __name__ == '__main__':
     manager.run()

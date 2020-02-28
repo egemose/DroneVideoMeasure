@@ -30,32 +30,32 @@
 {% include 'projects/edit_project_modal.html' %}
 {% include 'projects/remove_project_modal.html' %}
 <div class="card-columns">
-  {% for project in projects.values() %}
+  {% for project in projects %}
   <div class="collapse show">
     <div class="card border-dark mb-3">
       <div class="card-header">
-        <a href="{{ url_for('projects.video_gallery', project=project.title) }}">
-          <h5 class="card-title text-primary">{{ project.title }}</h5>
+        <a href="{{ url_for('projects.video_gallery', project_id=project.id) }}">
+          <h5 class="card-title text-primary">{{ project.name }}</h5>
         </a>
       </div>
       <div class="card-body text-right">
         <p class="card-text text-left">{{ project.description }}</p>
         <div class="btn-group">
-          <button type="button" data-toggle="tooltip" title="Open the project" class="btn btn-primary" onclick="window.location.href='{{ url_for('projects.video_gallery', project=project.title) }}'"><i class="far fa-folder-open"></i> Open</button>
+          <button type="button" data-toggle="tooltip" title="Open the project" class="btn btn-primary" onclick="window.location.href='{{ url_for('projects.video_gallery', project_id=project.id) }}'"><i class="far fa-folder-open"></i> Open</button>
           <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
           <div class="dropdown-menu">
-            <a class="dropdown-item" data-toggle="tooltip" title="Download all annotations" href="{{ url_for('projects.download', project=project.title, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
-            <a class="dropdown-item" data-toggle="modal" data-target="#edit_project_modal" data-project="{{ project.title }}" data-description="{{ project.description }}" href="#"><i class="far fa-edit"></i> Edit</a>
+            <a class="dropdown-item" data-toggle="tooltip" title="Download all annotations" href="{{ url_for('projects.download', project_id=project.id, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#edit_project_modal" data-project="{{ project.name }}" data-project="{{ project.id }}" data-description="{{ project.description }}" href="#"><i class="far fa-edit"></i> Edit</a>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" data-toggle="modal" data-target="#remove_project_modal" data-project="{{ project.title }}" data-link="{{ url_for('projects.remove_project', project=project.title) }}" href="#"><i class="far fa-trash-alt"></i>
+            <a class="dropdown-item" data-toggle="modal" data-target="#remove_project_modal" data-project="{{ project.name }}" data-link="{{ url_for('projects.remove_project', project_id=project.id) }}" href="#"><i class="far fa-trash-alt"></i>
               Remove</a>
           </div>
         </div>
       </div>
       <div class="card-footer text-muted">
-        <p class="card-text" data-toggle="tooltip" title="When the project was last updated"><small>{{ project.last_updated }}</small></p>
+        <p class="card-text" data-toggle="tooltip" title="When the project was last updated"><small>{{ project.last_update }}</small></p>
       </div>
     </div>
   </div>
@@ -79,11 +79,13 @@
     var button = $(event.relatedTarget) // Button that triggered the modal
     var project = button.data('project') // Extract info from data-* attributes
     var description = button.data('description')
+    var project_id = button.data('project_id')
     var modal = $(this)
     modal.find('.modal-title').text('Edit ' + project)
     $('#edit_name').attr('value', project)
     $('#edit_description').text(description)
     $('#edit_project_before').attr('value', project)
+    $('#edit_project_id').attr('value', project_id)
   });
   $('#filter_projects').on('input', function(event) {
     var input = $(this)

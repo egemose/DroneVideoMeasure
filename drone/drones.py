@@ -8,22 +8,11 @@ import logging
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from forms import NewDroneForm, EditDroneForm
-from app_config import data_dir, db
+from app_config import data_dir, Drone, db
 from calibration.calibration import CalibrateCamera
 
 logger = logging.getLogger('app.' + __name__)
 drones_view = flask.Blueprint('drones', __name__)
-
-
-class Drone(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(), unique=True, nullable=False)
-    description = db.Column(db.Text())
-    calibration = db.Column(db.PickleType())
-    last_update = db.Column(db.DateTime())
-
-    def __repr__(self):
-        return f'<Drone {self.name}>'
 
 
 @drones_view.route('/drones', methods=['GET', 'POST'])

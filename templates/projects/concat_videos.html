@@ -7,7 +7,7 @@
 
 {% block add_navbar %}
 <li class="nav-item active">
-  <a class="nav-link" href="{{ url_for('projects.video_gallery', project=project) }}"><i class="fas fa-file-video"></i> Video gallery</a>
+  <a class="nav-link" href="{{ url_for('projects.video_gallery', project_id=project_id) }}"><i class="fas fa-file-video"></i> Video gallery</a>
 </li>
 {% endblock %}
 
@@ -57,11 +57,11 @@
     $.each(obj.items, function(index, value) {
       data.push(value.node.innerText);
     });
-    $.post('{{ url_for("projects.do_concat_videos", project=project) }}', {
+    $.post('{{ url_for("projects.do_concat_videos", project_id=project_id) }}', {
       videos: JSON.stringify(data),
       output_name: output_name,
     }, function(data) {
-      window.location.href = '{{ url_for("projects.video_gallery", project=project) }}';
+      window.location.href = '{{ url_for("projects.video_gallery", project_id=project_id) }}';
     });
   };
 </script>

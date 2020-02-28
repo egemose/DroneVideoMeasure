@@ -6,16 +6,17 @@ from flask_wtf.file import FileField, FileRequired
 class NewProjectForm(flask_wtf.FlaskForm):
     name = wtforms.fields.StringField(u'Project Name', validators=[wtforms.validators.DataRequired()])
     description = wtforms.fields.TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
-    drone = wtforms.fields.SelectField(u'Drone')
+    drone = wtforms.fields.SelectField(u'Drone', coerce=int)
     log_file = FileField(u'Drone log', validators=[FileRequired()])
     submit = wtforms.fields.SubmitField(u'Add Project')
 
 
 class EditProjectForm(flask_wtf.FlaskForm):
     edit_project_before = wtforms.fields.HiddenField()
+    edit_project_id = wtforms.fields.HiddenField()
     edit_name = wtforms.fields.StringField(u'Project Name', validators=[wtforms.validators.DataRequired()])
     edit_description = wtforms.fields.TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
-    edit_drone = wtforms.fields.SelectField(u'Drone')
+    edit_drone = wtforms.fields.SelectField(u'Drone', coerce=int)
     edit_log_file = FileField(u'Drone log')
     edit_submit = wtforms.fields.SubmitField(u'Edit Project')
 

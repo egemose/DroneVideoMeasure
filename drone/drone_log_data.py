@@ -33,11 +33,10 @@ class DroneLog:
         return self.time_stamp, self.height, yaw, pitch, roll, self.is_video
 
     @staticmethod
-    def test_log(project):
+    def test_log(log):
         indexes = ['CUSTOM.updateTime', 'GIMBAL.yaw', 'GIMBAL.pitch', 'GIMBAL.roll', 'OSD.height [m]', 'CUSTOM.isVideo', 'OSD.latitude', 'OSD.longitude']
-        log = os.path.join(data_dir, 'projects', project, 'drone_log.csv')
         remove_null_bytes(log)
-        logger.debug(f'Opening log to test for {project}')
+        logger.debug(f'Opening log "{log}" to test')
         with open(log, encoding='iso8859_10') as csv_file:
             reader = csv.DictReader(csv_file)
             row = next(reader)
@@ -46,8 +45,8 @@ class DroneLog:
                     return False
             return True
 
-    def get_log_data(self, project):
-        logger.debug(f'Getting log data for {project}')
+    def get_log_data(self, log):
+        logger.debug(f'Getting log data for {log}')
         self.time_stamp = []
         self.height = []
         self.rotation = []
@@ -61,7 +60,6 @@ class DroneLog:
         is_video_idx = 'CUSTOM.isVideo'
         latitude_idx = 'OSD.latitude'
         longitude_idx = 'OSD.longitude'
-        log = os.path.join(data_dir, 'projects', project, 'drone_log.csv')
         remove_null_bytes(log)
         with open(log, encoding='iso8859_10') as csv_file:
             reader = csv.DictReader(csv_file)
@@ -98,34 +96,6 @@ class DroneLog:
         if match:
             self.video_pos = (float(match.group(1)), float(match.group(2)))
 
-    @staticmethod
-    def save_video_data_to_file(project, video_file_name, location_video_file=None):
-        logger.debug(f'Reading video data for video {video_file_name} in {project}')
-        video_file = os.path.join(data_dir, 'projects', project, video_file_name)
-        video_data_file = os.path.join(data_dir, 'projects', project, video_file_name + '_data.txt')
-        ffprobe_res = ffmpeg.probe(video_file, cmd='ffprobe')
-        video_duration = float(ffprobe_res['format']['duration'])
-        video_nb_frames = int(ffprobe_res['streams'][0]['nb_frames'])
-        video_size = (int(ffprobe_res['streams'][0]['width']), int(ffprobe_res['streams'][0]['height']))
-        try:
-            location_string = ffprobe_res['format']['tags']['location']
-        except KeyError:
-            if location_video_file:
-                ffprobe_res = ffmpeg.probe(location_video_file, cmd='ffprobe')
-                location_string = ffprobe_res['format']['tags']['location']
-            else:
-                location_string = None
-        video_pos = ('', '')
-        if location_string:
-            match = re.match(r'([-+]\d+.\d+)([-+]\d+.\d+)([-+]\d+.\d+)', location_string)
-            if match:
-                video_pos = (float(match.group(1)), float(match.group(2)))
-        with open(video_data_file, 'w', newline='') as data_file:
-            logger.debug(f'Saving video data to {video_data_file}')
-            csv_writer = csv.writer(data_file)
-            csv_writer.writerow(['duration', 'nb_frames', 'width', 'height', 'lat', 'long'])
-            csv_writer.writerow([video_duration, video_nb_frames, video_size[0], video_size[1], video_pos[0], video_pos[1]])
-
     def get_video_data_from_data_file(self, project, video_file):
         logger.debug(f'Reading video data from data file for video {video_file} from {project}')
         video_data_file = os.path.join(data_dir, 'projects', project, video_file + '_data.txt')
@@ -139,6 +109,12 @@ class DroneLog:
                     self.video_pos = (float(row['lat']), float(row['long']))
                 else:
                     self.video_pos = None
+
+    def set_video_data(self, duration, frames, size, pos):
+        self.video_duration = duration
+        self.video_nb_frames = frames
+        self.video_size = size
+        self.video_pos = pos
 
     def match_log_and_video(self):
         logger.debug(f'Matching video and log file')

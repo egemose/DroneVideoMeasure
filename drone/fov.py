@@ -21,13 +21,12 @@ class Fov:
     def set_image_size(self, width, height):
         self.image_size = (width, height)
 
-    def set_camera_params(self, mat_file):
+    def set_camera_params(self, camera_matrix, dist_coefficients, horizontal_fov, vertical_fov):
         logger.debug(f'Setting camera params')
-        mat_contents = np.load(mat_file)
-        self.camera_matrix = mat_contents['mtx']
-        self.dist_coefficients = mat_contents['dist']
-        self.horizontal_fov = mat_contents['fov_x'] * np.pi / 180
-        self.vertical_fov = mat_contents['fov_y'] * np.pi / 180
+        self.camera_matrix = camera_matrix
+        self.dist_coefficients = dist_coefficients
+        self.horizontal_fov = horizontal_fov * np.pi / 180
+        self.vertical_fov = vertical_fov * np.pi / 180
 
     @staticmethod
     def roll(roll):

@@ -13,7 +13,7 @@
 
 {% block add_navbar %}
 <li class="nav-item active">
-  <a class="nav-link" href="{{ url_for('projects.video_gallery', project=project) }}" ><i class="fas fa-images"></i>Video gallery</a>
+  <a class="nav-link" href="{{ url_for('projects.video_gallery', project_id=project_id) }}" ><i class="fas fa-images"></i>Video gallery</a>
 </li>
 {% endblock %}
 
@@ -21,15 +21,15 @@
     <div class="jumbotron">
       <div class="row justify-content-between">
         <div class="col-auto mx-auto text-center">
-          <h1>Upload videos to {{ project }}</h1>
-          <p>When the upload is done, videos are converted in the background and the status can be seen in the <a href="{{ url_for('projects.video_gallery', project=project) }}">Video gallery</a>
+          <h1>Upload videos to {{ project_name }}</h1>
+          <p>When the upload is done, videos are converted in the background and the status can be seen in the <a href="{{ url_for('projects.video_gallery', project_id=project_id) }}">Video gallery</a>
         </div>
       </div>
-      {{ dropzone.create(action=url_for('projects.upload', project=project)) }}
+      {{ dropzone.create(action=url_for('projects.upload', project_id=project_id)) }}
       {{ dropzone.config() }}
       <div class="row justify-content-end">
         <div class="col">
-          <a href="{{ url_for('projects.video_gallery', project=project) }}" class="btn btn-primary float-right" id="upload_done" role="button"><i class="fas fa-images"></i>Video gallery</a>
+          <a href="{{ url_for('projects.video_gallery', project_id=project_id) }}" class="btn btn-primary float-right" id="upload_done" role="button"><i class="fas fa-images"></i>Video gallery</a>
         </div>
       </div>
     </div>

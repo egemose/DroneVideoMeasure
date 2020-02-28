@@ -3,7 +3,7 @@
     <div class="col">
       <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
         <div class="btn-group my-1 ml-auto mr-2" role="group" aria-label="group1">
-          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Return to Video Gallery and save annotations" id="home" onclick="VideoAnnotator.navigate('{{ url_for('videos.save_fabric_json', project=project, video_file=video) }}', '{{ url_for('projects.video_gallery', project=project) }}')"><i class="fas fa-home"></i></button>
+          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Return to Video Gallery and save annotations" id="home" onclick="VideoAnnotator.navigate('{{ url_for('videos.save_fabric_json', video_id=video.id) }}', '{{ url_for('projects.video_gallery', project_id=project_id) }}')"><i class="fas fa-home"></i></button>
         </div>
         <div class="btn-group my-1 mr-2" role="group" aria-label="group2">
           <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Zoom in" id="zoom-in"><i class="fas fa-search-plus"></i></button>
@@ -13,7 +13,7 @@
         </div>
         <div class="input-group my-1 mr-2" id="colorpicker">
           <div class="input-group-prepend">
-            <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Save all annotations" id="save" onclick="VideoAnnotator.save('{{ url_for('videos.save_fabric_json', project=project, video_file=video) }}')"><i class="fas fa-save"></i></button>
+            <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Save all annotations" id="save" onclick="VideoAnnotator.save('{{ url_for('videos.save_fabric_json', video_id=video.id) }}')"><i class="fas fa-save"></i></button>
             <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Undo the last annotation" id="undo" onclick="VideoAnnotator.on_undo()"><i class="fas fa-undo"></i></button>
             <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Redo the last undo" id="redo" onclick="VideoAnnotator.on_redo()"><i class="fas fa-redo"></i></button>
           </div>

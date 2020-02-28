@@ -2,16 +2,16 @@
 
 {% block add_navbar %}
 <li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Upload more videos" href="{{ url_for('projects.upload', project=project) }}"><i class="fas fa-plus"></i> Upload</a>
+  <a class="nav-link" data-toggle="tooltip" title="Upload more videos" href="{{ url_for('projects.upload', project_id=project_id) }}"><i class="fas fa-plus"></i> Upload</a>
 </li>
 <li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Download all annotation for the project" href="{{ url_for( 'projects.download', project=project, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download</a>
+  <a class="nav-link" data-toggle="tooltip" title="Download all annotation for the project" href="{{ url_for( 'projects.download', project_id=project_id, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download</a>
 </li>
 <li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Show a plot of the drone log" href="{{ url_for( 'videos.plot_log', project=project) }}"><i class="fas fa-chart-area"></i> Plot Log file</a>
+  <a class="nav-link" data-toggle="tooltip" title="Show a plot of the drone log" href="{{ url_for( 'videos.plot_log', project_id=project_id) }}"><i class="fas fa-chart-area"></i> Plot Log file</a>
 </li>
 <li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Concatenate videos if the drone has split it into multiple files" href="{{ url_for( 'projects.concat_videos', project=project) }}"><i class="fas fa-file-video"></i> Concatenate videos</a>
+  <a class="nav-link" data-toggle="tooltip" title="Concatenate videos if the drone has split it into multiple files" href="{{ url_for( 'projects.concat_videos', project_id=project_id) }}"><i class="fas fa-file-video"></i> Concatenate videos</a>
 </li>
 {% endblock %}
 {% block navbar_end %}
@@ -23,23 +23,28 @@
 {% block content %}
 <div class="card-columns">
   {% for video in videos %}
-  <div class="collapse show">
-    <a href={{ url_for('videos.video', project=project, video_file=video) }}>
-      <div class="card text-white bg-dark">
-        <div class="card-body">
-          <h5 class="card-title">{{ video[:-4] }}</h5>
-        </div>
-        <img src="{{ url_for('projects_folder', filename = project + '/' + video + '.jpg') }}" class="card-img-top">
+    {% if video.duration %}
+      <div class="collapse show">
+        <a href={{ url_for('videos.video', video_id=video.id) }}>
+          <div class="card text-white bg-dark">
+            <div class="card-body">
+              <h5 class="card-title">{{ video.name }}</h5>
+            </div>
+            {% if video.image %}
+            <img src="{{ url_for('data', filename = video.image) }}" class="card-img-top">
+            {% else %}
+            <img src="{{ url_for('static', filename='missing.png') }}">
+            {% endif %}
+          </div>
+        </a>
       </div>
-    </a>
-  </div>
+    {% endif %}
   {% endfor %}
-  {% for task, task_dict in tasks.items() %}
+  {% for task, video in task_and_videos %}
   <div class="collapse show">
-    <div class="card text-white bg-dark task-status" data-task-id="{{ task }}" data-video-link="{{ url_for('videos.video', project=project, video_file=task_dict['video']) }}"
-      data-image-link="{{ url_for('projects_folder', filename = project + '/' + task_dict['video'] + '.jpg') }}">
+    <div class="card text-white bg-dark task-status" data-task-id="{{ task.id }}" data-video-link="{{ url_for('videos.video', video_id=task.video_id) }}" data-image-link="{{ url_for('data', filename = video.image) }}">
       <div class="card-body">
-        <h5 class="card-title">{{ task_dict['video'][:-4] }}</h5>
+        <h5 class="card-title">{{ video.name }}</h5>
       </div>
       <div class="card-no-image">
         <div class="card-center">
