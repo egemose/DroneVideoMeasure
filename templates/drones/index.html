@@ -24,7 +24,9 @@
       </div>
       <div class="card-body text-right">
         <p class="card-text text-left">{{ drone.description }}</p>
-        {% if drone.calibration %}
+        {% if drone.task %}
+        <a class="btn btn-primary task-status disabled" data-toggle="tooltip" data-task-id="{{ drone.task.id }}" data-link="{{ url_for('drones.view_calibration', drone_id=drone.id) }}" title="Calibrating camera" href="#"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Calibrating Camera</a>
+        {% elif drone.calibration %}
         <a class="btn btn-primary" data-toggle="tooltip" title="View camera calibration" href="{{ url_for('drones.view_calibration', drone_id=drone.id) }}"><i class="fas fa-check-square"></i> View Calibration</a>
         {% else %}
         <a class="btn btn-primary" data-toggle="tooltip" title="Calibrate camera to complete drone setup" href="{{ url_for('drones.add_calibration', drone_id=drone.id) }}"><i class="fas fa-camera"></i> Calibrate Camera</a>
@@ -40,9 +42,6 @@
             <a class="dropdown-item" data-toggle="modal" data-target="#remove_drone_modal" data-drone="{{ drone.name }}" data-link="{{ url_for('drones.remove_drone', drone_id=drone.id) }}" href="#"><i class="far fa-trash-alt"></i>Remove</a>
           </div>
         </div>
-      </div>
-      <div class="card-footer text-muted">
-        <p data-toggle="tooltip" title="Last time the drone was updated" class="card-text"><small>{{ drone.last_update }}</small></p>
       </div>
     </div>
   </div>
@@ -94,5 +93,28 @@
       }
     }
   });
+  $('.task-status').each(function() {
+    task_id = $(this).data('task-id');
+    status_url = '/drones/status/' + task_id;
+    update_progress(status_url, this);
+  });
+
+  function update_progress(status_url, status_link) {
+    $.getJSON(status_url, function(data) {
+      if (data['state'] != 'PENDING' && data['state'] != 'PROCESSING') {
+        if (data['state'] == 'SUCCESS') {
+          calibration_link = $(status_link).data('link');
+          $(status_link).attr('href', calibration_link);
+          $(status_link).removeClass('disabled');
+          $(status_link).html('<i class="fas fa-check-square"></i> View Calibration')
+        }
+      } else {
+        // rerun in 2 seconds
+        setTimeout(function() {
+          update_progress(status_url, status_link);
+        }, 2000);
+      }
+    });
+  }
 </script>
 {% endblock %}

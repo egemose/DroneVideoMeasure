@@ -153,17 +153,21 @@ def convert_after_upload_task(self, temp_file, video_file):
 
 
 @celery.task(bind=True)
-def concat_videos_task(self, concat_file, output_file, project_id, video_file, first_video_file):
+def concat_videos_task(self, videos, video_file):
+    video_str = ''
+    for video in videos:
+        video_str += 'file ' + video + '\n'
+    concat_file = os.path.join(data_dir, 'concat.txt')
+    with open(concat_file, 'w') as file:
+        file.write(video_str)
     self.update_state(state='PROCESSING')
+    output_file = os.path.join(data_dir, video_file)
     cmd = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', r'{}'.format(concat_file), '-c', 'copy', r'{}'.format(output_file)]
     subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    video_data = get_video_data(project_id, video_file, first_video_file)
     cmd = ['ffmpeg', '-i', r'{}'.format(output_file), '-vframes', '1', '-an', '-s', '300x200', '-ss', '0', r'{}.jpg'.format(output_file)]
     subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    video = Video(file=video_file, name=video_file, project_id=project_id, duration=video_data[0], frames=video_data[1], image=video_file + '.jpg',
-                  width=video_data[2][0], height=video_data[2][1], latitude=video_data[3][0], longitude=video_data[3][1])
-    db.session.add(video)
-    db.session.commit()
+    for video in videos:
+        remove_file(video)
 
 
 @projects_view.route('/status/<task_id>')
@@ -197,9 +201,7 @@ def video_gallery(project_id):
     videos = Video.query.all()
     random_int = random.randint(1, 10000000)
     logger.debug(f'Render video_gallery for {project_id}')
-    tasks = Task.query.all()
-    task_videos = [Video.query.get_or_404(x.video_id) for x in tasks]
-    task_and_videos = zip(tasks, task_videos)
+    task_and_videos = [(video, video.task) for video in videos if video.task]
     return flask.render_template('projects/video_gallery.html', project_id=project_id, videos=videos, task_and_videos=task_and_videos, random_int=random_int)
 
 
@@ -218,17 +220,15 @@ def do_concat_videos(project_id):
     if output_file_name[-4:] != '.mp4':
         output_file_name += '.mp4'
     videos = json.loads(videos_json)
-    video_str = ''
-    for video in videos:
-        video_str += 'file ' + video + '\n'
-    concat_file = os.path.join(data_dir, 'concat.txt')
-    with open(concat_file, 'w') as file:
-        file.write(video_str)
-    output_file = os.path.join(data_dir, output_file_name)
     logger.debug(f'Calling celery task for concat')
-    task = concat_videos_task.apply_async(args=(concat_file, output_file, project_id, output_file_name, videos[0]))
-    task_dict = {'function': concat_videos_task, 'video': output_file_name}
-    tasks.update({task.id: task_dict})
+    video_file = get_random_filename(output_file_name)
+    video = Video(file=video_file, name=output_file_name, project_id=project_id, image=video_file + '.jpg')
+    db.session.add(video)
+    db.session.commit()
+    task = concat_videos_task.apply_async(args=(videos, output_file_name))
+    task_db = Task(task_id=task.id, function='concat_videos_task', video_id=video.id)
+    db.session.add(task_db)
+    db.session.commit()
     return flask.jsonify({}), 202
 
 

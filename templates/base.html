@@ -22,6 +22,9 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarCollapse">
       <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" data-toggle="tooltip" title="Return to Home" href={{ url_for('projects.index') }}><i class="fas fa-home"></i> Home</a>
+        </li>
         {% block add_navbar %}
         {% endblock %}
       </ul>

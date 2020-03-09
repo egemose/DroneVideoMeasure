@@ -13,7 +13,7 @@
 
 {% block add_navbar %}
 <li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Return to Home" href="{{ url_for('drones.index') }}"><i class="fas fa-plane"></i> Drones</a>
+  <a class="nav-link" data-toggle="tooltip" title="Drones" href="{{ url_for('drones.index') }}"><i class="fas fa-plane"></i> Drones</a>
 </li>
 <li class="nav-item active">
   <a class="nav-link" href="#" data-toggle="modal" data-target="#create_new_project_modal"><i class="fas fa-plus"></i> Add Project</a>
@@ -53,9 +53,6 @@
               Remove</a>
           </div>
         </div>
-      </div>
-      <div class="card-footer text-muted">
-        <p class="card-text" data-toggle="tooltip" title="When the project was last updated"><small>{{ project.last_update }}</small></p>
       </div>
     </div>
   </div>

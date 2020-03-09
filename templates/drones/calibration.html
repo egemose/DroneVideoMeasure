@@ -42,26 +42,10 @@
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript">
-var flashMessage = function(data){
-  html = '';
-  for (i=0; i<data.length; i++) {
-    html += '<div class="alert alert-' + data[i]['type'] + ' alert-dismissible", role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + data[i].message + '</div>';
-  }
-  return html;
-};
 function calibrate() {
-  $('#calibrate_btn').prop('disabled', true);
-  $('#calibrate_btn').html('<i class="fas fa-spinner fa-spin"></i> Calibrating');
   $.post('{{ url_for("drones.do_calibration", drone_id=drone) }}', {
   }, function(data) {
-    if (data == 'true') {
-      window.location.href = '{{ url_for("drones.index") }}';
-    }
-    else {
-      $('#flash').append(flashMessage(JSON.parse(data)));
-      $('#calibrate_btn').prop('disabled', false);
-      $('#calibrate_btn').html('Calibrate');
-    }
+    window.location.href = '{{ url_for("drones.index") }}';
   });
 };
 </script>

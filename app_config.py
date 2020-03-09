@@ -12,7 +12,6 @@ class AppConfig:
     SECRET_KEY = secrets.token_hex(32)
     WTF_CSRF_SECRET_KEY = secrets.token_hex(32)
     OBSCURE_SALT = secrets.randbelow(9999999999)
-    # Dropzone settings
     DROPZONE_UPLOAD_MULTIPLE = True
     DROPZONE_MAX_FILE_SIZE = 100000
     DROPZONE_PARALLEL_UPLOADS = 1
@@ -61,7 +60,6 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), unique=True, nullable=False)
     description = db.Column(db.Text())
-    last_update = db.Column(db.DateTime())
     log_file = db.Column(db.String(), nullable=False)
     drone_id = db.Column(db.Integer, db.ForeignKey('drone.id'), nullable=False)
     videos = db.relationship('Video', backref='project', lazy=True)
@@ -95,8 +93,8 @@ class Drone(db.Model):
     name = db.Column(db.String(), unique=True, nullable=False)
     description = db.Column(db.Text())
     calibration = db.Column(db.PickleType())
-    last_update = db.Column(db.DateTime())
     projects = db.relationship('Project', backref='drone', lazy=True)
+    task = db.relationship('Task', backref='Drone', lazy=True, uselist=False)
 
     def __repr__(self):
         return f'<Drone {self.name}>'
@@ -106,7 +104,8 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.String(), unique=True, nullable=False)
     function = db.Column(db.String())
-    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
+    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=True)
+    drone_id = db.Column(db.Integer, db.ForeignKey('drone.id'), nullable=True)
 
     def __repr__(self):
-        return f'<Drone {self.name}>'
+        return f'<Task {self.task_id}>'

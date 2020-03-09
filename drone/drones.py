@@ -3,12 +3,11 @@ import re
 import shutil
 import numpy as np
 import flask
-import json
 import logging
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from forms import NewDroneForm, EditDroneForm
-from app_config import data_dir, Drone, db
+from app_config import data_dir, celery, Drone, Task, db
 from calibration.calibration import CalibrateCamera
 
 logger = logging.getLogger('app.' + __name__)
@@ -53,7 +52,7 @@ def get_edit_drone_form():
         else:
             drone.name = new_drone_name
             drone.description = new_camera_settings
-            drone.last_update = datetime.now()
+            drone.last_update = datetime.now().isoformat(timespec='minutes')
             db.session.commit()
     return form
 
@@ -85,22 +84,55 @@ def add_calibration(drone_id):
 @drones_view.route('/dones/<drone_id>/do_calibration', methods=['POST'])
 def do_calibration(drone_id):
     logger.debug(f'do_calibration is called for drone {drone_id}')
-    calibrate_cam = CalibrateCamera()
+    drone = Drone.query.get_or_404(drone_id)
+    drone.calibration = None
+    db.session.commit()
+    task = concat_videos_task.apply_async(args=(drone.id,))
+    task_db = Task(task_id=task.id, function='concat_videos_task', drone_id=drone.id)
+    db.session.add(task_db)
+    db.session.commit()
+    return ''
+
+
+@celery.task(bind=True)
+def concat_videos_task(self, drone_id):
+    self.update_state(state='PROCESSING')
     in_folder = os.path.join(data_dir, 'calibration')
+    calibrate_cam = CalibrateCamera()
     try:
         result = calibrate_cam(in_folder)
         if result == -1:
-            return json.dumps([{'type': 'danger', 'message': 'Error finding checkerboard during calibration! Please try again with new images or new video by reloading the page.'}])
+            self.update_state(state='Error', meta={'type': 'danger', 'message': 'Error finding checkerboard during calibration! Please try again with new images or new video by reloading the page.'})
+            return False
         if not result:
-            return json.dumps([{'type': 'danger', 'message': 'Error no video or images found! Please try again by reloading the page.'}])
-        drone = Drone.query.get_or_404(drone_id)
-        drone.calibration = result
-        drone.last_update = datetime.now()
+            self.update_state(state='Error', meta={'type': 'danger', 'message': 'Error no video or images found! Please try again by reloading the page.'})
+            return False
+        drone_db = Drone.query.get(drone_id)
+        drone_db.calibration = result
+        drone_db.last_update = datetime.now().isoformat(timespec='minutes')
         db.session.commit()
     except AttributeError:
-        logger.debug(f'calibrate_cam throws an Attribute Error')
-        return json.dumps([{'type': 'danger', 'message': 'Error loading images or video. Please try again by reloading the page.'}])
-    return 'true'
+        self.update_state(state='Error', meta={'type': 'danger', 'message': 'Error loading images or video. Please try again by reloading the page.'})
+        return False
+
+
+@drones_view.route('/drones/status/<task_id>')
+def task_status(task_id):
+    task_db = Task.query.get_or_404(task_id)
+    task = eval(task_db.function + '.AsyncResult("' + task_db.task_id + '")')
+    if task.state == 'PENDING':
+        response = {'state': task.state, 'status': 'Pending'}
+    elif task.state == 'Error':
+        response = {'state': task.state, 'status': task.meta}
+    elif task.state == 'SUCCESS':
+        response = {'state': task.state, 'status': 'Done'}
+        db.session.delete(task_db)
+        db.session.commit()
+    elif task.state != 'FAILURE':
+        response = {'state': task.state, 'status': 'Processing'}
+    else:
+        response = {'state': task.state, 'status': str(task.info)}
+    return flask.jsonify(response)
 
 
 @drones_view.route('/drones/<drone_id>/view_calibration')
@@ -115,7 +147,6 @@ def view_calibration(drone_id):
 def remove_drone(drone_id):
     logger.debug(f'Removing drone {drone_id}')
     drone = Drone.query.get_or_404(drone_id)
-    os.remove(drone.cal_file)
     db.session.delete(drone)
     db.session.commit()
     return flask.redirect(flask.url_for('drones.index'))

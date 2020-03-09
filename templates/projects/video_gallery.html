@@ -23,22 +23,22 @@
 {% block content %}
 <div class="card-columns">
   {% for video in videos %}
-    {% if video.duration %}
-      <div class="collapse show">
-        <a href={{ url_for('videos.video', video_id=video.id) }}>
-          <div class="card text-white bg-dark">
-            <div class="card-body">
-              <h5 class="card-title">{{ video.name }}</h5>
-            </div>
-            {% if video.image %}
-            <img src="{{ url_for('data', filename = video.image) }}" class="card-img-top">
-            {% else %}
-            <img src="{{ url_for('static', filename='missing.png') }}">
-            {% endif %}
-          </div>
-        </a>
+  {% if video.duration %}
+  <div class="collapse show">
+    <a href={{ url_for('videos.video', video_id=video.id) }}>
+      <div class="card text-white bg-dark">
+        <div class="card-body">
+          <h5 class="card-title">{{ video.name }}</h5>
+        </div>
+        {% if video.image %}
+        <img src="{{ url_for('data', filename = video.image) }}" class="card-img-top">
+        {% else %}
+        <img src="{{ url_for('static', filename='missing.png') }}">
+        {% endif %}
       </div>
-    {% endif %}
+    </a>
+  </div>
+  {% endif %}
   {% endfor %}
   {% for task, video in task_and_videos %}
   <div class="collapse show">
