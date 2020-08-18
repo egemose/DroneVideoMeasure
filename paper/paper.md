@@ -27,7 +27,7 @@ It is a daunting task to quantify the length of marine mammals like porpoises an
 
 With the software marine biologist can estimate the size of marine animals in UAV recordings, using an noninvasive method and with a significantly lower time usage compared to the capture and measure process. Several software systems have been developed to measure marine animals in images taken from UAVs, but all work under the assumption that the UAVs camera is pointing straight down e.g. [@Torres2020; @Burnett2018; @Dawson2017]. This constrain limits the UAV operator and it may be hard to get images if the marine animal is at the surface for a short time period.
 
-The Porpoise Tracker software is available at [@Egemose2020VideoDroneMeasure] and is released under the MIT License. The software was developed as part of the Back2Nature project at the University of Southern Denmark.
+The Drone Video Measure software is available at [@Egemose2020VideoDroneMeasure] and is released under the MIT License. The software was developed as part of the Back2Nature project at the University of Southern Denmark.
 
 # Acknowledgements
 
