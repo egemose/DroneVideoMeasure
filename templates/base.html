@@ -3,10 +3,11 @@
 {% import 'bootstrap_wtf.html' as wtf %}
 
 {% block head %}
-    {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://kit.fontawesome.com/1133c68e8b.js" crossorigin="anonymous"></script>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32">
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('node_modules', filename='fortawesome/fontawesome-free/js/all.min.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('node_modules', filename='fortawesome/fontawesome-free/css/all.min.css') }}">
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32">
 {% endblock %}
 
 {% block title %}Drone Video Meassure{% endblock %}
@@ -15,23 +16,29 @@
 <header>
   <!-- Fixed navbar -->
   <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-    <div class="container">
-    <a class="navbar-brand" data-toggle="tooltip" title="Return to Home" href={{ url_for('projects.index') }}>Drone Video Measure</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarCollapse">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link" data-toggle="tooltip" title="Return to Home" href={{ url_for('projects.index') }}><i class="fas fa-home"></i> Home</a>
-        </li>
-        {% block add_navbar %}
+    <div class="container-lg">
+      <a class="navbar-brand" href="{{ url_for('home.index') }}">Drone Video Measure</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" data-toggle="tooltip" title="Return to Home" href={{ url_for('home.index') }}><i class="fas fa-home"></i> Home</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" data-toggle="tooltip" title="GO to Projects" href={{ url_for('projects.projects') }}><i class="fas fa-folder-open"></i> Projects</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" data-toggle="tooltip" title="Go to Drones" href={{ url_for('drones.drones') }}><i class="fas fa-plane"></i> Drones</a>
+          </li>
+          {% block add_navbar %}
+          {% endblock %}
+        </ul>
+        {% block navbar_end %}
         {% endblock %}
-      </ul>
-      {% block navbar_end %}
-      {% endblock %}
+      </div>
     </div>
-  </div>
   </nav>
 </header>
 {% endblock %}

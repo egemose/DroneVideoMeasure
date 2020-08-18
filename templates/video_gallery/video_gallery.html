@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block navbar_end %}
+<form class="form-inline mt-2 mt-md-0">
+  <input id="filter_videos" data-toggle="tooltip" title="Search by name for a video" class="form-control" type="text" placeholder="Search" aria-label="Search">
+</form>
+{% endblock %}
+
+{% block content %}
+{% include 'video_gallery/remove_video_modal.html' %}
+<div class="card-columns">
+  {% for video in videos %}
+  <div class="collapse show">
+    <div class="card border-dark mb-3">
+      {% if not (video.task or video.task_error) %}
+      <a href="{{ url_for('videos.video', video_id=video.id) }}">
+      {% endif %}
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <h5 class="card-title">{{ video.name }}</h5>
+            {% if video.task %}
+            <div class="spinner-border ml-auto task-status" data-toggle="tooltip" data-task-id="{{ video.task.id }}" data-video-url="{{ url_for('videos.video', video_id=video.id) }}" data-image-url="{{ url_for('data', filename=video.image) }}" title="Callibrating Camera" role="status" aria-hidden="true"></div>
+            {% endif %}
+            {% if video.task_error %}
+            <span style="color: crimson;" class="ml-auto" data-toggle="tooltip" title="{{ video.task_error }}">
+              <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      {% if not (video.task or video.task_error) %}
+      </a>
+      {% endif %}
+      {% if video.image %}
+      <img src="{{ url_for('data', filename=video.image) }}" class="card-img">
+      {% endif %}
+      <div class="card-img-overlay d-flex align-items-end justify-content-end" style="top: 61px">
+        <div class="btn-group">
+          {% if video.task or video.task_error %}
+          <button type="button" data-toggle="tooltip" title="Open video" class="btn btn-primary disabled"><i class="far fa-folder-open"></i> Open</button>
+          {% else %}
+          <button type="button" data-toggle="tooltip" title="Open video" class="btn btn-primary" onclick="window.location.href='{{ url_for('videos.video', video_id=video.id) }}'"><i class="far fa-folder-open"></i> Open</button>
+          {% endif %}
+          <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <div class="dropdown-menu">
+            {% if not (video.task or video.task_error) %}
+            <a class="dropdown-item" data-toggle="tooltip" title="Download annotations for video" href="{{ url_for('video_gallery.download', video_id=video.id, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
+            <div class="dropdown-divider"></div>
+            {% endif %}
+            <a class="dropdown-item" data-toggle="modal" data-target="#remove_video_modal" data-video="{{ video.name }}" data-link="{{ url_for('video_gallery.remove_video', video_id=video.id) }}" href="#"><i class="far fa-trash-alt"></i> Remove</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% if videos|length > 1 %}
+  <div class="collapse show">
+    <a href="{{ url_for( 'video_gallery.concat_videos', project_id=project_id) }}" data-toggle="tooltip" title="Concatenate videos if the drone has split it into multiple files">
+      <div class="card border-dark mb-3">
+        <div class="card-header">
+          <h5 class="card-title"><i class="fas fa-file-video"></i> Concatenate videos</h5>
+        </div>
+      </div>
+    </a>
+  </div>
+  {% endif %}
+  <div class="collapse show">
+    <a href="{{ url_for('video_gallery.upload', project_id=project_id) }}" data-toggle="tooltip" title="Upload more videos">
+      <div class="card border-dark mb-3">
+        <div class="card-header">
+          <h5 class="card-title"><i class="fas fa-plus"></i> Add Videos</h5>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+  $(document).ready(function() {
+    // Looping through all image elements
+    $("img").each(function() {
+      var element = $(this);
+      $.ajax({
+        url: $(this).attr('src'),
+        type: 'get',
+        async: false,
+        error: function(response) {
+          var replace_src = "{{ url_for('static', filename='missing.png') }}";
+          // Again check the default image
+          $.ajax({
+            url: replace_src,
+            type: 'get',
+            async: false,
+            success: function() {
+              $(element).attr('src', replace_src);
+            },
+            error: function(response) {
+              $(element).hide();
+            }
+          });
+        }
+      });
+    });
+  });
+  $('#remove_video_modal').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget) // Button that triggered the modal
+    var video = button.data('video') // Extract info from data-* attributes
+    var link = button.data('link')
+    var modal = $(this)
+    modal.find('.modal-title').text('Delete ' + video)
+    modal.find('.modal-body p').text('You are about to delete ' + video + '. are you sure?')
+    modal.find('.modal-footer a').attr('href', link)
+  });
+  $('#filter_videos').on('input', function(event) {
+    var input = $(this);
+    var text = input.val();
+    var regex = RegExp(text);
+    $('.card').each(function() {
+      project = $(this).find('.card-title').text();
+      if (regex.test(project)) {
+        $(this).parent().collapse('show');
+      } else {
+        $(this).parent().collapse('hide');
+      }
+    });
+  });
+  $(document).keypress(function(event) {
+    if (event.key == 'Enter') {
+      if (event.target = $('#filter_videos')) {
+        return false;
+      }
+    }
+  });
+  $('.task-status').each(function() {
+    task_id = $(this).data('task-id');
+    status_url = '/videos/status/' + task_id;
+    update_progress(status_url, this);
+  });
+
+  function update_progress(status_url, status_element) {
+    $.getJSON(status_url, function(data) {
+      if (data['state'] != 'PENDING' && data['state'] != 'PROCESSING') {
+        if (data['state'] == 'SUCCESS') {
+          var image_url = $(status_element).data('image-url');
+          var video_url = $(status_element).data('video-url');
+          $(status_element).parents('.card').find('img').attr('src', image_url);
+          $(status_element).parents('.card-header').wrap('<a href="' + video_url + '"></a>"');
+          $(status_element).parents('.card').find('.disabled').removeClass('disabled');
+          $(status_element).remove();
+        } else {
+          var error_element = '<span style="color: crimson;" class="ml-auto" data-toggle="tooltip" title="' + data['status'] + '"><i class="fas fa-exclamation-triangle fa-2x"></i></span>';
+          $(status_element).replaceWith(error_element);
+        }
+      } else {
+        // rerun in 2 seconds
+        setTimeout(function() {
+          update_progress(status_url, status_element);
+        }, 2000);
+      }
+    });
+  }
+</script>
+{% endblock %}

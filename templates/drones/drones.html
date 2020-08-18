@@ -1,10 +1,5 @@
 {% extends 'base.html' %}
 
-{% block add_navbar %}
-<li class="nav-item active">
-  <a class="nav-link" href="#" data-toggle="modal" data-target="#create_new_drone_modal"><i class="fas fa-plus"></i> Add Drone</a>
-</li>
-{% endblock %}
 {% block navbar_end %}
 <form class="form-inline mt-2 mt-md-0">
   <input id="filter_drones" data-toggle="tooltip" title="Search by name for drones" class="form-control" type="text" placeholder="Search" aria-label="Search">
@@ -20,32 +15,49 @@
   <div class="collapse show">
     <div class="card border-dark mb-3">
       <div class="card-header">
+        <div class="d-flex align-items-center">
           <h5 class="card-title">{{ drone.name }}</h5>
+          {% if drone.task %}
+          <div class="spinner-border ml-auto task-status" data-toggle="tooltip" data-task-id="{{ drone.task.id }}" title="Callibrating Camera" role="status" aria-hidden="true"></div>
+          {% endif %}
+          {% if drone.task_error %}
+          <span style="color: crimson;" class="ml-auto" data-toggle="tooltip" title="{{ drone.task_error }}">
+            <i class="fas fa-exclamation-triangle fa-lg"></i>
+          </span>
+          {% endif %}
+        </div>
       </div>
-      <div class="card-body text-right">
-        <p class="card-text text-left">{{ drone.description }}</p>
-        {% if drone.task %}
-        <a class="btn btn-primary task-status disabled" data-toggle="tooltip" data-task-id="{{ drone.task.id }}" data-link="{{ url_for('drones.view_calibration', drone_id=drone.id) }}" title="Calibrating camera" href="#"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Calibrating Camera</a>
-        {% elif drone.calibration %}
-        <a class="btn btn-primary" data-toggle="tooltip" title="View camera calibration" href="{{ url_for('drones.view_calibration', drone_id=drone.id) }}"><i class="fas fa-check-square"></i> View Calibration</a>
-        {% else %}
-        <a class="btn btn-primary" data-toggle="tooltip" title="Calibrate camera to complete drone setup" href="{{ url_for('drones.add_calibration', drone_id=drone.id) }}"><i class="fas fa-camera"></i> Calibrate Camera</a>
-        {% endif %}
-        <div class="btn-group">
+      <div class="card-body clearfix">
+        <p class="card-text">{{ drone.description }}</p>
+        <div class="btn-group float-right">
           <a class="btn btn-primary" data-toggle="modal" data-target="#edit_drone_modal" data-drone="{{ drone.name }}" data-drone_id="{{ drone.id }}" data-camera_settings="{{ drone.description }}" href="#"><i class="far fa-edit"></i> Edit</a>
           <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
           <div class="dropdown-menu">
+            {% if drone.calibration %}
+            <a data-toggle="tooltip" title="View camera calibration details" class="dropdown-item" href="{{ url_for('drones.view_calibration', drone_id=drone.id) }}"><i class="fas fa-eye"></i> View Camera Calibration</a>
             <a data-toggle="tooltip" title="Redo the camera calibration with new data" class="dropdown-item" href="{{ url_for('drones.add_calibration', drone_id=drone.id) }}"><i class="fas fa-camera"></i> Redo Camera Calibration</a>
+            {% else %}
+            <a data-toggle="tooltip" title="Redo the camera calibration with new data" class="dropdown-item" href="{{ url_for('drones.add_calibration', drone_id=drone.id) }}"><i class="fas fa-camera"></i> Camera Calibration</a>
+            {% endif %}
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" data-toggle="modal" data-target="#remove_drone_modal" data-drone="{{ drone.name }}" data-link="{{ url_for('drones.remove_drone', drone_id=drone.id) }}" href="#"><i class="far fa-trash-alt"></i>Remove</a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#remove_drone_modal" data-drone="{{ drone.name }}" data-link="{{ url_for('drones.remove_drone', drone_id=drone.id) }}" href="#"><i class="far fa-trash-alt"></i> Remove</a>
           </div>
         </div>
       </div>
     </div>
   </div>
   {% endfor %}
+  <div class="collapse show">
+    <a href="#" data-toggle="modal" data-target="#create_new_drone_modal">
+      <div class="card border-dark mb-3">
+        <div class="card-header">
+          <h5 class="card-title"><i class="fas fa-plus"></i> Add Drone</h5>
+        </div>
+      </div>
+    </a>
+  </div>
 </div>
 {% endblock %}
 
@@ -99,19 +111,19 @@
     update_progress(status_url, this);
   });
 
-  function update_progress(status_url, status_link) {
+  function update_progress(status_url, status_element) {
     $.getJSON(status_url, function(data) {
       if (data['state'] != 'PENDING' && data['state'] != 'PROCESSING') {
         if (data['state'] == 'SUCCESS') {
-          calibration_link = $(status_link).data('link');
-          $(status_link).attr('href', calibration_link);
-          $(status_link).removeClass('disabled');
-          $(status_link).html('<i class="fas fa-check-square"></i> View Calibration')
+          $(status_element).remove();
+        } else {
+          var error_element = '<span style="color: crimson;" class="ml-auto" data-toggle="tooltip" title="' + data['status'] + '"><i class="fas fa-exclamation-triangle fa-lg"></i></span>';
+          $(status_element).replaceWith(error_element);
         }
       } else {
         // rerun in 2 seconds
         setTimeout(function() {
-          update_progress(status_url, status_link);
+          update_progress(status_url, status_element);
         }, 2000);
       }
     });

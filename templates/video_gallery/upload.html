@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block head %}
+  {{ super() }}
+  {{ dropzone.load_css() }}
+  {{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 400px;') }}
+{% endblock %}
+
+{% block body %}
+{{ dropzone.load_js() }}
+  {{ super() }}
+{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+      <div class="row justify-content-between">
+        <div class="col-auto mx-auto text-center">
+          <h1>Upload videos to {{ project_name }}</h1>
+          <p>When the upload is done, videos are converted in the background and the status can be seen in the project.</p>
+        </div>
+      </div>
+      {{ dropzone.create(action=url_for('video_gallery.upload', project_id=project_id)) }}
+      {{ dropzone.config() }}
+      <div class="row justify-content-end">
+        <div class="col">
+          <a href="{{ url_for('video_gallery.video_gallery', project_id=project_id) }}" class="btn btn-primary float-right" id="upload_done" role="button">
+            <i class="fas fa-images"></i> Convert videos
+          </a>
+        </div>
+      </div>
+    </div>
+{%- endblock %}

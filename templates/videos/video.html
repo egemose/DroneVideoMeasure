@@ -3,6 +3,8 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.css" type="text/css" />
+<link rel="stylesheet" href="{{ url_for('node_modules', filename='jstree-bootstrap-theme/dist/themes/proton/style.min.css }}" type="text/css" />
+<script type="text/javascript" src="{{ url_for('node_modules', filename='jstree-bootstrap-theme/dist/jstree.min.js }}"></script>
 <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.min.js"></script>
 <script type="text/javascript">
@@ -11,16 +13,20 @@
 </script>
 {% endblock %}
 
-{% block navbar %}
-<!--remove navbar -->
-{% endblock %}
+{% block body_attribs %}
+style="margin-bottom: 0px; height: 100vh;"
+{% endblock body_attribs %}
 
 {% block before_content %}
-<!-- remove container -->
+<div class="container-fluid h-100" style="padding-bottom: 60px;">
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      {{utils.flashed_messages(messages, dismissible=True)}}
+    {% endif %}
+  {% endwith %}
 {% endblock %}
 
 {% block content %}
-{% include 'videos/video_controls.html' %}
 {% include 'videos/optionsModal.html' %}
 {% include 'videos/line_width_modal.html' %}
 {% include 'videos/new_name_modal.html' %}
@@ -31,44 +37,40 @@
   <source src="{{ url_for('data', filename = video.file) }}" type="video/mp4">
 </video>
 
-<div class="container-fluid">
-  {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-      {{utils.flashed_messages(messages, dismissible=True)}}
-    {% endif %}
-  {% endwith %}
-  <div class="row justify-content-center">
-    <div class="col-10">
-      <div id="openseadragon" class="openseadragon mx-auto"></div>
+  <div class="row pt-1 h-100">
+    <div class="video-toolbar ml-3">
+      {% include 'videos/toolbar.html' %}
     </div>
-    <div class="col-2">
+    <div class="col-9 pb-2">
+      <div class="d-flex flex-column h-100">
+        <div id="openseadragon" class="openseadragon flex-grow-1"></div>
+        {% include 'videos/video_controls.html' %}
+      </div>
+    </div>
+    <div class="col-2 d-flex flex-column px-0">
       <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-        <div class="btn-group my-1 mr-2" role="group" aria-label="group">
+        <div class="btn-group btn-group-sm mb-1" role="group" aria-label="group">
           <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Add a new name for the annotations" id="new-name" onclick="on_new_name()"><i class="fas fa-plus"></i></button>
           <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump in the video to the frame of the selected annotation" vid="jump-to-frame" onclick="jump_to_frame()"><i class="fas fa-level-down-alt"></i></button>
         </div>
       </div>
-      <div id="tree" class="tree"></div>
+      <div id="tree" class="tree flex-grow-1"></div>
     </div>
   </div>
-  <div class="collapse">
-    <div class="row justify-content-center">
-      <div class="col-10">
-        {{ plot_div | safe }}
-      </div>
-    </div>
-  </div>
-</div>
 {% endblock %}
 
 {% block after_content %}
-<!-- remove container -->
-{% endblock %}
+{{ super() }}
+<div class="container-fluid collapse show" style="max-width: 700px;">
+  <div class="plot d-flex justify-content-center">
+    {{ plot_div | safe }}
+  </div>
+</div>
+{% endblock after_content %}
 
 {% block scripts %}
 {{ super() }}
 {{ plot_script | safe }}
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.4.1/openseadragon.min.js"></script>
 <script src={{ url_for( 'static', filename='openseadragon-fabricjs-overlay.js' ) }}></script>
 <script src={{ url_for( 'static', filename='fabric.adapted.js' ) }}></script>
@@ -153,6 +155,7 @@
       $(".collapse").collapse('show')
     }
   };
+  on_show_hide_plot();
   function on_video_start_time() {
     $('#video_start_time_modal').modal('toggle');
     $('#video_start_time_input').val('{{ video_start_time.time() }}');

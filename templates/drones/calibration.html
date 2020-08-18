@@ -11,17 +11,12 @@
   {{ super() }}
 {% endblock %}
 
-{% block add_navbar %}
-<li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Return to Drones" href="{{ url_for('drones.index') }}"><i class="fas fa-plane"></i> Drones</a>
-</li>
-{% endblock %}
-
 {% block content %}
     <div class="jumbotron">
       <div class="row justify-content-between">
         <div class="col-auto mx-auto text-center">
-          <h1>Upload images/video with a checkerboard</h1>
+          <h1>Camera Calibration</h1>
+          <h3>Upload images/video with a checkerboard</h3>
         </div>
       </div>
       {{ dropzone.create(action=url_for('drones.add_calibration', drone_id=drone)) }}
@@ -45,7 +40,7 @@
 function calibrate() {
   $.post('{{ url_for("drones.do_calibration", drone_id=drone) }}', {
   }, function(data) {
-    window.location.href = '{{ url_for("drones.index") }}';
+    window.location.href = '{{ url_for("drones.drones") }}';
   });
 };
 </script>

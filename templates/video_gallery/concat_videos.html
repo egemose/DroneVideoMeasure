@@ -2,23 +2,17 @@
 
 {% block head %}
 {{ super() }}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.9.16/html5sortable.min.js" integrity="sha256-pQqGgYa7h89mF5HkKkM+WbgEdI59Ktr91ADiRogW+KU=" crossorigin="anonymous"></script>
-{% endblock %}
-
-{% block add_navbar %}
-<li class="nav-item active">
-  <a class="nav-link" href="{{ url_for('projects.video_gallery', project_id=project_id) }}"><i class="fas fa-file-video"></i> Video gallery</a>
-</li>
+<script src="{{ url_for('node_modules', filename='html5sortable/dist/html5sortable.min.js') }}"></script>
 {% endblock %}
 
 {% block content %}
-{% include 'projects/concat_modal.html' %}
+{% include 'video_gallery/concat_modal.html' %}
 <div class="row p-3">
   <div class="col">
     <h2>Drag videos</h2>
     <ul class="list-group p-3 js-sortable-copy border border-primary rounded-0" aria-dropeffect="move">
       {% for video in videos %}
-      <li class="list-group-item list-group-item-action list-group-item-dark rounded" draggable="true" role="option" aria-grabbed="false">{{ video }}</li>
+      <li class="list-group-item list-group-item-action list-group-item-dark rounded" draggable="true" role="option" aria-grabbed="false" data-video-id="{{ video.id }}">{{ video.name }}</li>
       {% endfor %}
     </ul>
   </div>
@@ -40,7 +34,7 @@
   sortable('.js-sortable-copy', {
     forcePlaceholderSize: true,
     placeholderClass: 'list-group-item',
-    copy: true,
+    copy: false,
     acceptFrom: false,
   });
   sortable('.js-sortable-copy-target', {
@@ -55,13 +49,13 @@
     var obj = sortable('.js-sortable-copy-target', 'serialize')[0];
     var data = [];
     $.each(obj.items, function(index, value) {
-      data.push(value.node.innerText);
+      data.push($(value.node).data('video-id'));
     });
-    $.post('{{ url_for("projects.do_concat_videos", project_id=project_id) }}', {
+    $.post('{{ url_for("video_gallery.do_concat_videos", project_id=project_id) }}', {
       videos: JSON.stringify(data),
       output_name: output_name,
     }, function(data) {
-      window.location.href = '{{ url_for("projects.video_gallery", project_id=project_id) }}';
+      window.location.href = '{{ url_for("video_gallery.video_gallery", project_id=project_id) }}';
     });
   };
 </script>

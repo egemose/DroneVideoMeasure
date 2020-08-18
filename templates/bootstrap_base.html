@@ -12,7 +12,7 @@
 
     {%- block styles %}
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('node_modules', filename='bootstrap/dist/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='colorpicker/bootstrap-colorpicker.css') }}" />
     {%- endblock styles %}
     {%- endblock head %}
@@ -36,13 +36,13 @@
     {% endblock after_content %}
 
     {% block scripts %}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="{{ url_for('node_modules', filename='jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('node_modules', filename='popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ url_for('node_modules', filename='/bootstrap/dist/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='colorpicker/bootstrap-colorpicker.js') }}"></script>
     <script type="text/javascript">
     $(function () {
-      $('[data-toggle="tooltip"]').attr('data-delay', '{"show":"2000", "hide":"500"}');
+      $('[data-toggle="tooltip"]').attr('data-delay', '{"show":"500", "hide":"0"}');
       $('[data-toggle="tooltip"]').tooltip();
     })
     </script>
@@ -51,9 +51,9 @@
     <footer class="footer">
       <div class="container">
         <span class="text-muted">
-          <a class="text-left" data-toggle="tooltip" title="See which version you are running" href="{{ url_for('misc.version') }}" >Version</a>
-           | 2019 &copy; Henrik Dyrberg Egemose, SDU UAS Center
-          <a class="float-right" data-toggle="tooltip" title="Download the log files for debug use" href="{{ url_for('misc.download_logs') }}" >Download logs</a>
+          <a class="text-left" data-toggle="tooltip" title="See which version you are running" href="{{ url_for('home.version') }}" >Version</a>
+           | 2019 &copy; Henrik Dyrberg Egemose
+          <a class="float-right" data-toggle="tooltip" title="Download the log files for debug use" href="{{ url_for('home.download_logs') }}" >Download logs</a>
         </span>
       </div>
     </footer>

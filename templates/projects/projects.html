@@ -1,24 +1,5 @@
 {% extends 'base.html' %}
 
-{% block head %}
-  {{ super() }}
-  {{ dropzone.load_css() }}
-  {{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 100px;') }}
-{% endblock %}
-
-{% block body %}
-{{ dropzone.load_js() }}
-  {{ super() }}
-{% endblock %}
-
-{% block add_navbar %}
-<li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Drones" href="{{ url_for('drones.index') }}"><i class="fas fa-plane"></i> Drones</a>
-</li>
-<li class="nav-item active">
-  <a class="nav-link" href="#" data-toggle="modal" data-target="#create_new_project_modal"><i class="fas fa-plus"></i> Add Project</a>
-</li>
-{% endblock %}
 {% block navbar_end %}
 <form class="form-inline mt-2 mt-md-0">
   <input id="filter_projects" data-toggle="tooltip" title="Search for a project by title" class="form-control" type="text" placeholder="Search" aria-label="Search">
@@ -33,21 +14,39 @@
   {% for project in projects %}
   <div class="collapse show">
     <div class="card border-dark mb-3">
-      <div class="card-header">
-        <a href="{{ url_for('projects.video_gallery', project_id=project.id) }}">
+      {% if not project.log_error %}
+      <a href="{{ url_for('video_gallery.video_gallery', project_id=project.id) }}">
+      {% endif %}
+        <div class="card-header">
+          <div class="d-flex align-items-center">
           <h5 class="card-title text-primary">{{ project.name }}</h5>
-        </a>
-      </div>
+          {% if project.log_error %}
+          <span style="color: crimson;" class="ml-auto" data-toggle="tooltip" title="{{ project.log_error}}">
+            <i class="fas fa-exclamation-triangle fa-lg"></i>
+          </span>
+          {% endif %}
+          </div>
+        </div>
+      {% if not project.log_error %}
+      </a>
+      {% endif %}
       <div class="card-body text-right">
         <p class="card-text text-left">{{ project.description }}</p>
         <div class="btn-group">
-          <button type="button" data-toggle="tooltip" title="Open the project" class="btn btn-primary" onclick="window.location.href='{{ url_for('projects.video_gallery', project_id=project.id) }}'"><i class="far fa-folder-open"></i> Open</button>
+          {% if project.log_error %}
+          <button type="button" data-toggle="tooltip" title="Open the project" class="btn btn-primary" disabled><i class="far fa-folder-open"></i> Open</button>
+          {% else %}
+          <button type="button" data-toggle="tooltip" title="Open the project" class="btn btn-primary" onclick="window.location.href='{{ url_for('video_gallery.video_gallery', project_id=project.id) }}'"><i class="far fa-folder-open"></i> Open</button>
+          {% endif %}
           <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
           <div class="dropdown-menu">
+            <a class="dropdown-item" data-toggle="modal" data-target="#edit_project_modal" data-project="{{ project.name }}" data-project-id="{{ project.id }}" data-description="{{ project.description }}" data-drone-id="{{ project.drone_id }}" href="#"><i class="far fa-edit"></i> Edit</a>
+            {% if project.log_file %}
             <a class="dropdown-item" data-toggle="tooltip" title="Download all annotations" href="{{ url_for('projects.download', project_id=project.id, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
-            <a class="dropdown-item" data-toggle="modal" data-target="#edit_project_modal" data-project="{{ project.name }}" data-project="{{ project.id }}" data-description="{{ project.description }}" href="#"><i class="far fa-edit"></i> Edit</a>
+            <a class="dropdown-item" data-toggle="tooltip" title="Show a plot of the drone log" href="{{ url_for( 'projects.plot_log', project_id=project.id) }}"><i class="fas fa-chart-area"></i> Plot Log file</a>
+            {% endif %}
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" data-toggle="modal" data-target="#remove_project_modal" data-project="{{ project.name }}" data-link="{{ url_for('projects.remove_project', project_id=project.id) }}" href="#"><i class="far fa-trash-alt"></i>
               Remove</a>
@@ -57,6 +56,26 @@
     </div>
   </div>
   {% endfor %}
+  <div class="collapse show">
+    {% if drones|length > 0 %}
+    <a href="#" data-toggle="modal" data-target="#create_new_project_modal">
+    {% endif %}
+      <div class="card border-dark mb-3 disabled">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <h5 class="card-title"><i class="fas fa-plus"></i> Add Project</h5>
+            {% if drones|length == 0 %}
+            <span style="color: crimson;" class="ml-auto" data-toggle="tooltip" title="A drone needs to be added and calibrated first">
+              <i class="fas fa-exclamation-triangle fa-lg"></i>
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% if drones|length > 0 %}
+    </a>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
 
@@ -76,13 +95,15 @@
     var button = $(event.relatedTarget) // Button that triggered the modal
     var project = button.data('project') // Extract info from data-* attributes
     var description = button.data('description')
-    var project_id = button.data('project_id')
+    var project_id = button.data('project-id')
+    var drone_id = button.data('drone-id')
     var modal = $(this)
     modal.find('.modal-title').text('Edit ' + project)
     $('#edit_name').attr('value', project)
     $('#edit_description').text(description)
     $('#edit_project_before').attr('value', project)
     $('#edit_project_id').attr('value', project_id)
+    $('#edit_drone').val(drone_id)
   });
   $('#filter_projects').on('input', function(event) {
     var input = $(this)

@@ -9,17 +9,11 @@
 </script>
 {% endblock %}
 
-{% block add_navbar %}
-<li class="nav-item active">
-  <a class="nav-link" data-toggle="tooltip" title="Return to Video Gallery" href="{{ url_for('projects.video_gallery', project_id=project_id) }}"><i class="fas fa-images"></i>Video gallery</a>
-</li>
-{% endblock %}
-
 {% block before_content %}
 {% endblock before_content %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid" style="max-width: 700px;">
   <div class="plot d-flex justify-content-center">
     {{ plot_div | safe }}
   </div>

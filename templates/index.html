@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-between" style="margin-top: 30px">
+  <div class="col-8">
+    <h1 class="text-center"> Drone Video Measure </h1>
+    <p>
+    Drone Video Measure (DVM) is a open source tool to retrive usefull infomation from drone logs and videos.
+    </p>
+  </div>
+  <div class="col-3">
+    <a href="{{ url_for('projects.projects') }}">
+    <h2 class="text-center" style="margin-bottom: 1rem"> Projects </h2>
+    </a>
+    {% if projects|length > 0 %}
+    {% for project in projects %}
+    <a href="{{ url_for('video_gallery.video_gallery', project_id=project.id) }}">
+      <div class="card border-dark mb-3">
+        <div class="card-header">
+          <h5 class="card-title">{{ project.name }}</h5>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+    {% else %}
+    <p>No projects added yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+  $('#filter_projects').on('input', function(event) {
+    var input = $(this)
+    var text = input.val()
+    var regex = RegExp(text)
+    $('.card').each(function() {
+      project = $(this).find('.card-title').text()
+      if (regex.test(project)) {
+        $(this).parent().collapse('show')
+      } else {
+        $(this).parent().collapse('hide')
+      }
+    })
+  });
+  $(document).keypress(function(event) {
+    if (event.key == 'Enter') {
+      if (event.target = $('#filter_projects')) {
+        return false;
+      }
+    }
+  });
+</script>
+{% endblock %}

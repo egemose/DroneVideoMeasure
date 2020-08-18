@@ -1,0 +1,22 @@
+<div class="btn-group-vertical btn-group-sm mb-1 toolbar-group" id="toolbar">
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Zoom in" id="zoom-in"><i class="fas fa-search-plus"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Zoom out" id="zoom-out"><i class="fas fa-search-minus"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Return to normal zoom" id="expand"><i class="fas fa-expand"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Toggle annotation mode on/off" id="draw-mode" onclick="VideoAnnotator.toggle_draw()" data-toggle="button" aria-pressed="false"><i class="fas fa-edit"></i></button>
+</div>
+<div class="btn-group-vertical btn-group-sm mb-1 toolbar-group" id="colorpicker">
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Save all annotations" id="save" onclick="VideoAnnotator.save('{{ url_for('videos.save_fabric_json', video_id=video.id) }}')"><i class="fas fa-save"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Undo the last annotation" id="undo" onclick="VideoAnnotator.on_undo()"><i class="fas fa-undo"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Redo the last undo" id="redo" onclick="VideoAnnotator.on_redo()"><i class="fas fa-redo"></i></button>
+  <input type="hidden" class="form-control" value="rgb(255, 0, 0)" />
+  <button type="button" class="btn btn-secondary colorpicker-input-addon" data-toggle="tooltip" title="Change color of a selected annotation" id="color_button" disabled><i></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Change the draw size of a selected annotation" id="line_width" onclick="VideoAnnotator.on_line_width()" disabled><i class="fas fa-pen"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Remove the selected annotation" id="remove" onclick="VideoAnnotator.remove()" disabled><i class="fas fa-eraser"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Remove ALL annotations" id="clear" onclick="VideoAnnotator.clear()"><i class="fas fa-trash"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Change the default color and draw size of annotations" id="options" onclick="VideoAnnotator.on_default()"><i class="fas fa-cog"></i></button>
+</div>
+<div class="btn-group-vertical btn-group-sm toolbar-group">
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Show an artificial horizon in the video to see match with drone log" id="show_hide_horizon" onclick="VideoAnnotator.toggle_horizon()" data-toggle="button" aria-pressed="false"><i class="fas fa-compass"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Show a plot of the drone log under the video" id="show_hide_plot" onclick="on_show_hide_plot()"><i class="fas fa-chart-area"></i></button>
+  <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Change the start time of the video in the drone log" id="video_start_time" onclick="on_video_start_time()"><i class="fas fa-clock"></i></button>
+</div>
