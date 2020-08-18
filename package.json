@@ -1,0 +1,19 @@
+{
+  "name": "dvm",
+  "version": "1.0.0",
+  "author": "Henrik Dyrberg Egemose",
+  "description": "Drone Video Measure",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/egemose/DroneVideoMeasure.git"
+  },
+  "dependencies": {
+    "jquery": "^3.5.1",
+    "popper.js": "^1.16.0",
+    "bootstrap": "^4.4.1",
+    "@fortawesome/fontawesome-free": "^5.12.1",
+    "html5sortable": "^0.9.16",
+    "jstree-bootstrap-theme": "^1.0.1"
+  }
+}

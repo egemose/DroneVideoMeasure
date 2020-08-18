@@ -1,13 +1,13 @@
 import flask_wtf
 import wtforms
-from flask_wtf.file import FileField, FileRequired
+from flask_wtf.file import FileField
 
 
 class NewProjectForm(flask_wtf.FlaskForm):
     name = wtforms.fields.StringField(u'Project Name', validators=[wtforms.validators.DataRequired()])
     description = wtforms.fields.TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
     drone = wtforms.fields.SelectField(u'Drone', coerce=int)
-    log_file = FileField(u'Drone log', validators=[FileRequired()])
+    log_file = FileField(u'Drone log')
     submit = wtforms.fields.SubmitField(u'Add Project')
 
 

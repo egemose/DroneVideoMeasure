@@ -1,11 +1,16 @@
 FROM python:3.6 as base
-RUN apt-get update && apt-get install -y \
+RUN curl -sL https://deb.nodesource.com/setup_13.x | bash - \
+&& apt-get update && apt-get install -y \
     ffmpeg \
+    nodejs \
 && rm -rf /var/lib/apt/lists/*
 
 FROM base
-COPY ./requirements.txt /app/requirements.txt
+COPY ./package.json /package.json
+RUN npm install
+RUN find . -depth -name @* -type d -exec bash -c 'mv $0 ${0/@/}' {} \;
 WORKDIR /app
+COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 COPY . /app
 RUN chmod u+x ./entrypoint.sh

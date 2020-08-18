@@ -16,11 +16,11 @@ run(){
 }
 
 display_help() {
-	echo "Usage: $0 [options] {start|stop|rebuild|update|remove}" >&2
+	echo "Usage: $0 [options] {start|stop|build|update|shell|remove}" >&2
 	echo
 	echo "   start                Start DVM"
 	echo "   stop                 Stop DVM"
-	echo "   rebuild              Rebuild the Docker image if changes where made to the code"
+	echo "   build              Rebuild the Docker image if changes where made to the code"
   echo "   update               Get the latest version of DVM from github"
 	echo "   shell                Start a bash shell inside the docker container"
 	echo "   remove               Remove Docker images and volumes belonging to DVM"

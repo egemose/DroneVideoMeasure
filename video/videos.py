@@ -37,16 +37,6 @@ def get_horizon_dict():
 horizon_dict = get_horizon_dict()
 
 
-@videos_view.route('/<project_id>/plot')
-def plot_log(project_id):
-    project = Project.query.get_or_404(project_id)
-    log_file = os.path.join(data_dir, project.log_file)
-    drone_log.get_log_data(log_file)
-    plot_script, plot_div = plot_log_data.get_log_plot(drone_log.log_data())
-    logger.debug(f'Render video plot for {project_id}')
-    return flask.render_template('videos/plot.html', plot_div=plot_div, plot_script=plot_script, project_id=project_id)
-
-
 @videos_view.route('/<video_id>/annotate')
 def video(video_id):
     logger.debug(f'Video called with video: {video_id}')
@@ -58,6 +48,7 @@ def video(video_id):
     drone_log.get_log_data(log_file)
     drone_log.set_video_data(video.duration, video.frames, (video.width, video.height), (video.latitude, video.longitude))
     fov.set_image_size(*drone_log.video_size)
+    json_data = video.json_data if video.json_data is str else '{}'
     video_start_time = video.start_time
     if video_start_time:
         drone_log.video_start_time = video_start_time
@@ -70,7 +61,7 @@ def video(video_id):
     plot_script, plot_div = plot_log_data.get_log_plot_with_video(drone_log.log_data(), video_start_time, drone_log.video_duration, drone_log.video_nb_frames)
     args = dict(project_id=project.id,
                 video=video,
-                json_data=json.loads(video.json_data),
+                json_data=json.loads(json_data),
                 plot_script=plot_script,
                 plot_div=plot_div,
                 video_width=drone_log.video_size[0],

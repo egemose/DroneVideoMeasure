@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 import glob
 import logging
-from collections import namedtuple
 from calibration.corner_detector import ChessBoardCornerDetector
 
 logger = logging.getLogger('app.' + __name__)
@@ -62,8 +61,10 @@ class CalibrateCamera:
                     if coverage > self.min_percentage_coverage:
                         obj_points_list.append(obj_points)
                         img_points_list.append(img_points)
-                        count += int(num_frames / num_images)
-                        cap.set(1, count)
+                    else:
+                        num_images = num_images + 1 if num_images < 30 else 30
+                    count += int(num_frames / num_images)
+                    cap.set(1, count)
                 else:
                     break
             cap.release()

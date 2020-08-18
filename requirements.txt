@@ -1,5 +1,4 @@
 Flask>=1.0.2
-Flask-Bootstrap>=3.3.7.1
 Flask_Dropzone>=1.5.3
 Flask_Obscure>=1.0
 Flask_WTF>=0.14.2
@@ -19,4 +18,4 @@ redis>=3.4.1
 flask-sqlalchemy>=2.4.1
 flask-migrate>=2.5.2
 Flask-Script>=2.0.6
-psycopg2>=2.8.4 
+psycopg2>=2.8.4

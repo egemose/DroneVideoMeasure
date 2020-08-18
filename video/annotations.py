@@ -63,7 +63,7 @@ class Annotations:
                     name = obj.get('name')
                     frame = obj.get('frame')
                     length = self._get_length(obj)
-                    text = f'Line; Frame: {frame}, Length: {length:.2f}m'
+                    text = f'<span>Line; Frame: {frame}, Length: {length:.2f}m</span>'
                 elif obj.get('type') == 'FramePoint':
                     name = obj.get('name')
                     frame = obj.get('frame')

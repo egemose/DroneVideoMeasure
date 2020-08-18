@@ -1,23 +1,31 @@
 import os
-import flask
 import logging
+import flask
+from app_config import Project, Drone, data_dir
 from zipfile import ZipFile
-from app_config import data_dir
+
 
 logger = logging.getLogger('app.' + __name__)
+home_view = flask.Blueprint('home', __name__)
 
-misc_view = flask.Blueprint('misc', __name__)
+
+@home_view.route('/', methods=['GET', 'POST'])
+def index():
+    logger.debug(f'Render index')
+    projects = Project.query.all()
+    drones = Drone.query.all()
+    return flask.render_template('index.html', projects=projects, drones=drones)
 
 
-@misc_view.route('/version')
+@home_view.route('/version')
 def version():
     with open('version.txt') as version_file:
-            ver = version_file.read()
+        ver = version_file.read()
     logger.debug(f'Render version')
-    return flask.render_template('misc/version.html', version=ver)
+    return flask.render_template('version.html', version=ver)
 
 
-@misc_view.route('/download_logs')
+@home_view.route('/download_logs')
 def download_logs():
     logger.debug(f'Downloading logs')
     log_dir = os.path.join(data_dir, 'logs')

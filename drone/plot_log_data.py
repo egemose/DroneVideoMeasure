@@ -12,7 +12,7 @@ logger = logging.getLogger('app.' + __name__)
 def get_log_plot(log_data):
     logger.debug(f'Getting log plot')
     height_plot, yaw_plot, pitch_plot, roll_plot = _get_log_plots(log_data)
-    grid = gridplot([[height_plot, yaw_plot], [pitch_plot, roll_plot]])
+    grid = gridplot([height_plot, yaw_plot, pitch_plot, roll_plot], ncols=1, sizing_mode="scale_width")
     script, div = components(grid)
     return script, div
 
@@ -49,7 +49,7 @@ def get_log_plot_with_video(log_data, video_start, video_duration, video_frames)
     yaw_plot.js_on_event('tap', callback)
     pitch_plot.js_on_event('tap', callback)
     roll_plot.js_on_event('tap', callback)
-    grid = gridplot([[height_plot, yaw_plot], [pitch_plot, roll_plot]])
+    grid = gridplot([height_plot, yaw_plot, pitch_plot, roll_plot], ncols=1, sizing_mode="scale_width")
     script, div = components(grid)
     return script, div
 

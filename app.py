@@ -1,10 +1,11 @@
 import os
 import logging.handlers
 from flask import Flask, send_from_directory
-from projects import projects_view
+from projects.projects import projects_view
+from projects.video_gallery import video_gallery_view
 from video.videos import videos_view
-from misc import misc_view
 from drone.drones import drones_view
+from home import home_view
 from app_config import AppConfig, data_dir, dropzone, obscure, make_celery, db, migrate
 from flask_script import Manager
 from flask_migrate import MigrateCommand
@@ -22,13 +23,18 @@ logger.addHandler(fh)
 
 
 def serve_data_file(filename):
-    return send_from_directory(os.path.join('data'), filename)
+    return send_from_directory(os.path.join('data'), os.path.split(filename)[-1])
+
+
+def serve_node_modules(filename):
+    return send_from_directory(os.path.join('..', '/node_modules'), filename)
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(AppConfig)
     app.add_url_rule('/data/<path:filename>', endpoint='data', view_func=serve_data_file)
+    app.add_url_rule('/node_modules/<path:filename>', endpoint='node_modules', view_func=serve_node_modules)
     dropzone.init_app(app)
     obscure.init_app(app)
     celery = make_celery(app)
@@ -36,8 +42,9 @@ def create_app():
     migrate.init_app(app, db)
     app.register_blueprint(projects_view)
     app.register_blueprint(videos_view)
-    app.register_blueprint(misc_view)
     app.register_blueprint(drones_view)
+    app.register_blueprint(home_view)
+    app.register_blueprint(video_gallery_view)
     manager = Manager(app)
     manager.add_command('db', MigrateCommand)
     return manager, app, celery

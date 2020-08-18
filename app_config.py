@@ -8,6 +8,10 @@ from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 
 
+class TaskFailure(Exception):
+    pass
+
+
 class AppConfig:
     SECRET_KEY = secrets.token_hex(32)
     WTF_CSRF_SECRET_KEY = secrets.token_hex(32)
@@ -60,9 +64,10 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), unique=True, nullable=False)
     description = db.Column(db.Text())
-    log_file = db.Column(db.String(), nullable=False)
+    log_file = db.Column(db.String(), nullable=True)
     drone_id = db.Column(db.Integer, db.ForeignKey('drone.id'), nullable=False)
     videos = db.relationship('Video', backref='project', lazy=True)
+    log_error = db.Column(db.String(), nullable=True)
 
     def __repr__(self):
         return f'<Project {self.name}>'
@@ -83,6 +88,7 @@ class Video(db.Model):
     start_time = db.Column(db.DateTime())
     json_data = db.Column(db.String())
     task = db.relationship('Task', backref='Video', lazy=True, uselist=False)
+    task_error = db.Column(db.String(), nullable=True)
 
     def __repr__(self):
         return f'<Video {self.file}>'
@@ -95,6 +101,7 @@ class Drone(db.Model):
     calibration = db.Column(db.PickleType())
     projects = db.relationship('Project', backref='drone', lazy=True)
     task = db.relationship('Task', backref='Drone', lazy=True, uselist=False)
+    task_error = db.Column(db.String(), nullable=True)
 
     def __repr__(self):
         return f'<Drone {self.name}>'
