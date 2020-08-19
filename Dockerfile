@@ -8,7 +8,7 @@ RUN curl -sL https://deb.nodesource.com/setup_13.x | bash - \
 FROM base
 COPY ./package.json /package.json
 RUN npm install
-RUN find . -depth -name @* -type d -exec bash -c 'mv $0 ${0/@/}' {} \;
+RUN find . -depth -readable -name @* -type d -exec bash -c 'mv $0 ${0/@/}' {} \; | return 0
 WORKDIR /app
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
