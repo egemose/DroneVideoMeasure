@@ -2,8 +2,8 @@
 
 {% block head %}
 {{ super() }}
-<link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.css" type="text/css" />
-<script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.2.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('node_modules', filename='bokehjs/build/css/bokeh.min.css') }}" type="text/css" />
+<script type="text/javascript" src="{{ url_for('node_modules', filename='bokehjs/build/js/bokeh.min.js') }}"></script>
 <script type="text/javascript">
   Bokeh.set_log_level("info");
 </script>
