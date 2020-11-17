@@ -14,7 +14,7 @@ services:
   worker:
     build: .
     container_name: dvm_worker
-    command: celery worker -A app.celery --loglevel=warn -c 1
+    command: celery -A app.celery worker --loglevel=WARNING -c 1
     volumes:
       - appmedia:/app/data
     depends_on:
