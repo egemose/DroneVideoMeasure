@@ -50,11 +50,11 @@ class Annotations:
                 else:
                     continue
                 if name not in parents:
-                    parent = {'id': name, 'parent': '#', 'text': name}
+                    parent = {'id': name, 'parent': '#', 'text': name, 'icon': 'far fa-folder'}
                     self.tree_json.append(parent)
                     parents.add(name)
-                node = {'id': idx, 'parent': name, 'text': text}
+                node = {'id': idx, 'parent': name, 'text': text, 'icon': '-'}
                 idx += 1
                 self.tree_json.append(node)
         if not self.tree_json:
-            self.tree_json.append({'id': 'Doodles', 'parent': '#', 'text': 'Doodles'})
+            self.tree_json.append({'id': 'Doodles', 'parent': '#', 'text': 'Doodles', 'icon': 'far fa-folder'})

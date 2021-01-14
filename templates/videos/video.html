@@ -177,8 +177,7 @@ style="margin-bottom: 0px; height: 100vh;"
     add_name(name);
     $('#new_name_modal').modal('toggle');
   };
-
-  var tree_data = [{ "id" : "1", "parent" : "#", "text" : "Doodles" },]
+  var tree_data = [{ "id" : "1", "parent" : "#", "text" : "Doodles", "icon": "far fa-folder"},]
   $('#tree').jstree({
       'plugins': ['wholerow'],
       'core': {
@@ -216,7 +215,7 @@ style="margin-bottom: 0px; height: 100vh;"
     };
   });
   function add_name(name) {
-    id = $('#tree').jstree('create_node', '#', {text: name}, 'last', false, false);
+    id = $('#tree').jstree('create_node', '#', {'id': name, 'text': name, 'icon': 'far fa-folder'}, 'last', false, false);
     $('#tree').jstree('deselect_all', true)
     $('#tree').jstree('select_node', id)
 
