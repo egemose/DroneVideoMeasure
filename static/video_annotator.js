@@ -107,6 +107,7 @@ class video_annotator {
         stroke: self.default_stroke,
         strokeWidth: self.default_line_width,
         hasRotatingPoint: false,
+        perPixelTargetFind: true,
         frame: current_frame,
         name: self.current_name,
       });
