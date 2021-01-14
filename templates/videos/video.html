@@ -227,6 +227,7 @@ style="margin-bottom: 0px; height: 100vh;"
       tree_data = data;
       $('#tree').jstree(true).refresh(true);
       $('#tree').jstree('select_node', current_node);
+      VideoAnnotator.save('{{ url_for('videos.save_fabric_json', video_id=video.id) }}');
       });
   };
   markings_modified(JSON.stringify(VideoAnnotator.overlay.fabricCanvas()));
