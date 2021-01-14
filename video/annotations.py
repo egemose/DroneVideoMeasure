@@ -5,35 +5,12 @@ import logging
 logger = logging.getLogger('app.' + __name__)
 
 
-class Annotation:
-    def __init__(self, text):
-        self.text = text
-        self.nodes = []
-
-
 class Annotations:
     def __init__(self, drone_log, fov):
         logger.debug(f'Creating Annotations instance: {self}')
         self.drone_log = drone_log
         self.fov = fov
-        self.parents = []
-
-    def add_parent(self, name):
-        logger.debug(f'Adding parent: {name} to {self}')
-        parent = Annotation(name)
-        self.parents.append(parent)
-
-    def add_node(self, text, parent_name):
-        logger.debug(f'Adding node: {text} to parent: {parent_name} of {self}')
-        p = self.get_parent(parent_name)
-        node = Annotation(text)
-        p.nodes.append(node)
-
-    def get_parent(self, name):
-        for p in self.parents:
-            if p.text == name:
-                return p
-        return None
+        self.tree_json = []
 
     def _get_length(self, obj):
         log_data = self.drone_log.get_log_data_from_frame(obj.get('frame'))
@@ -54,7 +31,9 @@ class Annotations:
         return length
 
     def from_fabric_json(self, fabric_json):
-        self.parents = []
+        parents = set()
+        idx = 0
+        self.tree_json = []
         json_dict = json.loads(fabric_json)
         objects = json_dict.get('objects')
         if objects:
@@ -70,18 +49,12 @@ class Annotations:
                     text = f'Point; Frame: {frame}'
                 else:
                     continue
-                parent = self.get_parent(name)
-                if not parent:
-                    self.add_parent(name)
-                self.add_node(text, name)
-
-    def to_json(self):
-        json_obj = []
-        for p in self.parents:
-            node_list = []
-            for node in p.nodes:
-                node_dict = {'text': node.text}
-                node_list.append(node_dict)
-            p_dict = {'text': p.text, 'nodes': node_list}
-            json_obj.append(p_dict)
-        return json_obj
+                if name not in parents:
+                    parent = {'id': name, 'parent': '#', 'text': name}
+                    self.tree_json.append(parent)
+                    parents.add(name)
+                node = {'id': idx, 'parent': name, 'text': text}
+                idx += 1
+                self.tree_json.append(node)
+        if not self.tree_json:
+            self.tree_json.append({'id': 'Doodles', 'parent': '#', 'text': 'Doodles'})

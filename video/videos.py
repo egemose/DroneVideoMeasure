@@ -84,18 +84,13 @@ def save_fabric_json(video_id):
     return ''
 
 
-@videos_view.route('/add_marking', methods=['POST'])
-def add_marking():
-    logger.debug(f'add_marking called')
-    global annotation_class
-    add_name = flask.request.form.get('add_name')
-    if add_name == 'true':
-        name = flask.request.form.get('name')
-        annotation_class.add_parent(name)
-    else:
-        fabric_json = flask.request.form.get('fabric_json')
-        annotation_class.from_fabric_json(fabric_json)
-    return flask.jsonify(annotation_class.to_json())
+@videos_view.route('/markings_modified', methods=['POST'])
+def markings_modified():
+    logger.debug(f'markings_modified called')
+    fabric_json = flask.request.form.get('fabric_json')
+    annotation_class.from_fabric_json(fabric_json)
+    return flask.jsonify(annotation_class.tree_json)
+
 
 
 @videos_view.route('/get_horizon_fabricjs', methods=['POST'])
