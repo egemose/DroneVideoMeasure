@@ -141,8 +141,8 @@ def get_all_annotations(project, pro_version):
     fov.set_camera_params(*drone.calibration)
     drone_log.get_log_data(project.log_file)
     for video in project.videos:
-        with open(video.annotation_file, 'r') as fp:
-            json_data = json.load(fp)
+        json_data = json.loads(video.json_data)
+        objects = json_data['objects']
         objects = json_data['objects']
         drone_log.set_video_data(video.duration, video.frames, (video.width, video.height), (video.latitude, video.longitude))
         fov.set_image_size(*drone_log.video_size)
