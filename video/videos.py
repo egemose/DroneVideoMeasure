@@ -48,7 +48,7 @@ def video(video_id):
     drone_log.get_log_data(log_file)
     drone_log.set_video_data(video.duration, video.frames, (video.width, video.height), (video.latitude, video.longitude))
     fov.set_image_size(*drone_log.video_size)
-    json_data = video.json_data if video.json_data is str else '{}'
+    json_data = video.json_data if type(video.json_data) is str else '{}'
     video_start_time = video.start_time
     if video_start_time:
         drone_log.video_start_time = video_start_time
