@@ -30,7 +30,7 @@ services:
     image: redis:alpine
     container_name: dvm_redis
   db:
-    image: postgres:alpine
+    image: postgres:12-alpine
     container_name: dvm_db
     volumes:
       - type: volume
