@@ -3,23 +3,23 @@
 A tool to measure and track things on a planar surface.
 Developed to measure and track marine mammals in the surface of the ocean.
 
-* [Getting Started](#getting-started)
-  * [Using a Docker-hub image](#using-a-docker-hub-image-the-easy-way)
-  * [Manual install](#manual-install)
-  * [Usage](#usage)
-  * [Author](#author)
-  * [License](#license)
+- [Getting Started](#getting-started)
+  - [Manual install](#manual-install)
+- [Usage](#usage)
+- [Supported Drones](#supported-drones)
+- [Author](#author)
+- [License](#license)
 
 ## Getting Started
 
 ### Manual install
 
-* Install the following applications:
-  * [Git](https://git-scm.com/downloads)
-  * [Docker](https://www.docker.com/)
-  * [Docker-compose](https://docs.docker.com/compose/install/) (only on Linux)
+- Install the following applications:
+  - [Git](https://git-scm.com/downloads)
+  - [Docker](https://www.docker.com/)
+  - [Docker-compose](https://docs.docker.com/compose/install/) (only on Linux)
 
-* From Powershell (windows) or command line (Mac / Linux), type:
+- From Powershell (windows) or command line (Mac / Linux):
 
 ```bash
 git clone https://github.com/egemose/DroneVideoMeasure.git
@@ -27,28 +27,28 @@ cd DroneVideoMeasure
 ./dvm.sh start
 ```
 
-* Open a Web Browser at `http://localhost:5000`
-  * If Drone Video Measure appears all is set and up and running.
+- Open a Web Browser at `http://localhost:5000`
+  - If Drone Video Measure appears all is set and up and running.
 
-* To stop Drone Video Measure, type:
+- To stop Drone Video Measure:
 
 ```bash
 ./dvm.sh stop
 ```
 
-* To rebuild Drone Video Measure, type:
+- To build Drone Video Measure if changes is made to the code:
 
 ```bash
-./dvm.sh rebuild
+./dvm.sh build
 ```
 
-* To update Drone Video Measure, type:
+- To update Drone Video Measure:
 
 ```bash
 ./dvm.sh update
 ```
 
-* To uninstall Drone Video Measure, type:
+- To uninstall Drone Video Measure:
 
 ```bash
 ./dvm.sh remove
@@ -56,13 +56,13 @@ cd DroneVideoMeasure
 
 And delete the DroneVideoMeasure directory.
 
-* On Windows data is stored in a Docker volume and will persist even when DVM is closed. To remove the data, type:
+- On Windows data is stored in a Docker volume and will persist even when DVM is closed. To remove the data:
 
 ```bash
 docker volume rm appmedia
 ```
 
-* On Mac / Linux data is stored in the data directory and can be removed simply by deleting it.
+- On Mac / Linux data is stored in the data directory and can be removed simply by deleting it.
 
 ## Usage
 
@@ -72,7 +72,7 @@ Demo data is available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.36
 
 ## Supported Drones
 
-* DJI
+- DJI
 
 Currently only flight logs from DJI drones are supported. If you what support for other drones please create a issue with a flight log attached.
 
