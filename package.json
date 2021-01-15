@@ -9,13 +9,13 @@
     "url": "git+https://github.com/egemose/DroneVideoMeasure.git"
   },
   "dependencies": {
-    "jquery": "^3.5.1",
-    "popper.js": "^1.16.0",
-    "bootstrap": "^4.4.1",
-    "@fortawesome/fontawesome-free": "^5.12.1",
-    "html5sortable": "^0.9.16",
-    "jstree-bootstrap-theme": "^1.0.1",
-    "openseadragon": "^2.4.2",
-    "bokehjs": "1.0.1"
+    "jquery": "3.5.1",
+    "popper.js": "1.16.1",
+    "bootstrap": "4.5.3",
+    "@fortawesome/fontawesome-free": "5.12.1",
+    "html5sortable": "0.9.16",
+    "jstree-bootstrap-theme": "1.0.1",
+    "openseadragon": "2.4.2",
+    "bokehjs": "1.0.2"
   }
 }
