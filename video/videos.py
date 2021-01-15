@@ -77,7 +77,6 @@ def video(video_id):
 def save_fabric_json(video_id):
     logger.debug(f'Saving annotations to json file for {video_id}')
     json_data = flask.request.form.get('fabric_json')
-    print(json_data)
     video = Video.query.get_or_404(video_id)
     video.json_data = json_data
     db.session.commit()
