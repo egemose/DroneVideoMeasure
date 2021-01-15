@@ -18,7 +18,7 @@
           <div class="d-flex align-items-center">
             <h5 class="card-title">{{ video.name }}</h5>
             {% if video.task %}
-            <div class="spinner-border ml-auto task-status" data-toggle="tooltip" data-task-id="{{ video.task.id }}" data-video-url="{{ url_for('videos.video', video_id=video.id) }}" data-image-url="{{ url_for('data', filename=video.image) }}" title="Callibrating Camera" role="status" aria-hidden="true"></div>
+            <div class="spinner-border ml-auto task-status" data-toggle="tooltip" data-task-id="{{ video.task.id }}" data-video-url="{{ url_for('videos.video', video_id=video.id) }}" data-image-url="{{ url_for('data', filename=video.image.split('/')[-1]) }}" title="Callibrating Camera" role="status" aria-hidden="true"></div>
             {% endif %}
             {% if video.task_error %}
             <span style="color: crimson;" class="ml-auto" data-toggle="tooltip" title="{{ video.task_error }}">
@@ -31,7 +31,7 @@
       </a>
       {% endif %}
       {% if video.image %}
-      <img src="{{ url_for('data', filename=video.image) }}" class="card-img">
+      <img src="{{ url_for('data', filename=video.image.split('/')[-1]) }}" class="card-img">
       {% endif %}
       <div class="card-img-overlay d-flex align-items-end justify-content-end" style="top: 61px">
         <div class="btn-group">

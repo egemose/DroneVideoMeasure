@@ -33,7 +33,7 @@ style="margin-bottom: 0px; height: 100vh;"
 {% include 'videos/change_video_start_time_modal.html' %}
 
 <video id="video" muted="" class="canvas-img" width={{ video_width }} height={{ video_height }} preload="auto" style="display: none">
-  <source src="{{ url_for('data', filename = video.file) }}" type="video/mp4">
+  <source src="{{ url_for('data', filename = video.file.split('/')[-1]) }}" type="video/mp4">
 </video>
 
   <div class="row pt-1 h-100">
