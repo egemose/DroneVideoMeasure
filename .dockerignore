@@ -2,6 +2,7 @@
 .git
 .gitignore
 .idea
+.vscode
 *.pyc
 /data/
 /example-data/
