@@ -79,6 +79,7 @@ class video_annotator {
     var self = this;
     this.viewer = OpenSeadragon({
       id: "openseadragon",
+      prefixUrl: "/node_modules/openseadragon/build/openseadragon/images/",
       toolbar: toolbar_id,
       zoomInButton: "zoom-in",
       zoomOutButton: "zoom-out",
