@@ -70,7 +70,7 @@
     var link = button.data('link')
     var modal = $(this)
     modal.find('.modal-title').text('Delete ' + drone)
-    modal.find('.modal-body p').text('You are about to delete ' + drone + '. are you sure?')
+    modal.find('.modal-body p').text('You are about to delete ' + drone + '. are you sure? This will also delete every project where the drone is used!')
     modal.find('.modal-footer a').attr('href', link)
   });
   $('#edit_drone_modal').on('show.bs.modal', function(event) {

@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from forms import NewDroneForm, EditDroneForm
-from app_config import data_dir, celery, Drone, Task, db, TaskFailure
+from app_config import Project, data_dir, celery, Drone, Task, db, TaskFailure
 from calibration.calibration import CalibrateCamera
 
 logger = logging.getLogger('app.' + __name__)
@@ -162,6 +162,21 @@ def remove_drone(drone_id):
         task = eval(task_db.function + '.AsyncResult("' + task_db.task_id + '")')
         task.revoke(terminate=True)
         db.session.delete(task_db)
+    for project in drone.projects:
+        project_db = Project.query.get_or_404(project.id)
+        remove_file(project_db.log_file)
+        for video in project_db.videos:
+            remove_file(video.file)
+            remove_file(video.image)
+            db.session.delete(video)
+        db.session.delete(project_db)
     db.session.delete(drone)
     db.session.commit()
     return flask.redirect(flask.url_for('drones.drones'))
+
+def remove_file(file):
+    if file:
+        try:
+            os.remove(file)
+        except FileNotFoundError:
+            pass
