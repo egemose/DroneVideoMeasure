@@ -20,8 +20,8 @@ display_help() {
 	echo
 	echo "   start                Start DVM"
 	echo "   stop                 Stop DVM"
-	echo "   build              Rebuild the Docker image if changes where made to the code"
-  echo "   update               Get the latest version of DVM from github"
+	echo "   build                Rebuild the Docker image if changes where made to the code"
+  	echo "   update               Get the latest version of DVM from github"
 	echo "   shell                Start a bash shell inside the docker container"
 	echo "   remove               Remove Docker images and volumes belonging to DVM"
 	echo
