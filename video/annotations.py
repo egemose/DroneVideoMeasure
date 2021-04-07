@@ -18,13 +18,10 @@ class Annotations:
         x2 = obj.get('x2')
         y1 = obj.get('y1')
         y2 = obj.get('y2')
-        direction = (x1 < 0 and y1 < 0) or (x2 < 0 and y2 < 0)
-        if direction:
-            image_point1 = (obj.get('left'), obj.get('top'))
-            image_point2 = (obj.get('left') + obj.get('width'), obj.get('top') + obj.get('height'))
-        else:
-            image_point1 = (obj.get('left') + obj.get('width'), obj.get('top'))
-            image_point2 = (obj.get('left'), obj.get('top') + obj.get('height'))
+        xoffset = obj.get('left') + obj.get('width') / 2
+        yoffset = obj.get('top') + obj.get('height') / 2
+        image_point1 = (x1 + xoffset, y1 + yoffset)
+        image_point2 = (x2 + xoffset, y2 + yoffset)
         wp1 = self.fov.get_world_point(image_point1, *log_data[1:])
         wp2 = self.fov.get_world_point(image_point2, *log_data[1:])
         length = np.sqrt((wp1[0] - wp2[0]) ** 2 + (wp1[1] - wp2[1]) ** 2)
