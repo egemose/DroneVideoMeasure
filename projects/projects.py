@@ -5,6 +5,7 @@ import random
 import logging
 import flask
 import numpy as np
+import math
 from drone.drone_log_data import drone_log
 from forms import NewProjectForm, EditProjectForm
 from drone.fov import fov
@@ -126,8 +127,14 @@ def save_annotations_csv(annotations, filename):
     logger.debug(f'Saving annotations in {filename}')
     with open(filename, 'w') as fp:
         csv_writer = csv.writer(fp, delimiter=',')
-        header = ('name', 'time', 'length', 'lat', 'lon', 'east', 'north', 'zone number', 'zone letter',
-                  'image_x', 'image_y', 'video', 'project', 'pro. version')
+        header = ('name', 'time', 'length', 
+                'lat', 'lon', 
+                'east', 'north', 'zone number', 'zone letter',
+                'image_x', 'image_y', 
+                'start_east', 'start_north', 
+                'end_east', 'end_north', 
+                'heading', 
+                'video', 'project', 'pro. version')
         csv_writer.writerow(header)
         for annotation in annotations:
             if annotation:
@@ -183,7 +190,10 @@ def get_frame_obj_data(obj):
     else:
         return None
     pos = fov.convert_utm(wp[0], wp[1], zone)
-    annotation = [name, log_data[0], length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1], image_point[0], image_point[1]]
+    dx = wp2[0] - wp1[0]
+    dy = wp2[1] - wp1[1]
+    heading = 180 / math.pi * math.atan2(dx, dy)
+    annotation = [name, log_data[0], length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1], image_point[0], image_point[1], wp1[0], wp1[1], wp2[0], wp2[1], heading]
     return annotation
 
 
