@@ -205,16 +205,22 @@ def get_frame_obj_data(obj):
     name = obj.get('name')
     log_data = drone_log.get_log_data_from_frame(obj.get('frame'))
     if obj['type'] == 'FrameLine':
-        direction = (obj.get('x1') < 0 and obj.get('y1') < 0) or (obj.get('x2') < 0 and obj.get('y2') < 0)
-        if direction:
+        if obj.get('x1') < 0 and obj.get('y1') < 0:
             image_point1 = (obj.get('left'), obj.get('top'))
             image_point2 = (obj.get('left') + obj.get('width'), obj.get('top') + obj.get('height'))
-        else:
+        elif obj.get('x2') < 0 and obj.get('y2') < 0:
+            image_point1 = (obj.get('left') + obj.get('width'), obj.get('top') + obj.get('height'))
+            image_point2 = (obj.get('left'), obj.get('top'))
+        elif obj.get('x1') < 0 and obj.get('y1') > 0:
+            image_point1 = (obj.get('left'), obj.get('top') + obj.get('height'))
+            image_point2 = (obj.get('left') + obj.get('width'), obj.get('top'))
+        elif obj.get('x1') > 0 and obj.get('y1') < 0:
             image_point1 = (obj.get('left') + obj.get('width'), obj.get('top'))
             image_point2 = (obj.get('left'), obj.get('top') + obj.get('height'))
         image_point = ((image_point1[0] + image_point2[0]) / 2, (image_point1[1] + image_point2[1]) / 2)
         wp1, zone = fov.get_world_point(image_point1, *log_data[1:], return_zone=True)
         wp2 = fov.get_world_point(image_point2, *log_data[1:])
+        # use wp1 and wp2 to calc heading. wp1 is the start click and wp2 is where the click ends. 
         wp = ((wp1[0] + wp2[0]) / 2, (wp1[1] + wp2[1]) / 2)
         length = np.sqrt((wp1[0] - wp2[0]) ** 2 + (wp1[1] - wp2[1]) ** 2)
     elif obj['type'] == 'FramePoint':
