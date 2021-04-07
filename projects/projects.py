@@ -163,13 +163,14 @@ def get_frame_obj_data(obj):
     name = obj.get('name')
     log_data = drone_log.get_log_data_from_frame(obj.get('frame'))
     if obj['type'] == 'FrameLine':
-        direction = (obj.get('x1') < 0 and obj.get('y1') < 0) or (obj.get('x2') < 0 and obj.get('y2') < 0)
-        if direction:
-            image_point1 = (obj.get('left'), obj.get('top'))
-            image_point2 = (obj.get('left') + obj.get('width'), obj.get('top') + obj.get('height'))
-        else:
-            image_point1 = (obj.get('left') + obj.get('width'), obj.get('top'))
-            image_point2 = (obj.get('left'), obj.get('top') + obj.get('height'))
+        x1 = obj.get('x1')
+        x2 = obj.get('x2')
+        y1 = obj.get('y1')
+        y2 = obj.get('y2')
+        xoffset = obj.get('left') + obj.get('width') / 2
+        yoffset = obj.get('top') + obj.get('height') / 2
+        image_point1 = (x1 + xoffset, y1 + yoffset)
+        image_point2 = (x2 + xoffset, y2 + yoffset)
         image_point = ((image_point1[0] + image_point2[0]) / 2, (image_point1[1] + image_point2[1]) / 2)
         wp1, zone = fov.get_world_point(image_point1, *log_data[1:], return_zone=True)
         wp2 = fov.get_world_point(image_point2, *log_data[1:])
