@@ -133,9 +133,9 @@ def remove_project(project_id):
     return flask.redirect(flask.url_for('projects.projects'))
 
 
-def remove_file(file):
-    if file:
+def remove_file(f):
+    if f:
         try:
-            os.remove(file)
+            os.remove(f)
         except FileNotFoundError:
             pass
