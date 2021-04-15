@@ -33,6 +33,7 @@ fabric.FramePoint = fabric.util.createClass(fabric.Circle, {
 
 fabric.FramePoint.fromObject = function(object, callback) {
   object.hasControls = false;
+  object.perPixelTargetFind = true;
   var frame_point = new fabric.FramePoint(object);
   callback && callback(frame_point);
 };
