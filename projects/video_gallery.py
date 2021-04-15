@@ -18,18 +18,18 @@ video_gallery_view = flask.Blueprint('video_gallery', __name__)
 @video_gallery_view.route('/videos/<project_id>/upload', methods=['GET', 'POST'])
 def upload(project_id):
     if flask.request.method == 'POST':
-        for key, file in flask.request.files.items():
+        for key, file_obj in flask.request.files.items():
             if key.startswith('file'):
-                video_file = os.path.join(data_dir, get_random_filename(file.filename.rsplit('.', 1)[0] + '.mp4'))
+                video_file = os.path.join(data_dir, get_random_filename(file_obj.filename.rsplit('.', 1)[0] + '.mp4'))
                 video_mime_type = re.compile('video/*')
-                if video_mime_type.match(file.mimetype):
-                    temp_filename = get_random_filename(file.filename)
+                if video_mime_type.match(file_obj.mimetype):
+                    temp_filename = get_random_filename(file_obj.filename)
                     logger.debug(f'Uploading file: {video_file}')
                     temp_file = os.path.join(data_dir, temp_filename)
-                    file.save(temp_file)
+                    file_obj.save(temp_file)
                     logger.debug(f'Upload done for file: {video_file}')
                     logger.debug(f'Calling celery to convert file: {temp_filename} and save as {video_file}')
-                    video = Video(file=video_file, name=file.filename, project_id=project_id, image=video_file + '.jpg')
+                    video = Video(file=video_file, name=file_obj.filename, project_id=project_id, image=video_file + '.jpg')
                     db.session.add(video)
                     db.session.commit()
                     task = convert_after_upload_task.apply_async(args=(temp_file, video.file))
