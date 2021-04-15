@@ -57,15 +57,22 @@ fabric.FrameLine = fabric.util.createClass(fabric.Line, {
     if (this.get('frame') == current_frame) {
       this.selectable = true;
       this.evented = true;
-      this.callSuper('_render', ctx);
-      ctx.fillStyle = 'red';
+      ctx.fillStyle = this.stroke;
       var p = this.calcLinePoints();
       ctx.beginPath();
-      var radius = 20;
+      var radius = 10;
       var start_angle = 0;
       var end_angle = 2 * Math.PI;
       ctx.arc(p.x1, p.y1, radius, start_angle, end_angle);
       ctx.fill();
+      var headlen = 30;
+      var angle = Math.atan2(p.y2-p.y1,p.x2-p.x1);
+      ctx.moveTo(p.x2, p.y2);
+      ctx.lineTo(p.x2-headlen*Math.cos(angle-Math.PI/6),p.y2-headlen*Math.sin(angle-Math.PI/6));
+      ctx.moveTo(p.x2, p.y2);
+      ctx.lineTo(p.x2-headlen*Math.cos(angle+Math.PI/6),p.y2-headlen*Math.sin(angle+Math.PI/6));
+      ctx.stroke();
+      this.callSuper('_render', ctx);
     } else {
       this.selectable = false;
       this.evented = false;
