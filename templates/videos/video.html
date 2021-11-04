@@ -51,6 +51,7 @@ style="margin-bottom: 0px; height: 100vh;"
         <div class="btn-group btn-group-sm mb-1" role="group" aria-label="group">
           <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Add a new name for the annotations" id="new-name" onclick="on_new_name()"><i class="fas fa-plus"></i></button>
           <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump in the video to the frame of the selected annotation" vid="jump-to-frame" onclick="jump_to_frame()"><i class="fas fa-level-down-alt"></i></button>
+          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump 50 frames ahead in the video" vid="jump-to-frame" onclick="jump_to_frame_50_frames_ahead()"><i class="fas fa-forward"></i></button>
         </div>
       </div>
       <div id="tree" class="tree flex-grow-1">
@@ -143,6 +144,13 @@ style="margin-bottom: 0px; height: 100vh;"
       console.log("Jumping to frame: " + target_frame);
       VideoAnnotator.video.seekTo({frame: target_frame});
       };
+    };
+  };
+  function jump_to_frame_50_frames_ahead() {
+    if (VideoAnnotator.jump_frame != 'null') {
+      var target_frame = VideoAnnotator.video.get() + 50;
+      console.log("Jumping to frame: " + target_frame);
+      VideoAnnotator.video.seekTo({frame: target_frame});
     };
   };
 
