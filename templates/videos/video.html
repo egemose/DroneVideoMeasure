@@ -139,7 +139,9 @@ style="margin-bottom: 0px; height: 100vh;"
         VideoAnnotator.video.seekTo({frame: 1});
         VideoAnnotator.video.seekBackward(1);
       } else {
-      VideoAnnotator.video.seekTo({frame: VideoAnnotator.jump_frame});
+      var target_frame = VideoAnnotator.jump_frame;
+      console.log("Jumping to frame: " + target_frame);
+      VideoAnnotator.video.seekTo({frame: target_frame});
       };
     };
   };
