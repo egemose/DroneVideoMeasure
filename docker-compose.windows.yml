@@ -4,7 +4,7 @@ services:
     build: .
     image: dvm
     container_name: dvm_app
-    command: gunicorn -b 0.0.0.0:5000 -k gevent -t 10000 "app:app"
+    command: ./entrypoint.sh
     ports:
       - "5000:5000"
     volumes:
