@@ -24,7 +24,15 @@ To get the flight logs from a DJI drone the following guide can be used.
 
 - [HOW TO: Retrieve DJI Phantom Flight Logs from an Apple Device](https://www.phantomhelp.com/tips/how-to-retrieve-dji-go-flight-logs-from-itunes.29)
 
-The flight log needs to be converted to csv format and can be done by uploading the flight log to [PhantomHelp](https://www.phantomhelp.com/LogViewer/Upload/) and Downloading the verbose csv. The verbose version is needed since the normal version lack video timestamps.
+The flight log needs to be converted to csv format before they can be used by the Drone Video Measure software. 
+Earlier that conversion could be done by uploading the flight log to [PhantomHelp](https://www.phantomhelp.com/LogViewer/Upload/) and Downloading the verbose csv. The verbose version is needed since the normal version lack video timestamps.
+Currently PhantomHelp does not support the export of "verbose csv".
+
+An alternative way of converting the logfiles to CSV the windows program `TXTlogToCSVtool.exe` which can be downloaded from
+[https://phantompilots.com](https://phantompilots.com/threads/tool-win-offline-txt-flightrecord-to-csv-converter.70428/).
+
+
+
 
 ## Using the Program
 
