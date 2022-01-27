@@ -129,6 +129,12 @@ style="margin-bottom: 0px; height: 100vh;"
     $('#line_width_modal').modal('toggle')
     return false;
   });
+  $('#video_time_stamp').change(function(e) {
+    var timestamp_string = $('#video_time_stamp')[0].value;
+    VideoAnnotator.video.seekTo({
+      milliseconds: Number(timestamp_string) * 1000
+    });
+  });
   $('#video_seek').click(function(e) {
     VideoAnnotator.video.seekTo({
       frame: (e.offsetX / this.offsetWidth) * {{ num_frames }}

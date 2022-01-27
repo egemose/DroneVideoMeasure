@@ -249,6 +249,8 @@ class video_annotator {
       var progress = current_frame / this.num_frames * 100 + '%';
       $('#video_seek').find('.progress-bar').css('width', progress);
       $('#video_seek').find('.progress-bar').html(this.video.toTime());
+      // Show the video time as 32.1
+      $('#video_time_stamp')[0].value = ((this.video.toMilliseconds()) / 1000).toFixed(2);
       this.draw_horizon();
     } else {
       this.overlay.fabricCanvas().renderAll();
