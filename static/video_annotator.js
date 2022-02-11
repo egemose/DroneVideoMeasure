@@ -60,7 +60,7 @@ fabric.FrameLine = fabric.util.createClass(fabric.Line, {
       ctx.fillStyle = this.stroke;
       var p = this.calcLinePoints();
       ctx.beginPath();
-      var radius = 10;
+      var radius = 1;
       var start_angle = 0;
       var end_angle = 2 * Math.PI;
       ctx.arc(p.x1, p.y1, radius, start_angle, end_angle);
