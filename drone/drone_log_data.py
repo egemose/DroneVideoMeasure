@@ -42,7 +42,9 @@ class DroneLog:
             row = next(reader)
             for idx in indexes:
                 if idx not in row.keys():
+                    logger.debug(f'Could not locate the column { idx } in the uploaded logfile')
                     return False
+            logger.debug(f'Found all expected columns in the log file')
             return True
 
     def get_log_data(self, log):
@@ -61,6 +63,7 @@ class DroneLog:
         latitude_idx = 'OSD.latitude'
         longitude_idx = 'OSD.longitude'
         remove_null_bytes(log)
+        number_of_parsed_lines = 0
         with open(log, encoding='iso8859_10') as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
@@ -79,9 +82,11 @@ class DroneLog:
                         longitude = float(row[longitude_idx])
                         self.pos.append((latitude, longitude))
                         self.is_video.append(True if row[is_video_idx] else False)
-                    except ValueError:
-                        logger.debug(f'Row skipped because of value error.')
+                    except ValueError as VE:
+                        logger.debug(f'Row skipped because of value error ({ VE }).')
                         continue
+                    number_of_parsed_lines += 1
+        logger.debug(f'Number of parsed lines: { number_of_parsed_lines }')
 
     def get_video_data(self, project, video_file):
         logger.debug(f'Reading video data for video {video_file} in {project}')
