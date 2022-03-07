@@ -51,22 +51,33 @@ class CalibrateCamera:
         for video_file in video_files:
             cap = cv2.VideoCapture(video_file)
             num_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-            num_images = 15
+            num_images = 30
+            logger.debug(f"Number of frames in video: { num_frames }")
+            logger.debug(f"Number of images to extract: { num_images }")
             count = 0
             while cap.isOpened():
-                ret, frame = cap.read()
-                if ret:
+                # Set next frame to read
+                logger.debug(f"Next frame to extract is: { count }")
+                cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+
+                # Read frame
+                ret_val, frame = cap.read()
+                if ret_val:
+                    logger.debug(f"Examining frame { count } for calibration pattern coverage")
                     image_size = (frame.shape[1], frame.shape[0])
                     obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(frame)
                     if coverage > self.min_percentage_coverage:
+                        logger.debug(f"Calibration pattern coverage is fine ({ coverage })")
                         obj_points_list.append(obj_points)
                         img_points_list.append(img_points)
                     else:
+                        logger.debug(f"Calibration pattern coverage too low in image ({ coverage })")
                         num_images = num_images + 1 if num_images < 30 else 30
-                    count += int(num_frames / num_images)
-                    cap.set(1, count)
-                else:
-                    break
+
+                # Calculate next frame to extract
+                count += int(num_frames / num_images)
+                if(count > num_frames):
+                    break 
             cap.release()
         if obj_points_list:
             logger.debug(f'Using {len(obj_points_list)} images from video to calibrate')
