@@ -13,6 +13,7 @@ Given a matching flight log (from a DJI drone) and video of a marine animal, e.g
   - [Annotating on Video](#annotating-on-video)
     - [Artificial Compass and Flight Log Plot](#artificial-compass-and-flight-log-plot)
   - [Exporting data to csv file](#exporting-data-to-csv-file)
+  - [Typical issues](#typical-issues)
 
 ## Installation
 
@@ -169,3 +170,12 @@ All the data from a project can be downloaded by clicking "Download annotations"
 - video name, name of video file
 - project, name of project
 - pro. version, version of the program used. (only useful for debugging)
+
+
+### Typical issues
+
+Lack of free space on harddrive.
+
+Logfile was not converted before uploading it to Drone Video Measure.
+
+
