@@ -13,7 +13,7 @@ bokeh==1.0.2
 gunicorn==19.9.0
 gevent==22.10.2
 celery==5.1.2
-redis==3.4.1
+redis==4.3.4
 flask-sqlalchemy==2.4.1
 flask-migrate==2.5.2
 Flask-Script==2.0.6
