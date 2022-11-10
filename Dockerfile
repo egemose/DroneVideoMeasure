@@ -1,4 +1,4 @@
-FROM python:3.6 as base
+FROM python:3.8 as base
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - \
 && apt-get update && apt-get install -y \
     ffmpeg \
