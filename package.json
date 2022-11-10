@@ -16,6 +16,6 @@
     "html5sortable": "0.9.16",
     "jstree-bootstrap-theme": "1.0.1",
     "openseadragon": "2.4.2",
-    "bokehjs": "1.0.2"
+    "bokehjs": "1.4.0"
   }
 }

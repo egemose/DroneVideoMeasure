@@ -9,7 +9,7 @@ Werkzeug==0.16.0
 utm==0.4.2
 opencv-python==4.2.0.32
 scikit-learn==0.22
-bokeh==1.0.2
+bokeh==1.4.0
 gunicorn==19.9.0
 gevent==22.10.2
 celery==5.1.2
