@@ -28,10 +28,12 @@ services:
     image: postgres:12-alpine
     container_name: dvm_db
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
     restart: always
     environment:
       POSTGRES_PASSWORD: example
   
 volumes:
   appmedia:
+  db: 
+    driver: local
