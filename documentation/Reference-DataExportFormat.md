@@ -1,0 +1,39 @@
+When exporting annotations from a project a .csv file with a lot of details about the annotated objects will be saved. Here is a more detailed description of each of the columns in the saved file.
+- name
+	- The name of the annotation
+- time
+	- The timestamp of the frame in which the object was annotated
+- length
+	- The length of the annotated line
+- lat
+	- The **latitude** of the center of the annotation
+- lon
+	- The **longitude** of the center of the annotation
+- east
+	- The **easting** coordinate of the center of the annotation (UTM coordinate)
+- north
+	- The **northing** coordinate of the center of the annotation (UTM coordinate)
+- zone number
+	- The UTM **zone number**
+- zone letter
+	- The UTM **zone letter**
+- image_x
+	- Internal image coordinate
+- image_y
+	- Internal image coordinate
+- start_east
+	- **Easting** coordinate to the start of the drawn arrow
+- start_north
+	- **Northing** coordinate to the start of the drawn arrow
+- end_east
+	- **Easting** coordinate to the end of the drawn arrow
+- end_north
+	- **Northing** coordinate to the end of the drawn arrow
+- heading	
+	- Compas heading of the drawn arrow
+- video
+	- Name of the video file which was annotated - this is not the original filename of the video, but an internal filename
+- project
+	- Name of the project
+- pro. version
+	- The version number of the DVM program that generated the exported file

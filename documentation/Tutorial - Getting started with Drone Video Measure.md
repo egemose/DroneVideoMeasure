@@ -12,7 +12,7 @@ The dataset contains the following elements that will be used in this tutorial
 	- `DJI_0013.MOV`
 
 This tutorial assumes that you already have installed the Drone Video Measure program and opened the interface in your browser on this link http://localhost:5000. You should now see this screen. If not please consult the installation guide linked to below.
-- [Howto - Install Drone Video Measure](Howto-InstallDroneVideoMeasure).
+- [Howto - Install Drone Video Measure](Howto-InstallDroneVideoMeasure.md).
 
 ![Image](pic/main_menu.png)
 
@@ -43,7 +43,6 @@ When the calibration process is finished, you can see the calibration results by
 ![Image](pic/camera_calibration_results.png)
 
 Well done, you have now calibrated the camera in the drone. This information together with the camera orientation and altitude will be used in estimating the location and size of objects in drone videos.
-
 
 ## 2. Add a new project
 Now open the "Projects" tab and click on "Add Project".
@@ -98,4 +97,7 @@ When the annotations are completed, they can be exported as a csv (comma seperat
 
 ## Whats next?
 For more information about how to create a suitable calibration video see this howto:
-* [Howto - Record a calibration video](Howto-RecordACalibrationVideo)
+* [Howto - Record a calibration video](Howto-RecordACalibrationVideo.md)
+
+For details about the exported annotations
+- [Reference - Data export format](Reference-DataExportFormat.md)
