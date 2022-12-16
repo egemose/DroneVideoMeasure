@@ -14,7 +14,7 @@ The dataset contains the following elements that will be used in this tutorial
 This tutorial assumes that you already have installed the Drone Video Measure program and opened the interface in your browser on this link http://localhost:5000. You should now see this screen. If not please consult the installation guide linked to below.
 - [[Howto - Install Drone Video Measure]]
 
-![[main_menu.png]]
+![Image](main_menu.png)
 
 ## Overview
 To analyse the video, the following three steps should be taken.
@@ -28,19 +28,19 @@ In this step camera parameters like field of view, focal length and lens distort
 ### 1.1 Create a new drone in DVM
 Click on the "Drones" tap in the top most part and then click on the "Add Drone" button. This will open a new dialog, where information about the drone can be entered. 
 Fill out the Drone Name with "Phantom 4 Pro" and then click "Add Drone".
-![[create_new_drone.png]]
+![Image](create_new_drone.png)
 
 ### 1.2 Upload a calibration video to DVM
 Click on the small down arrow next to the "Edit" button and select "Camera calibration".  At this point the page will be changed so that you can upload the calibration movie.
 From the file explorer drag the `calibration.MOV` file onto the white rectangle and the file will be uploaded to DVM. This can take a minute or so.
-![[uploading_calibration_video.png]]
+![Image](Uploading_calibration_video.png)
 
 ### 1.3 Calibrate the camera
 When the upload is finished you can click on the "Calibration Camera" button at the lower right corner. This will start the camera calibration process. As long as the calibration process is active an animation will be shown next to the "Phantom 4 Pro" entry in the Drones tap. The camera calibration can take a few minutes. 
 
 ### 1.4 Examine the obtained results
 When the calibration process is finished, you can see the calibration results by selecting the "View Camera Calibration" option in the blue drop down menu. You will now see the following screen.
-![[camera_calibration_results.png]]
+![Image](camera_calibration_results.png)
 
 
 
