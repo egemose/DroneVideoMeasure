@@ -42,4 +42,3 @@ Example value: `55.507158`.
 ### `OSD.longitude`
 The location of the camera specified with the longitude coordinate.
 Example value: `10.717505`.
-`
