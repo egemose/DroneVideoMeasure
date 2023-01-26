@@ -18,6 +18,10 @@ def get_log_plot(log_data):
 
 
 def get_log_plot_with_video(log_data, video_start, video_duration, video_frames):
+    """
+    Arrange the log file plots and add annotations to them that shows 
+    the current time in the video and the duration of the current video.
+    """
     logger.debug(f'Getting log plot with video')
     height_plot, yaw_plot, pitch_plot, roll_plot = _get_log_plots(log_data)
     video_end_time = datetime.fromtimestamp(video_start.timestamp()+video_duration)
@@ -25,7 +29,7 @@ def get_log_plot_with_video(log_data, video_start, video_duration, video_frames)
     video_position_line1 = Span(location=video_start, dimension='height', line_color='red')
     height_plot.add_layout(video_box)
     height_plot.add_layout(video_position_line1)
-    video_box = BoxAnnotation(left=video_start, right=video_end_time, top=10, bottom=-10, fill_color='#00cc00')
+    video_box = BoxAnnotation(left=video_start, right=video_end_time, top=yaw_plot.y_range.end, bottom=yaw_plot.y_range.start, fill_color='#00cc00')
     video_position_line2 = Span(location=video_start, dimension='height', line_color='red')
     yaw_plot.add_layout(video_box)
     yaw_plot.add_layout(video_position_line2)
@@ -55,6 +59,7 @@ def get_log_plot_with_video(log_data, video_start, video_duration, video_frames)
 
 
 def _get_log_plots(log_data):
+    """Make plots for visualizing data from the drone log file."""
     time_stamp = log_data[0]
     height = log_data[1]
     yaw = _shift_yaw(log_data[2])
