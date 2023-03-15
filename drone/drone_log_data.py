@@ -86,8 +86,6 @@ class DroneLog:
         self.rotation = []
         self.pos = []
         self.is_video = []
-        indexes = ['time(millisecond)'
-, 'datetime(utc)', 'latitude', 'longitude', 'height_above_takeoff(meters)', 'altitude_above_seaLevel(meters)', 'height_sonar(meters)', 'isPhoto', 'isVideo', 'gimbal_heading(degrees)', 'gimbal_pitch(degrees)', 'gimbal_roll(degrees)', 'altitude(meters)']
         time_idx = 'datetime(utc)'
         yaw_idx = 'gimbal_heading(degrees)'
         pitch_idx = 'gimbal_pitch(degrees)'
