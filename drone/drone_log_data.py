@@ -87,6 +87,7 @@ class DroneLog:
         self.pos = []
         self.is_video = []
         time_idx = 'datetime(utc)'
+        time_milliseconds_idx = 'time(millisecond)'
         yaw_idx = 'gimbal_heading(degrees)'
         pitch_idx = 'gimbal_pitch(degrees)'
         roll_idx = 'gimbal_roll(degrees)'
@@ -96,17 +97,16 @@ class DroneLog:
         longitude_idx = 'longitude'
         remove_null_bytes(log)
         number_of_parsed_lines = 0
+        first_row = None
         with open(log, encoding='iso8859_10') as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
                 if row[time_idx]:
+                    if first_row is None:
+                        first_row = row[time_idx]
+                        date_time_first_row = datetime.strptime(row[time_idx], '%Y-%m-%d %H:%M:%S')
                     try:
-                        # TODO: take into account the "time(milisecond)" column when computing the timestamp.
-                        self.time_stamp.append(datetime.strptime(row[time_idx], '%Y-%m-%d %H:%M:%S.%f'))
-                    except ValueError:
-                        # TODO: take into account the "time(milisecond)" column when computing the timestamp.
-                        self.time_stamp.append(datetime.strptime(row[time_idx], '%Y-%m-%d %H:%M:%S'))
-                    try:
+                        self.time_stamp.append(date_time_first_row + timedelta(milliseconds = float(row[time_milliseconds_idx])))
                         self.height.append(float(row[height_idx]))
                         yaw = float(row[yaw_idx]) * np.pi / 180
                         pitch = float(row[pitch_idx]) * np.pi / 180
