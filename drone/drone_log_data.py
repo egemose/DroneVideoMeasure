@@ -34,9 +34,17 @@ class DroneLog:
 
     @staticmethod
     def test_log(log):
-        indexes = ['CUSTOM.updateTime', 'GIMBAL.yaw', 'GIMBAL.pitch', 'GIMBAL.roll', 'OSD.height [m]', 'CUSTOM.isVideo', 'OSD.latitude', 'OSD.longitude']
-        remove_null_bytes(log)
-        logger.debug(f'Opening log "{log}" to test')
+        res = DroneLog.test_log_txt_to_log_csv_file(log)
+        if res is True:
+            return True
+        res = DroneLog.test_log_air_data(log)
+        return res
+
+    @staticmethod
+    def test_log_air_data(log):
+        indexes = ['time(millisecond)', 'datetime(utc)', 'latitude', 'longitude', 'height_above_takeoff(meters)', 'altitude_above_seaLevel(meters)', 'height_sonar(meters)', 'isPhoto', 'isVideo', 'gimbal_heading(degrees)', 'gimbal_pitch(degrees)', 'gimbal_roll(degrees)', 'altitude(meters)']
+        #remove_null_bytes(log)
+        logger.debug(f'Opening log "{log}" to test - assuming it contains data from airdata.com ')
         with open(log, encoding='iso8859_10') as csv_file:
             reader = csv.DictReader(csv_file)
             row = next(reader)
@@ -44,10 +52,80 @@ class DroneLog:
                 if idx not in row.keys():
                     logger.debug(f'Could not locate the column { idx } in the uploaded logfile')
                     return False
-            logger.debug(f'Found all expected columns in the log file')
+            logger.debug(f'Found all expected columns in the log file (airdata.com format)')
+            return True
+
+    @staticmethod
+    def test_log_txt_to_log_csv_file(log):
+        indexes = ['CUSTOM.updateTime', 'GIMBAL.yaw', 'GIMBAL.pitch', 'GIMBAL.roll', 'OSD.height [m]', 'CUSTOM.isVideo', 'OSD.latitude', 'OSD.longitude']
+        remove_null_bytes(log)
+        logger.debug(f'Opening log "{log}" to test - assuming it contains data from TXTlogToCSVtool.exe')
+        with open(log, encoding='iso8859_10') as csv_file:
+            reader = csv.DictReader(csv_file)
+            row = next(reader)
+            for idx in indexes:
+                if idx not in row.keys():
+                    logger.debug(f'Could not locate the column { idx } in the uploaded logfile')
+                    return False
+            logger.debug(f'Found all expected columns in the log file (TXTlogToCSVtool.exe)')
             return True
 
     def get_log_data(self, log):
+        try: 
+            self.get_log_data_txt_to_log_csv_file(log)
+        except KeyError as e:
+            logger.debug('Encoutered issue in get_log_data - KeyError')
+            logger.debug(e)
+        self.get_log_data_air_data_com(log)
+
+
+    def get_log_data_air_data_com(self, log):
+        logger.debug(f'Getting log data for {log}')
+        self.time_stamp = []
+        self.height = []
+        self.rotation = []
+        self.pos = []
+        self.is_video = []
+        indexes = ['time(millisecond)'
+, 'datetime(utc)', 'latitude', 'longitude', 'height_above_takeoff(meters)', 'altitude_above_seaLevel(meters)', 'height_sonar(meters)', 'isPhoto', 'isVideo', 'gimbal_heading(degrees)', 'gimbal_pitch(degrees)', 'gimbal_roll(degrees)', 'altitude(meters)']
+        time_idx = 'datetime(utc)'
+        yaw_idx = 'gimbal_heading(degrees)'
+        pitch_idx = 'gimbal_pitch(degrees)'
+        roll_idx = 'gimbal_roll(degrees)'
+        height_idx = 'height_sonar(meters)'
+        is_video_idx = 'isVideo'
+        latitude_idx = 'latitude'
+        longitude_idx = 'longitude'
+        remove_null_bytes(log)
+        number_of_parsed_lines = 0
+        with open(log, encoding='iso8859_10') as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:
+                if row[time_idx]:
+                    try:
+                        # TODO: take into account the "time(milisecond)" column when computing the timestamp.
+                        self.time_stamp.append(datetime.strptime(row[time_idx], '%Y-%m-%d %H:%M:%S.%f'))
+                    except ValueError:
+                        # TODO: take into account the "time(milisecond)" column when computing the timestamp.
+                        self.time_stamp.append(datetime.strptime(row[time_idx], '%Y-%m-%d %H:%M:%S'))
+                    try:
+                        self.height.append(float(row[height_idx]))
+                        yaw = float(row[yaw_idx]) * np.pi / 180
+                        pitch = float(row[pitch_idx]) * np.pi / 180
+                        roll = float(row[roll_idx]) * np.pi / 180
+                        self.rotation.append((yaw, pitch, roll))
+                        latitude = float(row[latitude_idx])
+                        longitude = float(row[longitude_idx])
+                        self.pos.append((latitude, longitude))
+                        self.is_video.append(True if row[is_video_idx]=="1" else False)
+                    except ValueError as VE:
+                        logger.debug(f'Row skipped because of value error ({ VE }).')
+                        continue
+                    number_of_parsed_lines += 1
+        logger.debug(f'Number of parsed lines: { number_of_parsed_lines }')
+            
+
+    def get_log_data_txt_to_log_csv_file(self, log):
         logger.debug(f'Getting log data for {log}')
         self.time_stamp = []
         self.height = []
