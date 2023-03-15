@@ -14,7 +14,7 @@ scikit-learn==0.22
 bokeh==1.4.0
 gunicorn==19.9.0
 gevent==22.10.2
-celery==5.1.2
+celery==5.2.2
 redis==4.3.4
 SQLAlchemy==1.4.46
 flask-sqlalchemy==2.4.1
