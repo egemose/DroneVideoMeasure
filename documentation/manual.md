@@ -6,14 +6,14 @@ Given a matching flight log (from a DJI drone) and video of a marine animal, e.g
 - [Installation](#installation)
 - [Acquire Flight Logs](#acquire-flight-logs)
 - [Using the Program](#using-the-program)
-  - [Example data](#example-data)
-  - [Open the program](#open-the-program)
-  - [Adding and calibration of a Drone](#adding-and-calibration-of-a-drone)
-  - [Creating a Project](#creating-a-project)
-  - [Annotating on Video](#annotating-on-video)
-    - [Artificial Compass and Flight Log Plot](#artificial-compass-and-flight-log-plot)
-  - [Exporting data to csv file](#exporting-data-to-csv-file)
-  - [Typical issues](#typical-issues)
+	- [Example data](#example-data)
+	- [Open the program](#open-the-program)
+	- [Adding and calibration of a Drone](#adding-and-calibration-of-a-drone)
+	- [Creating a Project](#creating-a-project)
+	- [Annotating on Video](#annotating-on-video)
+		- [Artificial Compass and Flight Log Plot](#artificial-compass-and-flight-log-plot)
+	- [Exporting data to csv file](#exporting-data-to-csv-file)
+- [Typical issues](#typical-issues)
 
 ## Installation
 
