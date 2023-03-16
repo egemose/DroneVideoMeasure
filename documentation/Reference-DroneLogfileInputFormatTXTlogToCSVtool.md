@@ -1,5 +1,5 @@
 # Reference - Drone logfile input format
-To get information about the location, altitude and orientation of the camera, information from the drone log file is used.
+To get information about the location, altitude and orientation of the camera, information from the drone log file is used. The format exported from `TXTlogToCSVtool.exe` is described in this document. 
 
 DVM expects that the uploaded drone log file is a comma separated file, containing the following columns:
 - `CUSTOM.updateTime`
