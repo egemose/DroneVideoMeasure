@@ -172,7 +172,8 @@ def download(video_id):
     filename = os.path.join(data_dir, 'annotations.csv')
     save_annotations_csv(annotations, filename)
     logger.debug(f'Sending annotations.csv to user.')
-    return flask.send_file(filename, as_attachment=True, attachment_filename='annotations.csv')
+    annotated_filename = f"annotations - {project.name} - {video.name}.csv"
+    return flask.send_file(filename, as_attachment=True, attachment_filename=annotated_filename)
 
 
 @video_gallery_view.route('/videos/<video_id>/remove')
