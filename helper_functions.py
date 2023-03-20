@@ -57,7 +57,8 @@ def get_all_annotations(project, pro_version, video=None):
 
 def get_frame_obj_data(obj):
     name = obj.get('name')
-    log_data = drone_log.get_log_data_from_frame(obj.get('frame'))
+    frame_number = obj.get('frame')
+    log_data = drone_log.get_log_data_from_frame(frame_number)
     if obj['type'] == 'FrameLine':
         x1 = obj.get('x1')
         x2 = obj.get('x2')
@@ -85,5 +86,5 @@ def get_frame_obj_data(obj):
     else:
         return None
     pos = fov.convert_utm(wp[0], wp[1], zone)
-    annotation = [name, log_data[0], length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1], image_point[0], image_point[1], wp1[0], wp1[1], wp2[0], wp2[1], heading]
+    annotation = [name, log_data[0], frame_number, length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1], image_point[0], image_point[1], wp1[0], wp1[1], wp2[0], wp2[1], heading]
     return annotation
