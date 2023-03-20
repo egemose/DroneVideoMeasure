@@ -6,6 +6,7 @@ import math
 from drone.drone_log_data import drone_log
 from drone.fov import fov
 from app_config import Drone
+from icecream import ic
 
 
 logger = logging.getLogger('app.' + __name__)
@@ -15,7 +16,7 @@ def save_annotations_csv(annotations, filename):
     logger.debug(f'Saving annotations in {filename}')
     with open(filename, 'w') as fp:
         csv_writer = csv.writer(fp, delimiter=',')
-        header = ('name', 'time', 'length', 
+        header = ('name', 'time', 'frame', 'length', 
                 'lat', 'lon', 
                 'east', 'north', 'zone number', 'zone letter',
                 'image_x', 'image_y', 
