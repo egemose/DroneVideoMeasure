@@ -91,7 +91,7 @@ class DroneLog:
         yaw_idx = 'gimbal_heading(degrees)'
         pitch_idx = 'gimbal_pitch(degrees)'
         roll_idx = 'gimbal_roll(degrees)'
-        height_idx = 'height_sonar(meters)'
+        height_idx = 'height_above_takeoff(meters)'
         is_video_idx = 'isVideo'
         latitude_idx = 'latitude'
         longitude_idx = 'longitude'
