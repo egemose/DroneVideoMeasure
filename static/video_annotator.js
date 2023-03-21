@@ -246,6 +246,7 @@ class video_annotator {
     var new_frame = this.video.get()
     if (new_frame != current_frame) {
       current_frame = new_frame;
+      this.jump_frame = current_frame;
       var progress = current_frame / this.num_frames * 100 + '%';
       $('#video_seek').find('.progress-bar').css('width', progress);
       $('#video_seek').find('.progress-bar').html(this.video.toTime());
