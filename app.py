@@ -1,6 +1,6 @@
 import os
 import logging.handlers
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, render_template
 from projects.projects import projects_view
 from projects.video_gallery import video_gallery_view
 from video.videos import videos_view
@@ -30,8 +30,13 @@ def serve_node_modules(filename):
     return send_from_directory(os.path.join('..', '/node_modules'), filename)
 
 
+def page_not_found(e):
+  return render_template('404.html'), 404
+
+
 def create_app():
     app = Flask(__name__)
+    app.register_error_handler(404, page_not_found)
     app.config.from_object(AppConfig)
     app.add_url_rule('/data/<path:filename>', endpoint='data', view_func=serve_data_file)
     app.add_url_rule('/node_modules/<path:filename>', endpoint='node_modules', view_func=serve_node_modules)
