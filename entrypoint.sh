@@ -23,9 +23,9 @@ done
 
 
 
-run "python app.py db upgrade"
+run "flask db upgrade"
 if [[ $dev_mode = true ]]; then
-  run "python app.py runserver --host 0.0.0.0 --debug"
+  run "flask run --host 0.0.0.0 --debug"
 else
   run "gunicorn -b 0.0.0.0:5000 -k gevent -t 10000 'app:app'"
 fi

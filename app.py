@@ -7,8 +7,8 @@ from video.videos import videos_view
 from drone.drones import drones_view
 from home import home_view
 from app_config import AppConfig, data_dir, dropzone, obscure, make_celery, db, migrate
-from flask_script import Manager
-from flask_migrate import MigrateCommand
+# from flask_script import Manager
+#from flask_migrate import MigrateCommand
 
 logger = logging.getLogger('app')
 logger.setLevel(logging.DEBUG)
@@ -50,12 +50,14 @@ def create_app():
     app.register_blueprint(drones_view)
     app.register_blueprint(home_view)
     app.register_blueprint(video_gallery_view)
-    manager = Manager(app)
-    manager.add_command('db', MigrateCommand)
+    #manager = Manager(app)
+    #manager.add_command('db', MigrateCommand)
+    manager = None
     return manager, app, celery
 
 
 manager, app, celery = create_app()
 
 if __name__ == '__main__':
-    manager.run()
+    # manager.run()
+    pass
