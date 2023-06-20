@@ -1,8 +1,8 @@
 # Howto - Convert Logfiles to csv files
-This document describes how to convert a logfile from a DJI drone into the .csv format that can be used with the Drone Video Measure programme.
+The flight log needs to be converted to csv format before it can be used by the Drone Video Measure software. This can be done by using the site [AirData.com](https://AirData.com). 
 
-The recommended tool for converting the log files to CSV is the windows program `TXTlogToCSVtool.exe` which can be downloaded from
-[https://phantompilots.com](https://phantompilots.com/threads/tool-win-offline-txt-flightrecord-to-csv-converter.70428/).
+It should also be possible to link the drone directly with the [[AirData.com]] site. See this link for details: 
+- https://app.airdata.com/wiki/Help/DJI+GO%2C+GO+4%2C+and+Pilot+with+DJI+Direct+Sync
 
-## Alternative tools
-Earlier that conversion could be done by uploading the flight log to [PhantomHelp](https://www.phantomhelp.com/LogViewer/Upload/) and Downloading the verbose csv. The verbose version is needed since the normal version lack video timestamps. Unfortunately PhantomHelp does not support the export of `verbose csv` at the moment.
+## References
+- [Explanation - Log file conversion](Explanation-LogfileConversion)

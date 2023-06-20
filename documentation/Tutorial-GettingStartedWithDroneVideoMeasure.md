@@ -98,6 +98,8 @@ When the annotations are completed, they can be exported as a csv (comma seperat
 ## Whats next?
 For more information about how to create a suitable calibration video see this howto:
 * [Howto - Record a calibration video](Howto-RecordACalibrationVideo.md)
+For information about how to convert a logfile to the proper format, see this howto:
+- [[Howto-ConvertLogfiles]]
 
 For details about the exported annotations
 - [Reference - Data export format](Reference-DataExportFormat.md)
