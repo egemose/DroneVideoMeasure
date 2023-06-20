@@ -6,14 +6,14 @@ Given a matching flight log (from a DJI drone) and video of a marine animal, e.g
 - [Installation](#installation)
 - [Acquire Flight Logs](#acquire-flight-logs)
 - [Using the Program](#using-the-program)
-  - [Example data](#example-data)
-  - [Open the program](#open-the-program)
-  - [Adding and calibration of a Drone](#adding-and-calibration-of-a-drone)
-  - [Creating a Project](#creating-a-project)
-  - [Annotating on Video](#annotating-on-video)
-    - [Artificial Compass and Flight Log Plot](#artificial-compass-and-flight-log-plot)
-  - [Exporting data to csv file](#exporting-data-to-csv-file)
-  - [Typical issues](#typical-issues)
+	- [Example data](#example-data)
+	- [Open the program](#open-the-program)
+	- [Adding and calibration of a Drone](#adding-and-calibration-of-a-drone)
+	- [Creating a Project](#creating-a-project)
+	- [Annotating on Video](#annotating-on-video)
+		- [Artificial Compass and Flight Log Plot](#artificial-compass-and-flight-log-plot)
+	- [Exporting data to csv file](#exporting-data-to-csv-file)
+- [Typical issues](#typical-issues)
 
 ## Installation
 
@@ -25,15 +25,10 @@ To get the flight logs from a DJI drone the following guide can be used.
 
 - [HOW TO: Retrieve DJI Phantom Flight Logs from an Apple Device](https://www.phantomhelp.com/tips/how-to-retrieve-dji-go-flight-logs-from-itunes.29)
 
-The flight log needs to be converted to csv format before they can be used by the Drone Video Measure software. 
-Earlier that conversion could be done by uploading the flight log to [PhantomHelp](https://www.phantomhelp.com/LogViewer/Upload/) and Downloading the verbose csv. The verbose version is needed since the normal version lack video timestamps.
-Currently PhantomHelp does not support the export of "verbose csv".
+The flight log needs to be converted to csv format before they can be used by the Drone Video Measure software. This can be done by using the site [AirData.com](https://AirData.com). 
 
-An alternative way of converting the logfiles to CSV the windows program `TXTlogToCSVtool.exe` which can be downloaded from
-[https://phantompilots.com](https://phantompilots.com/threads/tool-win-offline-txt-flightrecord-to-csv-converter.70428/).
-
-
-
+It should also be possible to link the drone directly with the [[AirData.com]] site. See this link for details: 
+- https://app.airdata.com/wiki/Help/DJI+GO%2C+GO+4%2C+and+Pilot+with+DJI+Direct+Sync
 
 ## Using the Program
 

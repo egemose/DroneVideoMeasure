@@ -73,9 +73,15 @@ class DroneLog:
     def get_log_data(self, log):
         try: 
             self.get_log_data_txt_to_log_csv_file(log)
+            return
         except KeyError as e:
             logger.debug('Encoutered issue in get_log_data - KeyError')
             logger.debug(e)
+        except Exception as e:
+            logger.debug('Encoutered issue in get_log_data')
+            logger.debug(e)
+        # If the logfile format differs from the output from TXTlogToCSVtool.exe
+        # try to handle it as a file from airdata.com
         self.get_log_data_air_data_com(log)
 
 
@@ -91,7 +97,7 @@ class DroneLog:
         yaw_idx = 'gimbal_heading(degrees)'
         pitch_idx = 'gimbal_pitch(degrees)'
         roll_idx = 'gimbal_roll(degrees)'
-        height_idx = 'height_sonar(meters)'
+        height_idx = 'height_above_takeoff(meters)'
         is_video_idx = 'isVideo'
         latitude_idx = 'latitude'
         longitude_idx = 'longitude'

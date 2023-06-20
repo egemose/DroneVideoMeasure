@@ -6,12 +6,11 @@ RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
 && rm -rf /var/lib/apt/lists/*
 
 FROM base
-COPY ./package.json /package.json
-RUN npm install
-RUN find . -depth -readable -name @* -type d -exec bash -c 'mv $0 ${0/@/}' {} \; | return 0
 WORKDIR /app
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
+COPY ./package.json /package.json
+RUN npm install
 COPY . /app
 RUN chmod u+x ./entrypoint.sh
 RUN mkdir data
