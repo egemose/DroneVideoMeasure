@@ -67,19 +67,19 @@ def _get_log_plots(log_data):
     roll = log_data[4]
     is_video = log_data[5]
     height_plot = figure(title='Height', width=700, height=500)
-    height_plot.xaxis.formatter = DatetimeTickFormatter(minsec=['%H:%M:%S'], minutes=['%H:%M:%S'], hourmin=['%H:%M:%S'])
+    height_plot.xaxis.formatter = DatetimeTickFormatter(minsec='%H:%M:%S', minutes='%H:%M:%S', hourmin='%H:%M:%S')
     height_plot.yaxis.axis_label = 'Meters'
     height_plot.line(time_stamp, height)
     yaw_plot = figure(title='Yaw', width=700, height=500, x_range=height_plot.x_range)
-    yaw_plot.xaxis.formatter = DatetimeTickFormatter(minsec=['%H:%M:%S'], minutes=['%H:%M:%S'], hourmin=['%H:%M:%S'])
+    yaw_plot.xaxis.formatter = DatetimeTickFormatter(minsec='%H:%M:%S', minutes='%H:%M:%S', hourmin='%H:%M:%S')
     yaw_plot.yaxis.axis_label = 'Degrees'
     yaw_plot.line(time_stamp, yaw)
     pitch_plot = figure(title='Pitch', width=700, height=500, x_range=height_plot.x_range)
-    pitch_plot.xaxis.formatter = DatetimeTickFormatter(minsec=['%H:%M:%S'], minutes=['%H:%M:%S'], hourmin=['%H:%M:%S'])
+    pitch_plot.xaxis.formatter = DatetimeTickFormatter(minsec='%H:%M:%S', minutes='%H:%M:%S', hourmin='%H:%M:%S')
     pitch_plot.yaxis.axis_label = 'Degrees'
     pitch_plot.line(time_stamp, pitch)
     roll_plot = figure(title='Roll', width=700, height=500, x_range=height_plot.x_range)
-    roll_plot.xaxis.formatter = DatetimeTickFormatter(minsec=['%H:%M:%S'], minutes=['%H:%M:%S'], hourmin=['%H:%M:%S'])
+    roll_plot.xaxis.formatter = DatetimeTickFormatter(minsec='%H:%M:%S', minutes='%H:%M:%S', hourmin='%H:%M:%S')
     roll_plot.yaxis.axis_label = 'Degrees'
     roll_plot.line(time_stamp, roll)
     for video_range in get_video_ranges(is_video, time_stamp):
