@@ -5,8 +5,8 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<script src="{{ url_for('node_modules', filename='fortawesome/fontawesome-free/js/all.min.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('node_modules', filename='fortawesome/fontawesome-free/css/all.min.css') }}">
+<script src="{{ url_for('node_modules', filename='@fortawesome/fontawesome-free/js/all.min.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('node_modules', filename='@fortawesome/fontawesome-free/css/all.min.css') }}">
 <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32">
 {% endblock %}
 
