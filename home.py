@@ -34,7 +34,7 @@ def download_logs():
     with ZipFile(log_zip, 'w') as zip_file:
         for file in file_paths:
             zip_file.write(file)
-    return flask.send_file(log_zip, as_attachment=True, attachment_filename='logs.zip')
+    return flask.send_file(log_zip, as_attachment=True, download_name='logs.zip')
 
 
 def get_all_file_paths(directory):
