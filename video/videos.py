@@ -105,6 +105,7 @@ def get_horizon_fabricjs():
 def save_start_time(video_id):
     logger.debug(f'save_start_time called for {video_id}')
     start_time_str = flask.request.form.get('start_time')
+    logger.debug(f'start_time_str: { start_time_str }')
     match = re.fullmatch(r'(\d\d):(\d\d):(\d\d)\.?(\d*)', start_time_str)
     video = Video.query.get_or_404(video_id)
     if match:
@@ -112,6 +113,7 @@ def save_start_time(video_id):
         video_start_time = video.start_time
         new_video_start_time = datetime.combine(video_start_time, start_time)
         video.start_time = new_video_start_time
+        logger.debug(f'video.start_time: { video.start_time }')
         db.session.commit()
         drone_log.video_start_time = new_video_start_time
     elif not start_time_str:
