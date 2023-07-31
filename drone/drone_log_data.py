@@ -207,7 +207,10 @@ class DroneLog:
         logger.debug(f'Matching video and log file')
         message = None
         video_ranges = list(get_video_ranges(self.is_video, self.time_stamp))
-        if self.video_pos is not None and self.video_pos[0] is not None:
+        if len(video_ranges) == 0:
+            message = f'Warning: No video recordings found in the logfile. You need to manually specify when the video recording started relative to the start of the logfile.'
+            minimum = min([(x, x) for x in self.time_stamp], key=lambda z: z[0])
+        elif self.video_pos is not None and self.video_pos[0] is not None:
             video_utm_pos = utm.from_latlon(*self.video_pos)
             start_utm_pos = [utm.from_latlon(*self.pos[self.time_stamp.index(y[0])]) for y in video_ranges]
             minimum = min([(abs(video_utm_pos[0] - x[0]) + abs(video_utm_pos[1] - x[1]), y[0]) for x, y in zip(start_utm_pos, video_ranges)], key=lambda z: z[0])
