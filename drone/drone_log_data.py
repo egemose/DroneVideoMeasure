@@ -204,12 +204,21 @@ class DroneLog:
         self.video_pos = pos
 
     def match_log_and_video(self):
+        '''
+        If the video start time is not set for the video, this method 
+        makes a guess based on either location (if available) 
+        or duration.
+        '''
         logger.debug(f'Matching video and log file')
+        if self.video_start_time is not None:
+            return self.video_start_time, None
         message = None
         video_ranges = list(get_video_ranges(self.is_video, self.time_stamp))
         if len(video_ranges) == 0:
             message = f'Warning: No video recordings found in the logfile. You need to manually specify when the video recording started relative to the start of the logfile.'
             minimum = min([(x, x) for x in self.time_stamp], key=lambda z: z[0])
+            if self.video_start_time is not None:
+              minimum = (minimum[0], self.video_start_time)
         elif self.video_pos is not None and self.video_pos[0] is not None:
             video_utm_pos = utm.from_latlon(*self.video_pos)
             start_utm_pos = [utm.from_latlon(*self.pos[self.time_stamp.index(y[0])]) for y in video_ranges]
