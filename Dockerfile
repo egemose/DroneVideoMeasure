@@ -1,9 +1,9 @@
 FROM python:3.8 as base
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
-&& apt-get update && apt-get install -y \
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - 
+RUN apt-get update && apt-get install -y \
     ffmpeg \
-    nodejs \
-&& rm -rf /var/lib/apt/lists/*
+    nodejs
+RUN rm -rf /var/lib/apt/lists/*
 
 FROM base
 WORKDIR /app
