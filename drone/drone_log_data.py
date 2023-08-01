@@ -24,6 +24,7 @@ class DroneLog:
         self.rotation = None
         self.pos = None
         self.is_video = None
+        self.takeoff_altitude = 0.0
 
     def log_data(self):
         logger.debug(f'Getting log data')
@@ -238,7 +239,7 @@ class DroneLog:
         delta_time = timedelta(seconds=frame / self.video_nb_frames * self.video_duration)
         time = self.video_start_time + delta_time
         idx = self.get_time_idx(time)
-        return self.time_stamp[idx], self.height[idx], self.rotation[idx], self.pos[idx]
+        return self.time_stamp[idx], self.height[idx] + self.takeoff_altitude, self.rotation[idx], self.pos[idx]
 
     def get_time_idx(self, time):
         minimum = min([(abs((x - time).total_seconds()), idx) for idx, x in enumerate(self.time_stamp)], key=lambda y: y[0])
