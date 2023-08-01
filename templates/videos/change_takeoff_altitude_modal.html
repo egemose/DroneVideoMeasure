@@ -1,0 +1,24 @@
+<div class="modal" id="change_takeoff_altitude_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Takeoff altitude</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="change_takeoff_altitude_form">
+          <div class="form-group">
+            <label for="takeoff_altitude_input" class="col-form-label">Takeoff altitude (meters):</label>
+            <input type="text" class="form-control" id="takeoff_altitude_input">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="on_save_takeoff_altitude()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>

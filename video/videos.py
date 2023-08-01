@@ -51,6 +51,7 @@ def video(video_id):
     log_file = os.path.join(data_dir, project.log_file)
     drone_log.get_log_data(log_file)
     drone_log.set_video_data(video.duration, video.frames, (video.width, video.height), (video.latitude, video.longitude))
+    drone_log.takeoff_altitude = video.takeoff_altitude
     fov.set_image_size(*drone_log.video_size)
     json_data = video.json_data if type(video.json_data) is str else '{}'
     video_start_time = video.start_time
@@ -72,6 +73,7 @@ def video(video_id):
                 video_height=drone_log.video_size[1],
                 num_frames=drone_log.video_nb_frames,
                 fps=drone_log.video_nb_frames / drone_log.video_duration,
+                takeoff_altitude = video.takeoff_altitude,
                 video_start_time=video_start_time)
     logger.debug(f'Render video {video.file}')
     return flask.render_template('videos/video.html', **args)
@@ -129,4 +131,22 @@ def save_start_time(video_id):
     else:
         flask.flash('Error setting the video time.', 'error')
         logger.debug(f'Error setting the video time')
+    return ''
+
+
+@videos_view.route('/<video_id>/save_takeoff_altitude', methods=['POST'])
+def save_takeoff_altitude(video_id):
+    logger.debug(f'save_takeoff_altitude called for {video_id}')
+    takeoff_altitude_str = flask.request.form.get('new_takeoff_altitude')
+    logger.debug(f'takeoff_altitude_str: { takeoff_altitude_str }')
+    video = Video.query.get_or_404(video_id)
+    try:
+        new_takeoff_altitude = float(takeoff_altitude_str)
+        video.takeoff_altitude = new_takeoff_altitude
+        logger.debug(f'video.takeoff_altitude: { video.takeoff_altitude }')
+        drone_log.takeoff_altitude = new_takeoff_altitude
+        db.session.commit()
+    except:
+        flask.flash('Error setting the takeoff altitude.', 'error')
+        logger.debug(f'Error setting the takeoff altitude')
     return ''

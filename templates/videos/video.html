@@ -30,6 +30,7 @@ style="margin-bottom: 0px; height: 100vh;"
 {% include 'videos/new_name_modal.html' %}
 {% include 'videos/clear_markings_modal.html' %}
 {% include 'videos/change_video_start_time_modal.html' %}
+{% include 'videos/change_takeoff_altitude_modal.html' %}
 
 <video id="video" muted="" class="canvas-img" width={{ video_width }} height={{ video_height }} preload="auto" style="display: none">
   <source src="{{ url_for('data', filename = video.file.split('/')[-1]) }}" type="video/mp4">
@@ -193,6 +194,18 @@ style="margin-bottom: 0px; height: 100vh;"
     var start_time = $('#video_start_time_input').val();
     $.post('{{ url_for('videos.save_start_time', video_id=video.id) }}', {
       new_start_time: start_time,
+    }, function(data) {
+      window.location.href = '{{ url_for('videos.video', video_id=video.id) }}'
+    });
+  };
+  function on_takeoff_altitude() {
+    $('#change_takeoff_altitude_modal').modal('toggle');
+    $('#takeoff_altitude_input').val('{{ takeoff_altitude }}');
+  };
+  function on_save_takeoff_altitude() {
+    var takeoff_altitude = $('#takeoff_altitude_input').val();
+    $.post('{{ url_for('videos.save_takeoff_altitude', video_id=video.id) }}', {
+      new_takeoff_altitude: takeoff_altitude,
     }, function(data) {
       window.location.href = '{{ url_for('videos.video', video_id=video.id) }}'
     });
