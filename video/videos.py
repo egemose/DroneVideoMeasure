@@ -19,15 +19,19 @@ videos_view = flask.Blueprint('videos', __name__)
 
 def get_horizon_dict():
     world_points = defaultdict(list)
+    # Points for North - South line
     for x in np.linspace(-np.pi, np.pi, 100):
         point = (0, np.cos(x), np.sin(x))
         world_points['NS'].append(point)
+    # Points for East - West line
     for x in np.linspace(-np.pi, np.pi, 100):
         point = (np.cos(x), 0, np.sin(x))
         world_points['EW'].append(point)
+    # Points for the artificial horizon
     for x in np.linspace(-np.pi, np.pi, 100):
         point = (np.cos(x), np.sin(x), 0)
         world_points['pitch0'].append(point)
+    # Points for the minus 45 degree pitch
     for x in np.linspace(-np.pi, np.pi, 100):
         point = (np.cos(x) / np.sqrt(2), np.sin(x) / np.sqrt(2), -1 / np.sqrt(2))
         world_points['pitch45'].append(point)
