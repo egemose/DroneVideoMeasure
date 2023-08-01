@@ -108,7 +108,7 @@ def get_horizon_fabricjs():
 @videos_view.route('/<video_id>/save_start_time', methods=['POST'])
 def save_start_time(video_id):
     logger.debug(f'save_start_time called for {video_id}')
-    start_time_str = flask.request.form.get('start_time')
+    start_time_str = flask.request.form.get('new_start_time')
     logger.debug(f'start_time_str: { start_time_str }')
     match = re.fullmatch(r'(\d\d):(\d\d):(\d\d)\.?(\d*)', start_time_str)
     video = Video.query.get_or_404(video_id)

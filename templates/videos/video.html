@@ -192,7 +192,7 @@ style="margin-bottom: 0px; height: 100vh;"
   function on_save_start_time() {
     var start_time = $('#video_start_time_input').val();
     $.post('{{ url_for('videos.save_start_time', video_id=video.id) }}', {
-      start_time: start_time,
+      new_start_time: start_time,
     }, function(data) {
       window.location.href = '{{ url_for('videos.video', video_id=video.id) }}'
     });
