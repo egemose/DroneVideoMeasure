@@ -86,6 +86,7 @@ class Video(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     start_time = db.Column(db.DateTime())
+    takeoff_altitude = db.Column(db.Float)
     json_data = db.Column(db.String())
     task = db.relationship('Task', backref='Video', lazy=True, uselist=False)
     task_error = db.Column(db.String(), nullable=True)
