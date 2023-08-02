@@ -2,7 +2,6 @@ version: '3.3'
 services:
   webapp:
     build: .
-    image: dvm
     container_name: dvm_app
     command: /app/entrypoint.sh
     ports:
@@ -17,7 +16,6 @@ services:
       - db
   worker:
     build: .
-    image: dvm_worker
     container_name: dvm_worker
     command: celery -A app.celery worker --loglevel=WARNING -c 1
     volumes:

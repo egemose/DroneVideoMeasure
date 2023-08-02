@@ -21,7 +21,7 @@ display_help() {
 	echo "   start                Start DVM"
 	echo "   stop                 Stop DVM"
 	echo "   build                Rebuild the Docker image if changes where made to the code"
-  	echo "   update               Get the latest version of DVM from github"
+	echo "   update               Get the latest version of DVM from github"
 	echo "   shell                Start a bash shell inside the docker container"
 	echo "   remove               Remove Docker images and volumes belonging to DVM"
 	echo
@@ -59,7 +59,7 @@ get_docker_compose(){
 }
 
 get_docker_image_rm(){
-	local docker_rm_image="docker image rm  python:3.6 redis:alpine dvm dvm_worker postgres:alpine"
+	local docker_rm_image="docker image rm  python:3.8 redis:alpine dvm dvm_worker postgres:alpine"
 	docker_rm_image="$(add_sudo "$docker_rm_image")"
 	echo "$docker_rm_image"
 }
