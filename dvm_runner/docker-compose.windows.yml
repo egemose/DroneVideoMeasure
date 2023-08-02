@@ -1,0 +1,38 @@
+version: '3.3'
+services:
+  webapp:
+    image: midtiby/dronevideomeasure_webapp
+    container_name: dvm_app
+    command: ./entrypoint.sh
+    ports:
+      - "5000:5000"
+    volumes:
+      - appmedia:/app/data
+    depends_on:
+      - redis
+      - worker
+      - db
+  worker:
+    image: midtiby/dronevideomeasure_worker
+    container_name: dvm_worker
+    command: celery -A app.celery worker --loglevel=WARNING -c 1
+    volumes:
+      - appmedia:/app/data
+    depends_on:
+      - redis
+  redis:
+    image: redis:alpine
+    container_name: dvm_redis
+  db:
+    image: postgres:12-alpine
+    container_name: dvm_db
+    volumes:
+      - db:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+  
+volumes:
+  appmedia:
+  db: 
+    driver: local
