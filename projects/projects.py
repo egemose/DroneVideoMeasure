@@ -116,7 +116,7 @@ def download(project_id):
     filename = os.path.join(data_dir, 'annotations.csv')
     save_annotations_csv(annotations, filename)
     logger.debug(f'Sending annotations.csv to user.')
-    return flask.send_file(filename, as_attachment=True, attachment_filename='annotations.csv')
+    return flask.send_file(filename, as_attachment=True)
 
 
 @projects_view.route('/projects/<project_id>/remove')
