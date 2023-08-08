@@ -3,6 +3,16 @@ When exporting annotations from a project a .csv file with a lot of details abou
 	- The name of the annotation
 - time
 	- The timestamp of the frame in which the object was annotated
+- frame
+	- The frame number
+- height
+	- The height of the UAV above ground used for the calculations
+- yaw
+	- The camera yaw (in degrees) used for the calculations
+- pitch
+	- The camera pitch (in degrees) used for the calculations
+- roll
+	- The camera roll (in degrees) used for the calculations
 - length
 	- The length of the annotated line
 - lat

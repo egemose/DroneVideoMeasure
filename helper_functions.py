@@ -16,7 +16,9 @@ def save_annotations_csv(annotations, filename):
     logger.debug(f'Saving annotations in {filename}')
     with open(filename, 'w') as fp:
         csv_writer = csv.writer(fp, delimiter=',')
-        header = ('name', 'time', 'frame', 'length', 
+        header = ('name', 'time', 'frame', 
+                'height', 'yaw', 'pitch', 'roll', 
+                'length', 
                 'lat', 'lon', 
                 'east', 'north', 'zone number', 'zone letter',
                 'image_x', 'image_y', 
@@ -86,5 +88,8 @@ def get_frame_obj_data(obj):
     else:
         return None
     pos = fov.convert_utm(wp[0], wp[1], zone)
-    annotation = [name, log_data[0], frame_number, length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1], image_point[0], image_point[1], wp1[0], wp1[1], wp2[0], wp2[1], heading]
+    yaw = log_data[2][0] * 180/np.pi
+    pitch = log_data[2][1] * 180/np.pi
+    roll = log_data[2][2] * 180/np.pi
+    annotation = [name, log_data[0], frame_number, log_data[1], yaw, pitch, roll, length, pos[0], pos[1], wp[0], wp[1], zone[0], zone[1], image_point[0], image_point[1], wp1[0], wp1[1], wp2[0], wp2[1], heading]
     return annotation
