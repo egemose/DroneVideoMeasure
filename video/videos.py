@@ -51,6 +51,8 @@ def video(video_id):
     log_file = os.path.join(data_dir, project.log_file)
     drone_log.get_log_data(log_file)
     drone_log.set_video_data(video.duration, video.frames, (video.width, video.height), (video.latitude, video.longitude))
+    if video.takeoff_altitude is None:
+        video.takeoff_altitude = 0.0
     drone_log.takeoff_altitude = video.takeoff_altitude
     fov.set_image_size(*drone_log.video_size)
     json_data = video.json_data if type(video.json_data) is str else '{}'
