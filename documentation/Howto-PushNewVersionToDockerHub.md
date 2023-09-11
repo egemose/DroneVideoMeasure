@@ -1,0 +1,12 @@
+# Howto - Push new version to docker hub
+
+When a new version is ready to be pushed to dockerhub.com, the following commands should be used.
+```
+docker tag dronevideomeasure_webapp:latest midtiby/dronevideomeasure_webapp
+docker push midtiby/dronevideomeasure_webapp
+```
+
+To launch the program based on the images on dockerhub.com, use these commands.
+```
+
+```
