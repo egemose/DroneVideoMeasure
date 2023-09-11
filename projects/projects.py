@@ -104,7 +104,11 @@ def plot_log(project_id):
     drone_log.get_log_data(project.log_file)
     plot_script, plot_div = plot_log_data.get_log_plot(drone_log.log_data())
     logger.debug(f'Render video plot for {project_id}')
-    return flask.render_template('projects/plot.html', plot_div=plot_div, plot_script=plot_script, project_id=project_id)
+    return flask.render_template('projects/plot.html', 
+        plot_div=plot_div, 
+        plot_script=plot_script, 
+        project_id=project_id, 
+        drone_path=drone_log.pos)
 
 
 @projects_view.route('/projects/<project_id>/download')

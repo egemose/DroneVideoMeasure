@@ -6,6 +6,12 @@
 <script type="text/javascript">
   Bokeh.set_log_level("info");
 </script>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
 {% endblock %}
 
 {% block before_content %}
@@ -13,6 +19,10 @@
 
 {% block content %}
 <div class="container-fluid" style="max-width: 700px;">
+  <div class="justify-content-center">
+    <h3 style="padding-top: 20px;">Drone flight path</h3>
+    <div id="drone_path_from_logfile" style="height: 500px; width: 700px;"></div>
+  </div>
   <div class="plot d-flex justify-content-center">
     {{ plot_div | safe }}
   </div>
@@ -22,4 +32,19 @@
 {% endblock %}
 
 {% block after_content %}
+<script>
+var map = L.map('drone_path_from_logfile');
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+var marker = L.marker([51.5, -0.09]).addTo(map);
+var latlngs = [
+{% for position in drone_path %}
+  [{{ position[0] }}, {{ position[1] }}], 
+{% endfor %}
+];
+var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
+map.fitBounds(polyline.getBounds());
+</script>
 {% endblock after_content %}
