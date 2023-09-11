@@ -15,7 +15,7 @@ services:
       - worker
       - db
   worker:
-    image: midtiby/dronevideomeasure_worker
+    image: midtiby/dronevideomeasure_webapp
     container_name: dvm_worker
     command: celery -A app.celery worker --loglevel=WARNING -c 1
     volumes:
