@@ -8,5 +8,6 @@ docker push midtiby/dronevideomeasure_webapp
 
 To launch the program based on the images on dockerhub.com, use these commands.
 ```
-
+docker compose -f ./dvm_runner/docker-compose.yml pull
+docker compose -f ./dvm_runner/docker-compose.yml up
 ```
