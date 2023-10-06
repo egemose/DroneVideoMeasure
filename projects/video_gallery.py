@@ -166,6 +166,7 @@ def do_concat_videos(project_id):
 def download(video_id):
     with open('version.txt') as version_file:
         pro_version = version_file.read()
+        pro_version = pro_version.strip()
     video = Video.query.get_or_404(video_id)
     project = Project.query.get_or_404(video.project_id)
     annotations = get_all_annotations(project, pro_version, video)
