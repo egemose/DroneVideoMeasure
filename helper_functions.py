@@ -40,20 +40,24 @@ def get_all_annotations(project, pro_version, video=None):
     drone_log.get_log_data(project.log_file)
     videos = [video] if video else project.videos
     for video in videos:
-        json_data = json.loads(video.json_data)
-        objects = json_data['objects']
-        drone_log.set_video_data(video.duration, video.frames, (video.width, video.height), (video.latitude, video.longitude))
-        fov.set_image_size(*drone_log.video_size)
-        drone_log.match_log_and_video()
-        if objects:
-            for obj in objects:
-                if obj['type'] == 'FrameLine' or obj['type'] == 'FramePoint':
-                    annotation = get_frame_obj_data(obj)
-                    annotation.extend([video.file, project.name, pro_version])
-                else:
-                    logger.debug(f'Unknown annotation found of type: {obj["type"]}')
-                    annotation = None
-                annotations.append(annotation)
+        try: 
+            json_data = json.loads(video.json_data)
+            objects = json_data['objects']
+            drone_log.set_video_data(video.duration, video.frames, (video.width, video.height), (video.latitude, video.longitude))
+            fov.set_image_size(*drone_log.video_size)
+            drone_log.match_log_and_video()
+            if objects:
+                for obj in objects:
+                    if obj['type'] == 'FrameLine' or obj['type'] == 'FramePoint':
+                        annotation = get_frame_obj_data(obj)
+                        annotation.extend([video.file, project.name, pro_version])
+                    else:
+                        logger.debug(f'Unknown annotation found of type: {obj["type"]}')
+                        annotation = None
+                    annotations.append(annotation)
+        except Exception as e:
+            logger.debug("Encoutered an error while exporting data")
+            logger.debug(e)
     return annotations
 
 
