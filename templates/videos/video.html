@@ -103,6 +103,12 @@ style="margin-bottom: 0px; height: 100vh;"
     VideoAnnotator.toggle_draw();
     $('#draw-mode').button('toggle')
   });
+  Mousetrap.bind('a', function(e) {
+    jump_to_frame_50_frames_back();
+  });
+  Mousetrap.bind('d', function(e) {
+    jump_to_frame_50_frames_ahead();
+  });
   Mousetrap.bind('ctrl+z', function(e) {
     VideoAnnotator.on_undo();
   });
