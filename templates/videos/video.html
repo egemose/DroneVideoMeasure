@@ -56,8 +56,8 @@ style="margin-bottom: 0px; height: 100vh;"
         <div class="btn-group btn-group-sm mb-1" role="group" aria-label="group">
           <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Add a new name for the annotations" id="new-name" onclick="on_new_name()"><i class="fas fa-plus"></i></button>
           <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump in the video to the frame of the selected annotation" vid="jump-to-frame" onclick="jump_to_frame()"><i class="fas fa-level-down-alt"></i></button>
-          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump N frames back in the video" vid="jump-to-frame" onclick="jump_to_frame_50_frames_back()"><i class="fas fa-backward"></i></button>
-          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump N frames ahead in the video" vid="jump-to-frame" onclick="jump_to_frame_50_frames_ahead()"><i class="fas fa-forward"></i></button>
+          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump N frames back in the video [a]" vid="jump-to-frame" onclick="jump_to_frame_50_frames_back()"><i class="fas fa-backward"></i></button>
+          <button type="button" class="btn btn-secondary" data-toggle="tooltip" title="Jump N frames ahead in the video [d]" vid="jump-to-frame" onclick="jump_to_frame_50_frames_ahead()"><i class="fas fa-forward"></i></button>
           <input type="text" class="form-control" id="frames_to_jump" value="50" title="Number of frames to jump">
         </div>
       </div>
@@ -103,6 +103,17 @@ style="margin-bottom: 0px; height: 100vh;"
     VideoAnnotator.toggle_draw();
     $('#draw-mode').button('toggle')
   });
+  VideoAnnotator.viewer.addHandler("canvas-key", function(e) { 
+    if(e.originalEvent.code == "KeyA")
+    {
+      jump_to_frame_50_frames_back();
+    }
+    if(e.originalEvent.code == "KeyD")
+    {
+      jump_to_frame_50_frames_ahead();
+    }
+    }
+  );
   Mousetrap.bind('a', function(e) {
     jump_to_frame_50_frames_back();
   });
