@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{{ url_for('node_modules', filename='jstree-bootstrap-theme/dist/themes/proton/style.min.css') }}" type="text/css" />
 <script type="text/javascript" src="{{ url_for('static', filename='mousetrap.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('node_modules', filename='@bokeh/bokehjs/build/js/bokeh.min.js') }}"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.5/papaparse.min.js"></script>
 <style>
 li.jstree-node > ul.jstree-children > li.jstree-node > i.jstree-ocl {
   width: 0px !important;
@@ -295,4 +296,36 @@ style="margin-bottom: 0px; height: 100vh;"
   };
   markings_modified(JSON.stringify(VideoAnnotator.overlay.fabricCanvas()));
 </script>
+   <form id="myFormCSV">
+      <input type="file" id="csvFile" accept=".csv" />
+      <br />
+      <input type="submit" value="Submit" />
+   </form>
+   <script>
+      const myForm = document.getElementById("myFormCSV");
+      const csvFile = document.getElementById("csvFile");
+      var loaded_results = 0;
+      myForm.addEventListener("submit", function (e) {
+         e.preventDefault();
+         const inputfile = csvFile.files[0];
+         Papa.parse(inputfile, {
+            header: true,
+            dynamicTyping: true,
+            complete: function(results) {
+              loaded_results = results;
+              console.log(results);
+              for(observation_idx in results.data)
+              {
+                let observation = results.data[observation_idx];
+                console.log(observation);
+                if(observation['beak.score'] > 0.9)
+                {
+                  console.log('Adding beak observation');
+                  VideoAnnotator.addAnnotationPointAPI(observation['frame_idx'], observation['beak.x'], observation['beak.y'], "beak");
+                }
+              }
+            }
+          });
+      });
+   </script>
 {% endblock %}

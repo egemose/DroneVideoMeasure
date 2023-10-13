@@ -9,6 +9,7 @@
     "url": "git+https://github.com/egemose/DroneVideoMeasure.git"
   },
   "dependencies": {
+    "papaparse": "5.4.0",
     "jquery": "3.7.0",
     "@popperjs/core": "2.11.8",
     "bootstrap": "4.6.2",
