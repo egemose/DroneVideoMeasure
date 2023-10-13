@@ -214,6 +214,21 @@ class video_annotator {
     this.current_name = 'Doodles'
   }
 
+  addAnnotationPointAPI(framenumber, position_x, position_y, name_of_annotation) {
+    this.point = new fabric.FramePoint({
+      radius: this.default_point_size,
+      fill: this.default_stroke,
+      left: position_x,
+      top: position_y,
+      originX: 'center', originY: 'center',
+      hasControls: false,
+      frame: framenumber,
+      name: name_of_annotation,
+    });
+    this.overlay.fabricCanvas().add(this.point);
+    this.updateModifications(true);
+  }
+
   set_current_name(name) {
     this.current_name = name;
   }
