@@ -1,0 +1,47 @@
+<div class="modal" id="upload_annotations_from_csv_file_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Upload annotations from csv file</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+   <script>
+      function upload_annotations_from_csv_file() {
+        const csvFile = document.getElementById("select_csv_file_with_annotations");
+        const inputfile = csvFile.files[0];
+        Papa.parse(inputfile, {
+            header: true,
+            dynamicTyping: true,
+            complete: function(results) {
+              for(observation_idx in results.data)
+              {
+                let observation = results.data[observation_idx];
+                if("frame" in observation)
+                {
+                  console.log(observation);
+                  VideoAnnotator.addAnnotationPointAPI(observation['frame'], observation['image_x'], observation['image_y'], observation["name"]);
+                  
+                }
+              }
+              VideoAnnotator.updateModifications(true)
+            }
+          });
+      }
+   </script>
+      <div class="modal-body">
+        <form id="change_takeoff_altitude_form">
+          <div class="form-group">
+            <label for="select_csv_file_with_annotations" class="col-form-label">Select CSV file with annotations</label>
+            <input type="file" id="select_csv_file_with_annotations" accept=".csv" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="upload_annotations_from_csv_file()">Upload annotations</button>
+      </div>
+    </div>
+  </div>
+</div>

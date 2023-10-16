@@ -37,6 +37,7 @@ style="margin-bottom: 0px; height: 100vh;"
 {% include 'videos/clear_markings_modal.html' %}
 {% include 'videos/change_video_start_time_modal.html' %}
 {% include 'videos/change_takeoff_altitude_modal.html' %}
+{% include 'videos/upload_annotations_from_csv_file.html' %}
 
 <video id="video" muted="" class="canvas-img" width={{ video_width }} height={{ video_height }} preload="auto" style="display: none">
   <source src="{{ url_for('data', filename = video.file.split('/')[-1]) }}" type="video/mp4">
@@ -233,6 +234,9 @@ style="margin-bottom: 0px; height: 100vh;"
       window.location.href = '{{ url_for('videos.video', video_id=video.id) }}'
     });
   };
+  function on_upload_annotations_from_csv_file() {
+    $('#upload_annotations_from_csv_file_modal').modal('toggle');
+  };
   function on_new_name() {
     $('#new_name_modal').modal('toggle');
   };
@@ -296,36 +300,4 @@ style="margin-bottom: 0px; height: 100vh;"
   };
   markings_modified(JSON.stringify(VideoAnnotator.overlay.fabricCanvas()));
 </script>
-   <form id="myFormCSV">
-      <input type="file" id="csvFile" accept=".csv" />
-      <br />
-      <input type="submit" value="Submit" />
-   </form>
-   <script>
-      const myForm = document.getElementById("myFormCSV");
-      const csvFile = document.getElementById("csvFile");
-      var loaded_results = 0;
-      myForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const inputfile = csvFile.files[0];
-        Papa.parse(inputfile, {
-            header: true,
-            dynamicTyping: true,
-            complete: function(results) {
-              loaded_results = results;
-              for(observation_idx in results.data)
-              {
-                let observation = results.data[observation_idx];
-                if("frame" in observation)
-                {
-                  console.log(observation);
-                  VideoAnnotator.addAnnotationPointAPI(observation['frame'], observation['image_x'], observation['image_y'], observation["name"]);
-                  
-                }
-              }
-              VideoAnnotator.updateModifications(true)
-            }
-          });
-      });
-   </script>
-{% endblock %}
+   {% endblock %}
