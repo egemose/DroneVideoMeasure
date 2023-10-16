@@ -306,24 +306,24 @@ style="margin-bottom: 0px; height: 100vh;"
       const csvFile = document.getElementById("csvFile");
       var loaded_results = 0;
       myForm.addEventListener("submit", function (e) {
-         e.preventDefault();
-         const inputfile = csvFile.files[0];
-         Papa.parse(inputfile, {
+        e.preventDefault();
+        const inputfile = csvFile.files[0];
+        Papa.parse(inputfile, {
             header: true,
             dynamicTyping: true,
             complete: function(results) {
               loaded_results = results;
-              console.log(results);
               for(observation_idx in results.data)
               {
                 let observation = results.data[observation_idx];
-                console.log(observation);
-                if(observation['beak.score'] > 0.9)
+                if("frame" in observation)
                 {
-                  console.log('Adding beak observation');
-                  VideoAnnotator.addAnnotationPointAPI(observation['frame_idx'], observation['beak.x'], observation['beak.y'], "beak");
+                  console.log(observation);
+                  VideoAnnotator.addAnnotationPointAPI(observation['frame'], observation['image_x'], observation['image_y'], observation["name"]);
+                  
                 }
               }
+              VideoAnnotator.updateModifications(true)
             }
           });
       });

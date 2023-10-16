@@ -226,7 +226,9 @@ class video_annotator {
       name: name_of_annotation,
     });
     this.overlay.fabricCanvas().add(this.point);
-    this.updateModifications(true);
+    // Call updateModifications but do not send updates to the server.
+    // This must be done manually after using the addAnnotationPointAPI.
+    this.updateModifications(false);
   }
 
   set_current_name(name) {
@@ -400,9 +402,9 @@ class video_annotator {
   }
 
   updateModifications(savehistory) {
+    var myjson = JSON.stringify(this.overlay.fabricCanvas());
+    this.states.push(myjson);
     if (savehistory == true) {
-      var myjson = JSON.stringify(this.overlay.fabricCanvas());
-      this.states.push(myjson);
       markings_modified(myjson);
     }
   }
