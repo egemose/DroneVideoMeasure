@@ -11,21 +11,35 @@
       function upload_annotations_from_csv_file() {
         const csvFile = document.getElementById("select_csv_file_with_annotations");
         const inputfile = csvFile.files[0];
+        async function update_current_frame_number(value) {
+          let current_frame_number = document.getElementById("adding_annotation_to_this_frame");
+          current_frame_number.textContent = value['frame'];
+          const p1 = new Promise(resolve => {
+            setTimeout(
+              () => {
+                resolve();
+            }, 1)});
+          await p1;
+        }
         Papa.parse(inputfile, {
             header: true,
             dynamicTyping: true,
-            complete: function(results) {
+            complete: async function(results) {
               for(observation_idx in results.data)
               {
                 let observation = results.data[observation_idx];
                 if("frame" in observation)
                 {
-                  console.log(observation);
                   VideoAnnotator.addAnnotationPointAPI(observation['frame'], observation['image_x'], observation['image_y'], observation["name"]);
-                  
+                  if(observation_idx % 20 == 0)
+                  {
+                    await update_current_frame_number(observation);
+                  }
                 }
               }
               VideoAnnotator.updateModifications(true)
+              let current_frame_number = document.getElementById("adding_annotation_to_this_frame");
+              current_frame_number.textContent = "not active";
             }
           });
       }
@@ -38,6 +52,7 @@
             <p></p>
             <p>The following columns will be used from the file:</p>
             <ul><li>name</li><li>frame</li><li>image_x</li><li>image_y</li></ul>
+            <p>Current frame: <span id="adding_annotation_to_this_frame">not active</span></p>
           </div>
         </form>
       </div>
