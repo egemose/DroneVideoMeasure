@@ -212,6 +212,7 @@ class DroneLog:
         '''
         logger.debug(f'Matching video and log file')
         if self.video_start_time is not None:
+            logger.debug(f'self.video_start_time: {self.video_start_time}')
             return self.video_start_time, None
         message = None
         video_ranges = list(get_video_ranges(self.is_video, self.time_stamp))
@@ -239,6 +240,7 @@ class DroneLog:
         delta_time = timedelta(seconds=frame / self.video_nb_frames * self.video_duration)
         time = self.video_start_time + delta_time
         idx = self.get_time_idx(time)
+        # logger.debug(f'idx: { idx }')
         return self.time_stamp[idx], self.height[idx] + self.takeoff_altitude, self.rotation[idx], self.pos[idx]
 
     def get_time_idx(self, time):
