@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{{ url_for('node_modules', filename='jstree-bootstrap-theme/dist/themes/proton/style.min.css') }}" type="text/css" />
 <script type="text/javascript" src="{{ url_for('static', filename='mousetrap.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('node_modules', filename='@bokeh/bokehjs/build/js/bokeh.min.js') }}"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.5/papaparse.min.js"></script>
+<script type="text/javascript" src="{{ url_for('node_modules', filename='papaparse/papaparse.min.js') }}"></script>
 <style>
 li.jstree-node > ul.jstree-children > li.jstree-node > i.jstree-ocl {
   width: 0px !important;
