@@ -15,19 +15,17 @@ perform a manual install, as described in this howto guide.
 * [Howto - Install Drone Video Measure](documentation/Howto-InstallDroneVideoMeasure.md)
 
 
-## Usage
+## Getting started using Drone Video Measure
 
 A detailed description of how to use the program can be found here: 
-* [Manual](documentation/Tutorial-GettingStartedWithDroneVideoMeasure.md)
-
-Demo data is available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3604005.svg)](https://doi.org/10.5281/zenodo.3604005) including a video demo of how to use the program.
+* [Tutorial - Getting started with Drone Video Measure](documentation/Tutorial-GettingStartedWithDroneVideoMeasure.md)
 
 
 ## Supported Drones
 
-- DJI
+The program can read flight logs exported from airdata.com.
+Airdata.com is able to handle flight logs from several drone manufactures including DJI.
 
-Currently only flight logs from DJI drones are supported. 
 If you want support for other drones please create a issue with a flight log attached.
 
 
