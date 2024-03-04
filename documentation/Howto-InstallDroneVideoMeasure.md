@@ -35,3 +35,35 @@ After having stopped the programme or having rebooted the computer, the programm
 cd DroneVideoMeasure
 ./dvm.sh start
 ```
+
+## Rebuilding the programme
+
+If the source code is changes, the program can be rebuilt using the command
+```bash
+./dvm.sh build
+```
+
+
+## Updating Drone Video Measure
+
+```bash
+./dvm.sh update
+```
+
+## Uninstalling Drone Video Measure
+
+```bash
+./dvm.sh remove
+```
+
+And delete the DroneVideoMeasure directory.
+
+On Windows data is stored in a Docker volume and will persist even when DVM is closed. 
+To remove the data:
+
+```bash
+docker volume rm appmedia
+```
+
+On Mac / Linux data is stored in the data directory and can be removed simply by deleting it.
+
