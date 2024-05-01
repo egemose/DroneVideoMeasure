@@ -228,7 +228,8 @@ class video_annotator {
     this.overlay.fabricCanvas().add(this.point);
     // Call updateModifications but do not send updates to the server.
     // This must be done manually after using the addAnnotationPointAPI.
-    this.updateModifications(false);
+    // Avoid adding this state to the undo stack.
+    this.updateModifications(false, false);
   }
 
   set_current_name(name) {
@@ -401,10 +402,12 @@ class video_annotator {
     $('#clear_markings_modal').modal('toggle');
   }
 
-  updateModifications(savehistory) {
+  updateModifications(save_update_on_server, add_state_to_undo_stack = true) {
     var myjson = JSON.stringify(this.overlay.fabricCanvas());
-    this.states.push(myjson);
-    if (savehistory == true) {
+    if (add_state_to_undo_stack) {
+      this.states.push(myjson);
+    }
+    if (save_update_on_server == true) {
       markings_modified(myjson);
     }
   }
