@@ -220,20 +220,33 @@ class DroneLog:
             message = f'Warning: No video recordings found in the logfile. You need to manually specify when the video recording started relative to the start of the logfile.'
             minimum = min([(x, x) for x in self.time_stamp], key=lambda z: z[0])
             if self.video_start_time is not None:
-              minimum = (minimum[0], self.video_start_time)
+                minimum = (minimum[0], self.video_start_time)
         elif self.video_pos is not None and self.video_pos[0] is not None:
-            video_utm_pos = utm.from_latlon(*self.video_pos)
-            start_utm_pos = [utm.from_latlon(*self.pos[self.time_stamp.index(y[0])]) for y in video_ranges]
-            minimum = min([(abs(video_utm_pos[0] - x[0]) + abs(video_utm_pos[1] - x[1]), y[0]) for x, y in zip(start_utm_pos, video_ranges)], key=lambda z: z[0])
+            minimum = self.locate_best_match_based_on_location(video_ranges)
             if minimum[0] > 1:
                 message = f'Warning: Video position and Drone Log position differs by {minimum[0]:.2f} meter.'
         else:
-            minimum = min([(abs((x[1] - x[0]).total_seconds() - self.video_duration), x[0]) for x in video_ranges], key=lambda y: y[0])
+            minimum = self.locate_best_match_based_on_duration(video_ranges)
             if minimum[0] > 5:
                 message = f'Warning: Video duration ({self.video_duration:.2f}) and Drone Log video duration differs by {minimum[0]:.2f} seconds.'
         logger.debug(f'Matching message: {message}')
         self.video_start_time = minimum[1]
         return minimum[1], message
+
+    def locate_best_match_based_on_location(self, video_ranges):
+        video_utm_pos = utm.from_latlon(*self.video_pos)
+        start_utm_pos = [utm.from_latlon(*self.pos[self.time_stamp.index(y[0])]) for y in video_ranges]
+        minimum = min([(abs(video_utm_pos[0] - x[0]) + abs(video_utm_pos[1] - x[1]), y[0])
+                       for x, y
+                       in zip(start_utm_pos, video_ranges)], key=lambda z: z[0])
+        return minimum
+
+    def locate_best_match_based_on_duration(self, video_ranges):
+        absolute_time_differences = [(abs((x[1] - x[0]).total_seconds() - self.video_duration), x[0])
+                                     for x
+                                     in video_ranges]
+        minimum = min(absolute_time_differences, key=lambda y: y[0])
+        return minimum
 
     def get_log_data_from_frame(self, frame):
         logger.debug(f'Getting log data for frame {frame}')
@@ -244,7 +257,11 @@ class DroneLog:
         return self.time_stamp[idx], self.height[idx] + self.takeoff_altitude, self.rotation[idx], self.pos[idx]
 
     def get_time_idx(self, time):
-        minimum = min([(abs((x - time).total_seconds()), idx) for idx, x in enumerate(self.time_stamp)], key=lambda y: y[0])
+        idx_and_absolute_time_difference = [(abs((x - time).total_seconds()), idx) 
+                                            for idx, x 
+                                            in enumerate(self.time_stamp)]
+        minimum = min(idx_and_absolute_time_difference, 
+                      key=lambda y: y[0])
         return minimum[1]
 
 
