@@ -2,7 +2,9 @@
 
 When a new version is ready to be pushed to dockerhub.com, the following commands should be used.
 ```
-docker tag dronevideomeasure_webapp:latest midtiby/dronevideomeasure_webapp
+./dvm.sh build
+docker tag dronevideomeasure-webapp:latest midtiby/dronevideomeasure_webapp
+docker login -u "midtiby"
 docker push midtiby/dronevideomeasure_webapp
 ```
 
