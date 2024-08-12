@@ -125,7 +125,7 @@ def save_start_time(video_id):
         db.session.commit()
         drone_log.video_start_time = new_video_start_time
     elif not start_time_str:
-        video_start_time, message = drone_log.match_log_and_video()
+        new_video_start_time, message = drone_log.match_log_and_video()
         if message:
             flask.flash(message, 'warning')
         video.start_time = new_video_start_time
