@@ -117,7 +117,16 @@ def save_start_time(video_id):
     match = re.fullmatch(r'(\d\d):(\d\d):(\d\d)\.?(\d*)', start_time_str)
     video = Video.query.get_or_404(video_id)
     if match:
-        start_time = time(int(match.group(1)), int(match.group(2)), int(match.group(3)), int(match.group(4) if match.group(4) else 0))
+        match_hour = int(match.group(1))
+        match_minute = int(match.group(2))
+        match_second = int(match.group(3))
+        # TODO: Handle case with less than 6 digits after the period.
+        match_microseconds = int(match.group(4) if match.group(4) else 0)
+        if len(match.group(4)) < 6:
+            logger.debug(f"len(match.group(4)): { len(match.group(4)) }")
+            match_microseconds = match_microseconds * 10**(6 - len(match.group(4)))
+            logger.debug(f"Microseconds: { match_microseconds }")
+        start_time = time(match_hour, match_minute, match_second, match_microseconds)
         video_start_time = video.start_time
         new_video_start_time = datetime.combine(video_start_time, start_time)
         video.start_time = new_video_start_time
