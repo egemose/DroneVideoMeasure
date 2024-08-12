@@ -133,13 +133,16 @@ def save_start_time(video_id):
         logger.debug(f'video.start_time: { video.start_time }')
         db.session.commit()
         drone_log.video_start_time = new_video_start_time
-    elif not start_time_str:
+    elif start_time_str == "1":
+        logger.debug(f'Attempting automatic matching of video with logfile')
+        drone_log.video_start_time = None
         new_video_start_time, message = drone_log.match_log_and_video()
         if message:
             flask.flash(message, 'warning')
         video.start_time = new_video_start_time
         db.session.commit()
     elif start_time_str == "0":
+        logger.debug(f'Set video start time to start of logfile')
         minimum = min([(x, x) for x in drone_log.time_stamp], key=lambda z: z[0])
         video.start_time = minimum[0]
         db.session.commit()        
