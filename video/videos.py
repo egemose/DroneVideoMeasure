@@ -139,6 +139,10 @@ def save_start_time(video_id):
             flask.flash(message, 'warning')
         video.start_time = new_video_start_time
         db.session.commit()
+    elif start_time_str == "0":
+        minimum = min([(x, x) for x in drone_log.time_stamp], key=lambda z: z[0])
+        video.start_time = minimum[0]
+        db.session.commit()        
     else:
         flask.flash('Error setting the video time.', 'error')
         logger.debug(f'Error setting the video time')
