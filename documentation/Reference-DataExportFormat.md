@@ -16,9 +16,9 @@ When exporting annotations from a project a .csv file with a lot of details abou
 - length
 	- The length of the annotated line
 - lat
-	- The **latitude** of the center of the annotation
+	- The **latitude** of the center of the annotation (WGS84)
 - lon
-	- The **longitude** of the center of the annotation
+	- The **longitude** of the center of the annotation (WGS84)
 - east
 	- The **easting** coordinate of the center of the annotation (UTM coordinate)
 - north
