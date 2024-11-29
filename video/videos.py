@@ -27,13 +27,27 @@ def get_horizon_dict():
     for x in np.linspace(-np.pi, np.pi, 100):
         point = (np.cos(x), 0, np.sin(x))
         world_points['EW'].append(point)
+    # Points for North East - South West line
+    for x in np.linspace(-np.pi, np.pi, 100):
+        point = (np.cos(x), np.cos(x), np.sin(x))
+        world_points['NESW'].append(point)
+    for x in np.linspace(-np.pi, np.pi, 100):
+        point = (np.cos(x), -np.cos(x), np.sin(x))
+        world_points['NWSE'].append(point)
     # Points for the artificial horizon
+    pitch_angle = 0
     for x in np.linspace(-np.pi, np.pi, 100):
-        point = (np.cos(x), np.sin(x), 0)
+        point = (np.cos(x) * np.cos(pitch_angle), np.sin(x) * np.cos(pitch_angle), np.sin(pitch_angle))
         world_points['pitch0'].append(point)
-    # Points for the minus 45 degree pitch
+    # Points for the minus 22.5 degree pitch
+    pitch_angle = -22.5 * np.pi / 180
     for x in np.linspace(-np.pi, np.pi, 100):
-        point = (np.cos(x) / np.sqrt(2), np.sin(x) / np.sqrt(2), -1 / np.sqrt(2))
+        point = (np.cos(x) * np.cos(pitch_angle), np.sin(x) * np.cos(pitch_angle), np.sin(pitch_angle))
+        world_points['pitch22'].append(point)
+    # Points for the minus 45 degree pitch
+    pitch_angle = -45 * np.pi / 180
+    for x in np.linspace(-np.pi, np.pi, 100):
+        point = (np.cos(x) * np.cos(pitch_angle), np.sin(x) * np.cos(pitch_angle), np.sin(pitch_angle))
         world_points['pitch45'].append(point)
     return world_points
 

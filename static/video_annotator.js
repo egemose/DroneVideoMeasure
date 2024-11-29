@@ -1,7 +1,10 @@
 var current_frame = 0;
 var horizon_fabricjs_ns = null;
 var horizon_fabricjs_ew = null;
+var horizon_fabricjs_nwse = null;
+var horizon_fabricjs_nesw = null;
 var horizon_fabricjs_pitch0 = null;
+var horizon_fabricjs_pitch22 = null;
 var horizon_fabricjs_pitch45 = null;
 
 // make points only on some frames
@@ -313,6 +316,34 @@ class video_annotator {
         } else {
           horizon_fabricjs_ew = null;
         };
+        if (data.NESW) {
+          horizon_fabricjs_nesw = new fabric.Polyline(data.NESW, {
+            stroke: 'magenta',
+            fill: 'rgba(0,0,0,0)',
+            strokeWidth: 3,
+            left: data.NESW_pos[0].left,
+            top: data.NESW_pos[0].top,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
+          });
+        } else {
+          horizon_fabricjs_nesw = null;
+        };
+        if (data.NWSE) {
+          horizon_fabricjs_nesw = new fabric.Polyline(data.NWSE, {
+            stroke: 'magenta',
+            fill: 'rgba(0,0,0,0)',
+            strokeWidth: 3,
+            left: data.NWSE_pos[0].left,
+            top: data.NWSE_pos[0].top,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
+          });
+        } else {
+          horizon_fabricjs_nwse = null;
+        };
         if (data.pitch0) {
           horizon_fabricjs_pitch0 = new fabric.Polyline(data.pitch0, {
             stroke: 'green',
@@ -326,6 +357,20 @@ class video_annotator {
           });
         } else {
           horizon_fabricjs_pitch0 = null;
+        };
+        if (data.pitch22) {
+          horizon_fabricjs_pitch22 = new fabric.Polyline(data.pitch22, {
+            stroke: 'green',
+            fill: 'rgba(0,0,0,0)',
+            strokeWidth: 3,
+            left: data.pitch22_pos[0].left,
+            top: data.pitch22_pos[0].top,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
+          });
+        } else {
+          horizon_fabricjs_pitch22 = null;
         };
         if (data.pitch45) {
           horizon_fabricjs_pitch45 = new fabric.Polyline(data.pitch45, {
@@ -348,8 +393,17 @@ class video_annotator {
       if (horizon_fabricjs_ew) {
         this.overlay.fabricCanvas().add(horizon_fabricjs_ew);
       };
+      if (horizon_fabricjs_nesw) {
+        this.overlay.fabricCanvas().add(horizon_fabricjs_nesw);
+      };
+      if (horizon_fabricjs_nwse) {
+        this.overlay.fabricCanvas().add(horizon_fabricjs_nwse);
+      };
       if (horizon_fabricjs_pitch0) {
         this.overlay.fabricCanvas().add(horizon_fabricjs_pitch0);
+      };
+      if (horizon_fabricjs_pitch22) {
+        this.overlay.fabricCanvas().add(horizon_fabricjs_pitch22);
       };
       if (horizon_fabricjs_pitch45) {
         this.overlay.fabricCanvas().add(horizon_fabricjs_pitch45);

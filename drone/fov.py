@@ -59,6 +59,8 @@ class Fov:
         return vector
 
     def get_horizon_and_world_corners(self, world_point_dict, yaw_pitch_roll):
+        # TODO: Are we using the camera matrix from the camera calibration
+        # to project this on the image? I don't think that is the case now.
         margin = 200
         image_plane_width_in_meters = np.tan(self.horizontal_fov / 2) * 2
         image_plane_height_in_meters = np.tan(self.vertical_fov / 2) * 2
