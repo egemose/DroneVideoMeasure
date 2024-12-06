@@ -62,11 +62,7 @@ class Fov:
         return vector
 
     def get_horizon_and_world_corners(self, world_point_dict, yaw_pitch_roll):
-        # TODO: Are we using the camera matrix from the camera calibration
-        # to project this on the image? I don't think that is the case now.
         margin = 200
-        image_plane_width_in_meters = np.tan(self.horizontal_fov / 2) * 2
-        image_plane_height_in_meters = np.tan(self.vertical_fov / 2) * 2
         yaw_pitch_roll = (-yaw_pitch_roll[0], yaw_pitch_roll[1], yaw_pitch_roll[2])
         rotation_matrix = self.rotation(*yaw_pitch_roll)
         image_points = defaultdict(list)
@@ -76,9 +72,9 @@ class Fov:
             for world_point in world_points:
                 world_rotated_vector = np.matmul(np.transpose(rotation_matrix), world_point)
                 if world_rotated_vector[1] >= 0:
-                    vector = world_rotated_vector / world_rotated_vector[1]
-                    image_point_x = int(vector[0] / image_plane_width_in_meters * self.image_size[0] + self.image_size[0]/2)
-                    image_point_y = int(- vector[2] / image_plane_height_in_meters * self.image_size[1] + self.image_size[1]/2)
+                    vector = self.camera_matrix @ self.rotation(0, np.pi / 2, 0) @ world_rotated_vector
+                    image_point_x = int(vector[0] / vector[2])
+                    image_point_y = int(vector[1] / vector[2])
                     if -margin <= image_point_x <= self.image_size[0] + margin:
                         if -margin <= image_point_y <= self.image_size[1] + margin:
                             temp_image_points_x.append(image_point_x)
