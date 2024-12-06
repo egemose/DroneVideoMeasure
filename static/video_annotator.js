@@ -331,8 +331,8 @@ class video_annotator {
           horizon_fabricjs_nesw = null;
         };
         if (data.NWSE) {
-          horizon_fabricjs_nesw = new fabric.Polyline(data.NWSE, {
-            stroke: 'magenta',
+          horizon_fabricjs_nwse = new fabric.Polyline(data.NWSE, {
+            stroke: 'cyan',
             fill: 'rgba(0,0,0,0)',
             strokeWidth: 3,
             left: data.NWSE_pos[0].left,
