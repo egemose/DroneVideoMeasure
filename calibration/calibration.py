@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import glob
 import logging
+from pathlib import Path
 from calibration.corner_detector import ChessBoardCornerDetector
 
 logger = logging.getLogger('app.' + __name__)
@@ -13,8 +14,12 @@ class CalibrateCamera:
         self.min_percentage_coverage = 15
         self.detector = ChessBoardCornerDetector()
 
-    def detect_calibration_pattern_in_image(self, img):
-        corners, coverage, _ = self.detector.detect_chess_board_corners(img)
+    def detect_calibration_pattern_in_image(self, img, filename):
+        corners, coverage, _ = self.detector.detect_chess_board_corners(
+            img,
+            debug=False,
+            path_to_image=Path(filename),
+            path_to_output_folder=Path("/app/data/calibrationtemp"))
         obj_points = []
         img_points = []
         for key, val in corners.items():
@@ -30,7 +35,7 @@ class CalibrateCamera:
         for image_file in image_files:
             img = cv2.imread(image_file)
             image_size = (img.shape[1], img.shape[0])
-            obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(img)
+            obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(img, filename=image_file)
             if coverage > self.min_percentage_coverage:
                 obj_points_list.append(obj_points)
                 img_points_list.append(img_points)
