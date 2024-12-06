@@ -6,6 +6,9 @@ import logging
 
 logger = logging.getLogger('app.' + __name__)
 
+# https://stackoverflow.com/a/2150512/185475
+def shift(seq, n):
+    return seq[n:] + seq[:n]
 
 class Fov:
     def __init__(self):
@@ -80,6 +83,12 @@ class Fov:
                         if -margin <= image_point_y <= self.image_size[1] + margin:
                             temp_image_points_x.append(image_point_x)
                             temp_image_points_y.append(image_point_y)
+            if not temp_image_points_x == []:
+                # Find last occurence of the maximum x value
+                name_id = len(temp_image_points_x) - 1 - temp_image_points_x[::-1].index(max(temp_image_points_x))
+                # Reorder temp_image_points such that the largest x value is the first in the list.
+                temp_image_points_x = shift(temp_image_points_x, name_id)
+                temp_image_points_y = shift(temp_image_points_y, name_id)
             left = min(temp_image_points_x, default=0)
             top = min(temp_image_points_y, default=0)
             for x, y in zip(temp_image_points_x, temp_image_points_y):
