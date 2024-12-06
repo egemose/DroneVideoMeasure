@@ -70,7 +70,8 @@ class CalibrateCamera:
                 if ret_val:
                     logger.debug(f"Examining frame { count } for calibration pattern coverage")
                     image_size = (frame.shape[1], frame.shape[0])
-                    obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(frame)
+                    obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(frame, 
+                                                                                                filename=f"frame_from_video_{ count }.png")
                     if coverage > self.min_percentage_coverage:
                         logger.debug(f"Calibration pattern coverage is fine ({ coverage })")
                         obj_points_list.append(obj_points)
