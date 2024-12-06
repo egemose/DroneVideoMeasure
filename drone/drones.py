@@ -62,15 +62,17 @@ def get_edit_drone_form():
 
 @drones_view.route('/drones/<drone_id>/calibrate', methods=['GET', 'POST'])
 def add_calibration(drone_id):
+    logger.debug('add_calibration')
     calibration_folder = os.path.join(data_dir, 'calibration')
     if not os.path.exists(calibration_folder):
         logger.debug(f'Creating calibration folder')
         os.mkdir(calibration_folder)
-    if os.path.isdir(calibration_folder):
-        logger.debug(f'Removing calibration folder')
-        shutil.rmtree(calibration_folder)
-        logger.debug(f'Creating calibration folder')
-        os.mkdir(calibration_folder)
+    if flask.request.method == 'GET':
+        if os.path.isdir(calibration_folder):
+            logger.debug(f'Removing calibration folder')
+            shutil.rmtree(calibration_folder)
+            logger.debug(f'Creating calibration folder')
+            os.mkdir(calibration_folder)
     if flask.request.method == 'POST':
         file_obj = flask.request.files
         for file in file_obj.values():
@@ -102,9 +104,13 @@ def do_calibration(drone_id):
 def calibration_task(self, drone_id):
     self.update_state(state='PROCESSING')
     in_folder = os.path.join(data_dir, 'calibration')
+    in_folder_temp = os.path.join(data_dir, 'calibrationtemp')
+    shutil.rmtree(in_folder_temp)
+    os.mkdir(in_folder_temp)
     calibrate_cam = CalibrateCamera()
     try:
         result = calibrate_cam(in_folder)
+        logger.debug(f'calibration result { result }')
         if result == -1:
             shutil.rmtree(in_folder)
             os.mkdir(in_folder)
