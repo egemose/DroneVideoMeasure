@@ -17,7 +17,7 @@ class CalibrateCamera:
     def detect_calibration_pattern_in_image(self, img, filename):
         corners, coverage, _ = self.detector.detect_chess_board_corners(
             img,
-            debug=False,
+            debug=True,
             path_to_image=Path(filename),
             path_to_output_folder=Path("/app/data/calibrationtemp"))
         obj_points = []

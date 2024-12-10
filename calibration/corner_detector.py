@@ -3,14 +3,16 @@ import numpy as np
 from calibration.MarkerTracker import MarkerTracker
 import math
 import collections
+import logging
 from sklearn.neighbors import KDTree
 
+logger = logging.getLogger('app.' + __name__)
 
 class ChessBoardCornerDetector:
     def __init__(self):
         self.distance_scale_ratio = 0.06
         self.distance_scale = 511
-        self.distance_threshold = 0.06
+        self.distance_threshold = 0.13
         self.calibration_points = None
         self.centers = None
         self.centers_kdtree = None
