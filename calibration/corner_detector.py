@@ -2,57 +2,70 @@ import cv2
 import numpy as np
 from calibration.MarkerTracker import MarkerTracker
 import math
+import time
 import collections
 import logging
 from sklearn.neighbors import KDTree
+from icecream import ic
+from calibration.peak_enumerator import PeakEnumerator
 
 logger = logging.getLogger('app.' + __name__)
 
 class ChessBoardCornerDetector:
     def __init__(self):
-        self.distance_scale_ratio = 0.06
-        self.distance_scale = 511
+        self.distance_scale_ratio = 0.1
+        self.distance_scale = 50
         self.distance_threshold = 0.13
+        self.kernel_size = 45
+        self.relative_threshold_level = 0.5
         self.calibration_points = None
         self.centers = None
         self.centers_kdtree = None
         self.points_to_examine_queue = None
 
     def detect_chess_board_corners(self, img, debug=False, *, path_to_image=None, path_to_output_folder=None):
-        # Set the distance scale to a certain fraction of the image height
-        self.distance_scale = img.shape[0] * self.distance_scale_ratio
-        # Calculate corner responses
-        response = self.calculate_corner_responses(img)
-        # print("%8.2f, convolution" % (time.time() - t_start))
-        # Localized normalization of responses
-        response_relative_to_neighbourhood = self.local_normalization(response, self.distance_scale)
-        # print("%8.2f, relative response" % (time.time() - t_start))
-        # Threshold responses
-        relative_responses_thresholded = self.threshold_responses(response_relative_to_neighbourhood)
-        # Locate centers of peaks
-        centers = self.locate_centers_of_peaks(relative_responses_thresholded)
-        # Select central center of mass
-        selected_center = self.select_central_peak_location(centers)
-        # Enumerate detected peaks
-        calibration_points = self.enumerate_peaks(centers, selected_center)
-        # print("%8.2f, grid mapping" % (time.time() - t_start))
-        # write output images if debug is True
+        try:
+            # Calculate corner response
+            response = self.calculate_corner_responses(img)
+            # print("%8.2f, convolution" % (time.time() - t_start))
+            # Localized normalization of responses
+            response_relative_to_neighbourhood = self.local_normalization(response, self.distance_scale)
+            # print("%8.2f, relative response" % (time.time() - t_start))
+            # Threshold responses
+            relative_responses_thresholded = self.threshold_responses(response_relative_to_neighbourhood)
+            # Locate centers of peaks
+            centers = self.locate_centers_of_peaks(relative_responses_thresholded)
+
+            pe = PeakEnumerator(centers)
+            selected_center = pe.select_central_peak_location()
+            calibration_points = pe.enumerate_peaks()
+            self.calibration_points = calibration_points
+            # print("%8.2f, grid mapping" % (time.time() - t_start))
+            # write output images if debug is True
+        except Exception as e:
+            ic(e)
         if debug:
-            # making the output folders
-            path_to_output_local_maxima_folder = path_to_output_folder / '4_local_maxima'
-            path_to_output_local_maxima_folder.mkdir(parents=False, exist_ok=True)
+            # Make output folders
             path_to_output_response_folder = path_to_output_folder / '1_response'
             path_to_output_response_folder.mkdir(parents=False, exist_ok=True)
             path_to_output_response_neighbourhood_folder = path_to_output_folder / '2_respond_relative_to_neighbourhood'
             path_to_output_response_neighbourhood_folder.mkdir(parents=False, exist_ok=True)
             path_to_output_response_threshold_folder = path_to_output_folder / '3_relative_response_thresholded'
             path_to_output_response_threshold_folder.mkdir(parents=False, exist_ok=True)
+            path_to_output_located_centers_folder = path_to_output_folder / '4_located_centers'
+            path_to_output_located_centers_folder.mkdir(parents=False, exist_ok=True)
+            path_to_output_local_maxima_folder = path_to_output_folder / '5_local_maxima'
+            path_to_output_local_maxima_folder.mkdir(parents=False, exist_ok=True)
+            # Write debug images
             path_response_1 = path_to_output_response_folder / (path_to_image.stem + '_response.png')
             cv2.imwrite(str(path_response_1), response)
             path_response_2 = path_to_output_response_neighbourhood_folder / (path_to_image.stem + '_response_relative_to_neighbourhood.png')
             cv2.imwrite(str(path_response_2), response_relative_to_neighbourhood * 255)
             path_response_3 = path_to_output_response_threshold_folder / (path_to_image.stem + '_relative_responses_thresholded.png')
             cv2.imwrite(str(path_response_3), relative_responses_thresholded)
+            located_centers = self.show_detected_points(img, centers)
+            path_response_4 = path_to_output_located_centers_folder / (path_to_image.stem + '_located_centers.png')
+            cv2.imwrite(str(path_response_4), located_centers)
             canvas = self.show_detected_calibration_points(img, self.calibration_points)
             cv2.circle(canvas, tuple(selected_center.astype(int)), 10, (0, 0, 255), -1)
             path_local_max = path_to_output_local_maxima_folder / (path_to_image.stem + '_local_maxima.png')
@@ -64,26 +77,51 @@ class ChessBoardCornerDetector:
         return self.calibration_points, percentage_image_covered, stats
 
         # Not necessary to output the images when we just want the statistics after undistorting
-    def make_statistics(self, img):
+    def make_statistics(self, img, debug, output, fname):
         # Calculate corner responses
         response = self.calculate_corner_responses(img)
+        if debug:
+            path_to_output_undistorted_corner_response = output.parent / '91_undistorted_corner_response'
+            path_to_output_undistorted_corner_response.mkdir(parents=False, exist_ok=True)
+            cv2.imwrite(path_to_output_undistorted_corner_response / (fname.stem + '.png'), response)
+
         # Localized normalization of responses
         response_relative_to_neighbourhood = self.local_normalization(response, self.distance_scale)
+        if debug:
+            path_to_output_undistorted_response = output.parent / '92_undistorted_relative_response'
+            path_to_output_undistorted_response.mkdir(parents=False, exist_ok=True)
+            cv2.imwrite(path_to_output_undistorted_response / (fname.stem + '.png'), response_relative_to_neighbourhood * 255)
+
         # Threshold responses
         relative_responses_thresholded = self.threshold_responses(response_relative_to_neighbourhood)
+        if debug:
+            path_to_output_undistorted_thresholded = output.parent / '93_undistorted_thresholded'
+            path_to_output_undistorted_thresholded.mkdir(parents=False, exist_ok=True)
+            cv2.imwrite(path_to_output_undistorted_thresholded / (fname.stem + '.png'), relative_responses_thresholded)
+
         # Locate centers of peaks
         centers = self.locate_centers_of_peaks(relative_responses_thresholded)
-        # Select central center of mass
-        selected_center = self.select_central_peak_location(centers)
-        # Enumerate detected peaks
-        calibration_points = self.enumerate_peaks(centers, selected_center)
+        centers = sorted(centers, key = lambda item: item[0])
+        #ic(centers)
+
+        pe = PeakEnumerator(centers)
+        selected_center = pe.select_central_peak_location()
+        calibration_points = pe.enumerate_peaks()
+        self.calibration_points = calibration_points
+
+        if debug:
+            canvas = self.show_detected_calibration_points(img, self.calibration_points)
+            cv2.circle(canvas, tuple(selected_center.astype(int)), 10, (0, 0, 255), -1)
+            path_to_output_undistorted_calibration_points = output.parent / '95_undistorted_calibration_points'
+            path_to_output_undistorted_calibration_points.mkdir(parents=False, exist_ok=True)
+            cv2.imwrite(path_to_output_undistorted_calibration_points / (fname.stem + '.png'), canvas)
+
         # How straight are the points?
         stats = self.statistics(calibration_points)
         return stats
 
-    @staticmethod
-    def calculate_corner_responses(img):
-        locator = MarkerTracker(order=2, kernel_size=45, scale_factor=40)
+    def calculate_corner_responses(self, img):
+        locator = MarkerTracker(order=2, kernel_size=self.kernel_size, scale_factor=40)
         greyscale_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         response = locator.apply_convolution_with_complex_kernel(greyscale_image)
         return response
@@ -93,153 +131,62 @@ class ChessBoardCornerDetector:
         response_relative_to_neighbourhood = self.peaks_relative_to_neighbourhood(response, neighbourhoodsize, 0.05 * max_val)
         return response_relative_to_neighbourhood
 
-    @staticmethod
-    def threshold_responses(response_relative_to_neighbourhood):
-        _, relative_responses_thresholded = cv2.threshold(response_relative_to_neighbourhood, 0.5, 255, cv2.THRESH_BINARY)
+    def threshold_responses(self, response_relative_to_neighbourhood):
+        _, relative_responses_thresholded = cv2.threshold(response_relative_to_neighbourhood, self.relative_threshold_level, 255, cv2.THRESH_BINARY)
         return relative_responses_thresholded
 
     def locate_centers_of_peaks(self, relative_responses_thresholded):
         contours, t1 = cv2.findContours(np.uint8(relative_responses_thresholded), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        centers = list(map(self.get_center_of_mass, contours))
+        centers = []
+        for contour in contours:
+            val = self.get_center_of_mass(contour)
+
+            area = cv2.contourArea(contour)
+            if area > 0:
+                perimeter = cv2.arcLength(contour, closed = True)
+                measure = 4 * np.pi * area / (perimeter * perimeter)
+                if measure > 0.6:
+                    centers.append(val)
         return centers
 
-    @staticmethod
-    def select_central_peak_location(centers):
-        mean_position_of_centers = np.mean(centers, axis=0)
-        central_center = np.array(sorted(list(centers), key=lambda c: np.sqrt((c[0] - mean_position_of_centers[0]) ** 2 + (c[1] - mean_position_of_centers[1]) ** 2)))
-        return central_center[0]
+    def show_detected_points(self, img, points):
+        canvas = img.copy()
+        for point in points:
+            x = int(point[0])
+            y = int(point[1])
+            cv2.circle(canvas, (x, y), int(self.kernel_size / 2), (0, 0, 255), 2)
 
-    def enumerate_peaks(self, centers, selected_center):
-        self.centers = centers
-        self.centers_kdtree = KDTree(np.array(self.centers))
-        self.calibration_points = self.initialize_calibration_points(selected_center)
-        self.points_to_examine_queue = [(0, 0), (1, 0), (0, 1)]
-        for x_index, y_index in self.points_to_examine_queue:
-            self.apply_all_rules_to_add_calibration_points(x_index, y_index)
-        return self.calibration_points
+        return canvas
 
-    @staticmethod
-    def show_detected_calibration_points(img, calibration_points):
+    def show_detected_calibration_points(self, img, calibration_points):
         canvas = img.copy()
         for x_index, temp in calibration_points.items():
             for y_index, cal_point in temp.items():
-                cv2.circle(canvas, tuple(cal_point.astype(int)), 20, (0, 255 * (y_index % 2), 255 * (x_index % 2)), 2)
+                cv2.circle(canvas, tuple(cal_point.astype(int)), int(self.kernel_size / 2), (0, 255 * (y_index % 2), 255 * (x_index % 2)), 2)
+
+                if x_index + 1 in self.calibration_points:
+                    if y_index + 1 in self.calibration_points[x_index + 1]:
+                        other_corner = self.calibration_points[x_index + 1][y_index + 1]
+                        alpha = 0.3
+                        p1 = alpha * cal_point + (1-alpha) * other_corner
+                        p2 = (1 - alpha) * cal_point + alpha * other_corner
+                        cv2.line(canvas, 
+                                 tuple(p1.astype(int)), 
+                                 tuple(p2.astype(int)), 
+                                 (0, 0, 255), 
+                                 1)
+                if x_index + 1 in self.calibration_points:
+                    if y_index - 1 in self.calibration_points[x_index + 1]:
+                        other_corner = self.calibration_points[x_index + 1][y_index - 1]
+                        alpha = 0.3
+                        p1 = alpha * cal_point + (1-alpha) * other_corner
+                        p2 = (1 - alpha) * cal_point + alpha * other_corner
+                        cv2.line(canvas, 
+                                 tuple(p1.astype(int)), 
+                                 tuple(p2.astype(int)), 
+                                 (0, 0, 255), 
+                                 1)
         return canvas 
-
-    def initialize_calibration_points(self, selected_center):
-        closest_neighbour, _ = self.locate_nearest_neighbour(selected_center)
-        direction = selected_center - closest_neighbour
-        rotation_matrix = np.array([[0, 1], [-1, 0]])
-        hat_vector = np.matmul(direction, rotation_matrix)
-        direction_b_neighbour, _ = self.locate_nearest_neighbour(selected_center + hat_vector, minimum_distance_from_selected_center=-1)
-        calibration_points = collections.defaultdict(dict)
-        calibration_points[0][0] = selected_center
-        calibration_points[1][0] = closest_neighbour
-        calibration_points[0][1] = direction_b_neighbour
-
-        return calibration_points
-
-    def apply_all_rules_to_add_calibration_points(self, x_index, y_index):
-        self.rule_one(x_index, y_index)
-        self.rule_two(x_index, y_index)
-        self.rule_three(x_index, y_index)
-        self.rule_four(x_index, y_index)
-        self.rule_five(x_index, y_index)
-
-    def rule_three(self, x_index, y_index):
-        try:
-            # Ensure that we don't overwrite already located
-            # points.
-            if y_index + 1 in self.calibration_points[x_index]:
-                return
-            position_one = self.calibration_points[x_index - 1][y_index]
-            position_two = self.calibration_points[x_index - 1][y_index + 1]
-            position_three = self.calibration_points[x_index][y_index]
-            predicted_location = position_two + position_three - position_one
-            location, distance = self.locate_nearest_neighbour(predicted_location,
-                                                               minimum_distance_from_selected_center=-1)
-            reference_distance = np.linalg.norm(position_three - position_one)
-            if distance / reference_distance < self.distance_threshold:
-                self.calibration_points[x_index][y_index + 1] = location
-                self.points_to_examine_queue.append((x_index, y_index + 1))
-        except KeyError:
-            pass
-
-    def rule_two(self, x_index, y_index):
-        try:
-            if y_index in self.calibration_points[x_index + 1]:
-                return
-            position_one = self.calibration_points[x_index - 1][y_index]
-            position_two = self.calibration_points[x_index][y_index]
-            predicted_location = 2 * position_two - position_one
-            location, distance = self.locate_nearest_neighbour(predicted_location,
-                                                               minimum_distance_from_selected_center=-1)
-            reference_distance = np.linalg.norm(position_two - position_one)
-            if distance / reference_distance < self.distance_threshold:
-                self.calibration_points[x_index + 1][y_index] = location
-                self.points_to_examine_queue.append((x_index + 1, y_index))
-        except KeyError:
-            pass
-
-    def rule_one(self, x_index, y_index):
-        try:
-            # Ensure that we don't overwrite already located
-            # points.
-            if y_index + 1 in self.calibration_points[x_index]:
-                return
-            position_one = self.calibration_points[x_index][y_index]
-            position_two = self.calibration_points[x_index][y_index - 1]
-            predicted_location = 2 * position_one - position_two
-            location, distance = self.locate_nearest_neighbour(predicted_location,
-                                                               minimum_distance_from_selected_center=-1)
-            reference_distance = np.linalg.norm(position_two - position_one)
-            if distance / reference_distance < self.distance_threshold:
-                self.calibration_points[x_index][y_index + 1] = location
-                self.points_to_examine_queue.append((x_index, y_index + 1))
-        except KeyError:
-            pass
-
-    def rule_four(self, x_index, y_index):
-        try:
-            # Ensure that we don't overwrite already located
-            # points.
-            if y_index - 1 in self.calibration_points[x_index]:
-                return
-            position_one = self.calibration_points[x_index][y_index]
-            position_two = self.calibration_points[x_index][y_index + 1]
-            predicted_location = 2 * position_one - position_two
-            location, distance = self.locate_nearest_neighbour(predicted_location,
-                                                               minimum_distance_from_selected_center=-1)
-            reference_distance = np.linalg.norm(position_two - position_one)
-            if distance / reference_distance < self.distance_threshold:
-                self.calibration_points[x_index][y_index - 1] = location
-                self.points_to_examine_queue.append((x_index, y_index - 1))
-        except KeyError:
-            pass
-
-    def rule_five(self, x_index, y_index):
-        try:
-            if y_index in self.calibration_points[x_index - 1]:
-                return
-
-            position_one = self.calibration_points[x_index + 1][y_index]
-            position_two = self.calibration_points[x_index][y_index]
-            predicted_location = 2 * position_two - position_one
-            location, distance = self.locate_nearest_neighbour(predicted_location, minimum_distance_from_selected_center=-1)
-            reference_distance = np.linalg.norm(position_two - position_one)
-            if distance / reference_distance < self.distance_threshold:
-                self.calibration_points[x_index - 1][y_index] = location
-                self.points_to_examine_queue.append((x_index - 1, y_index))
-        except KeyError:
-            pass
-
-    def locate_nearest_neighbour(self, selected_center, minimum_distance_from_selected_center=0):
-        reshaped_query_array = np.array(selected_center).reshape(1, -1)
-        (distances, indices) = self.centers_kdtree.query(reshaped_query_array, 2)
-        if distances[0][0] <= minimum_distance_from_selected_center:
-            return self.centers[indices[0][1]], distances[0][1]
-        else:
-            return self.centers[indices[0][0]], distances[0][0]
 
     @staticmethod
     def distance_to_ref(ref_point):
@@ -294,6 +241,20 @@ class ChessBoardCornerDetector:
     def image_coverage(calibration_points, img):
         h = img.shape[0]
         w = img.shape[1]
+
+        # Calculate coverage of detected calibration as
+        # a fraction of the image area.
+        points = []
+        for calibration_point_dict in calibration_points.values():
+            for x, y in calibration_point_dict.values():
+                points.append((x, y))
+        points = np.array(points).reshape(-1, 1, 2).astype(np.float32)
+        convexHull = cv2.convexHull(points)
+        convexHullArea = cv2.contourArea(convexHull)
+        imageArea = h * w
+        coverage_ratio = convexHullArea / imageArea
+        #ic(coverage_ratio)
+
         score = np.zeros((10, 10))
         for calibration_point_dict in calibration_points.values():
             for x, y in calibration_point_dict.values():
@@ -304,6 +265,7 @@ class ChessBoardCornerDetector:
                 if y_bin == 10:
                     y_bin = 9
                 score[int(x_bin)][int(y_bin)] += 1
+
         return np.count_nonzero(score)
 
     @staticmethod
