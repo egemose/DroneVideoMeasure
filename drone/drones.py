@@ -105,7 +105,10 @@ def calibration_task(self, drone_id):
     self.update_state(state='PROCESSING')
     in_folder = os.path.join(data_dir, 'calibration')
     in_folder_temp = os.path.join(data_dir, 'calibrationtemp')
-    shutil.rmtree(in_folder_temp)
+    try:
+        shutil.rmtree(in_folder_temp)
+    except Exception:
+        pass
     os.mkdir(in_folder_temp)
     calibrate_cam = CalibrateCamera()
     try:
