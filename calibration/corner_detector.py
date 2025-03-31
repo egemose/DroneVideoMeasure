@@ -15,9 +15,9 @@ logger = logging.getLogger("app." + __name__)
 class ChessBoardCornerDetector:
     def __init__(self):
         self.distance_scale_ratio = 0.1
-        self.distance_scale = 50
+        self.distance_scale = 250
         self.distance_threshold = 0.13
-        self.kernel_size = 45
+        self.kernel_size = 91
         self.relative_threshold_level = 0.5
         self.calibration_points = None
         self.centers = None
@@ -50,6 +50,7 @@ class ChessBoardCornerDetector:
             # print("%8.2f, grid mapping" % (time.time() - t_start))
             # write output images if debug is True
         except Exception as e:
+            print("Something failed in <detect_chess_board_corners>")
             ic(e)
         if debug:
             # Make output folders
@@ -97,11 +98,15 @@ class ChessBoardCornerDetector:
                 path_to_image.stem + "_local_maxima.png"
             )
             cv2.imwrite(str(path_local_max), canvas)
-        # Detect image covered
-        percentage_image_covered = self.image_coverage(calibration_points, img)
-        # How straight are the points?
-        stats = self.statistics(calibration_points)
-        return self.calibration_points, percentage_image_covered, stats
+        
+        try:
+            # Detect image coverage
+            percentage_image_covered = self.image_coverage(calibration_points, img)
+            # How straight are the points?
+            stats = self.statistics(calibration_points)
+            return self.calibration_points, percentage_image_covered, stats
+        except Exception as e:
+            raise Exception("calibration_points was probably not calculated")
 
         # Not necessary to output the images when we just want the statistics after undistorting
 

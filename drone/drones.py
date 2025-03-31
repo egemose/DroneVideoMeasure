@@ -173,7 +173,15 @@ def task_status(task_id):
 @drones_view.route("/drones/<drone_id>/view_calibration")
 def view_calibration(drone_id):
     drone = Drone.query.get_or_404(drone_id)
-    mtx, dist, fov_x, fov_y = drone.calibration
+    try:
+        # From 2025-03-31 Five values are stored in 
+        # drone.calibration, earlier it was only four.
+        # This try catch block is to support both cases.
+        mtx, dist, fov_x, fov_y, n_images = drone.calibration
+    except ValueError:
+        mtx, dist, fov_x, fov_y = drone.calibration
+        n_images = -1
+
     logger.debug(f"Render view_calibration")
     return flask.render_template(
         "drones/view_calibration.html",
@@ -181,6 +189,7 @@ def view_calibration(drone_id):
         dist=np.around(dist, 5),
         fov_x=np.round(fov_x, 2),
         fov_y=np.round(fov_y, 2),
+        n_images=n_images
     )
 
 

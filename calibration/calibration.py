@@ -40,22 +40,21 @@ class CalibrateCamera:
         for image_file in image_files:
             img = cv2.imread(image_file)
             image_size = (img.shape[1], img.shape[0])
-            obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(
-                img, filename=image_file
-            )
-            if coverage > self.min_percentage_coverage:
-                obj_points_list.append(obj_points)
-                img_points_list.append(img_points)
-            else:
-                logger.debug(
-                    f"{image_file} only has {coverage}% coverage minimum set to {self.min_percentage_coverage}"
-                )
+            try:
+                obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(img, filename=image_file)
+                if coverage > self.min_percentage_coverage:
+                    obj_points_list.append(obj_points)
+                    img_points_list.append(img_points)
+                else:
+                    logger.debug(f'{image_file} only has {coverage}% coverage minimum set to {self.min_percentage_coverage}')
+            except Exception as e:
+                print("Something failed in calibrate_camera_from_images")
+                print(e)
         if obj_points_list:
-            logger.debug(f"Using {len(obj_points_list)} images to calibrate")
-            _, mtx, dist, _, _ = cv2.calibrateCamera(
-                obj_points_list, img_points_list, image_size, None, None
-            )
-            return mtx, dist, image_size
+            n_images_used_for_calibration = len(obj_points_list)
+            logger.debug(f'Using {n_images_used_for_calibration} images to calibrate')
+            _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
+            return mtx, dist, image_size, n_images_used_for_calibration
         else:
             logger.debug(f"No usable images found")
             return None, None, None
@@ -106,11 +105,10 @@ class CalibrateCamera:
                     break
             cap.release()
         if obj_points_list:
-            logger.debug(f"Using {len(obj_points_list)} images from video to calibrate")
-            _, mtx, dist, _, _ = cv2.calibrateCamera(
-                obj_points_list, img_points_list, image_size, None, None
-            )
-            return mtx, dist, image_size
+            n_images_used_for_calibration = len(obj_points_list)
+            logger.debug(f'Using {n_images_used_for_calibration} images from video to calibrate')
+            _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
+            return mtx, dist, image_size, n_images_used_for_calibration
         else:
             logger.debug(f"No usable images found in the video")
             return None, None, None
@@ -153,13 +151,13 @@ class CalibrateCamera:
             video_files.extend(glob.glob(os.path.join(in_folder, file_format)))
             video_files.extend(glob.glob(os.path.join(in_folder, file_format.upper())))
         if image_files:
-            mtx, dist, image_size = self.calibrate_camera_from_images(image_files)
+            mtx, dist, image_size, n_images = self.calibrate_camera_from_images(image_files)
         elif video_files:
-            mtx, dist, image_size = self.calibrate_camera_from_video(video_files)
+            mtx, dist, image_size, n_images = self.calibrate_camera_from_video(video_files)
         else:
             return
         if mtx is not None:
             fov_x, fov_y = self.calculate_camera_fov(mtx, image_size)
-            return mtx, dist, fov_x, fov_y
+            return mtx, dist, fov_x, fov_y, n_images
         else:
             return -1
