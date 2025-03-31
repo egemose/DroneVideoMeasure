@@ -17,7 +17,7 @@ class ChessBoardCornerDetector:
         self.distance_scale_ratio = 0.1
         self.distance_scale = 250
         self.distance_threshold = 0.13
-        self.kernel_size = 91
+        self.kernel_size = 101
         self.relative_threshold_level = 0.5
         self.calibration_points = None
         self.centers = None
