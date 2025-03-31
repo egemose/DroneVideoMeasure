@@ -234,12 +234,13 @@ class ChessBoardCornerDetector:
         canvas = img.copy()
         for x_index, temp in calibration_points.items():
             for y_index, cal_point in temp.items():
+                line_width = 1 + int(self.kernel_size / 100)
                 cv2.circle(
                     canvas,
                     tuple(cal_point.astype(int)),
                     int(self.kernel_size / 2),
                     (0, 255 * (y_index % 2), 255 * (x_index % 2)),
-                    2,
+                    line_width,
                 )
 
                 if x_index + 1 in self.calibration_points:
@@ -253,7 +254,7 @@ class ChessBoardCornerDetector:
                             tuple(p1.astype(int)),
                             tuple(p2.astype(int)),
                             (0, 0, 255),
-                            1,
+                            line_width,
                         )
                 if x_index + 1 in self.calibration_points:
                     if y_index - 1 in self.calibration_points[x_index + 1]:
@@ -266,7 +267,7 @@ class ChessBoardCornerDetector:
                             tuple(p1.astype(int)),
                             tuple(p2.astype(int)),
                             (0, 0, 255),
-                            1,
+                            line_width,
                         )
         return canvas
 
