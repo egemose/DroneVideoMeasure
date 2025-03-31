@@ -4,38 +4,60 @@ from flask_wtf.file import FileField
 
 
 class NewProjectForm(flask_wtf.FlaskForm):
-    name = wtforms.fields.StringField(u'Project Name', validators=[wtforms.validators.DataRequired()])
-    description = wtforms.fields.TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
-    drone = wtforms.fields.SelectField(u'Drone', coerce=int)
-    log_file = FileField(u'Drone log')
-    submit = wtforms.fields.SubmitField(u'Add Project')
+    name = wtforms.fields.StringField(
+        "Project Name", validators=[wtforms.validators.DataRequired()]
+    )
+    description = wtforms.fields.TextAreaField(
+        "Description", render_kw={"placeholder": "Optional short project description"}
+    )
+    drone = wtforms.fields.SelectField("Drone", coerce=int)
+    log_file = FileField("Drone log")
+    submit = wtforms.fields.SubmitField("Add Project")
 
 
 class EditProjectForm(flask_wtf.FlaskForm):
     edit_project_before = wtforms.fields.HiddenField()
     edit_project_id = wtforms.fields.HiddenField()
-    edit_name = wtforms.fields.StringField(u'Project Name', validators=[wtforms.validators.DataRequired()])
-    edit_description = wtforms.fields.TextAreaField(u'Description', render_kw={'placeholder': 'Optional short project description'})
-    edit_drone = wtforms.fields.SelectField(u'Drone', coerce=int)
-    edit_log_file = FileField(u'Drone log')
-    edit_submit = wtforms.fields.SubmitField(u'Edit Project')
+    edit_name = wtforms.fields.StringField(
+        "Project Name", validators=[wtforms.validators.DataRequired()]
+    )
+    edit_description = wtforms.fields.TextAreaField(
+        "Description", render_kw={"placeholder": "Optional short project description"}
+    )
+    edit_drone = wtforms.fields.SelectField("Drone", coerce=int)
+    edit_log_file = FileField("Drone log")
+    edit_submit = wtforms.fields.SubmitField("Edit Project")
 
 
 class NewDroneForm(flask_wtf.FlaskForm):
-    name = wtforms.fields.StringField(u'Drone Name', validators=[wtforms.validators.DataRequired()])
-    camera_settings = wtforms.fields.TextAreaField(u'Camera Settings', render_kw={'placeholder': 'Optional description of camera settings used. \n'
-                                                                                  'Format, fps, etc. \n'
-                                                                                  'Useful if Drone is used with different settings',
-                                                                                  'rows': 4})
-    submit = wtforms.fields.SubmitField(u'Add Drone')
+    name = wtforms.fields.StringField(
+        "Drone Name", validators=[wtforms.validators.DataRequired()]
+    )
+    camera_settings = wtforms.fields.TextAreaField(
+        "Camera Settings",
+        render_kw={
+            "placeholder": "Optional description of camera settings used. \n"
+            "Format, fps, etc. \n"
+            "Useful if Drone is used with different settings",
+            "rows": 4,
+        },
+    )
+    submit = wtforms.fields.SubmitField("Add Drone")
 
 
 class EditDroneForm(flask_wtf.FlaskForm):
     edit_drone_before = wtforms.fields.HiddenField()
     edit_drone_id = wtforms.fields.HiddenField()
-    edit_name = wtforms.fields.StringField(u'Drone Name', validators=[wtforms.validators.DataRequired()])
-    edit_camera_settings = wtforms.fields.TextAreaField(u'Camera Settings', render_kw={'placeholder': 'Optional description of camera settings used. \n'
-                                                                                       'Format, fps, etc. \n'
-                                                                                       'Useful if Drone is used with different settings',
-                                                                                       'rows': 4})
-    edit_submit = wtforms.fields.SubmitField(u'Edit Drone')
+    edit_name = wtforms.fields.StringField(
+        "Drone Name", validators=[wtforms.validators.DataRequired()]
+    )
+    edit_camera_settings = wtforms.fields.TextAreaField(
+        "Camera Settings",
+        render_kw={
+            "placeholder": "Optional description of camera settings used. \n"
+            "Format, fps, etc. \n"
+            "Useful if Drone is used with different settings",
+            "rows": 4,
+        },
+    )
+    edit_submit = wtforms.fields.SubmitField("Edit Drone")

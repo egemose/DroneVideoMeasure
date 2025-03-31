@@ -9,11 +9,11 @@ from app_config import data_dir, get_random_filename, Project, Drone, db
 from helper_functions import get_all_annotations, save_annotations_csv
 
 
-logger = logging.getLogger('app.' + __name__)
-projects_view = flask.Blueprint('projects', __name__)
+logger = logging.getLogger("app." + __name__)
+projects_view = flask.Blueprint("projects", __name__)
 
 
-@projects_view.route('/projects', methods=['GET', 'POST'])
+@projects_view.route("/projects", methods=["GET", "POST"])
 def projects():
     random_int = random.randint(1, 10000000)
     res, new_project_form = get_new_project_form()
@@ -23,9 +23,15 @@ def projects():
     projects = Project.query.all()
     drones = Drone.query.all()
     drones = [(x.id, x.name) for x in drones if x.calibration]
-    arguments = {'projects': projects, 'drones': drones, 'random_int': random_int, 'new_project_form': new_project_form, 'edit_project_form': edit_project_form}
-    logger.debug(f'Render index')
-    return flask.render_template('projects/projects.html', **arguments)
+    arguments = {
+        "projects": projects,
+        "drones": drones,
+        "random_int": random_int,
+        "new_project_form": new_project_form,
+        "edit_project_form": edit_project_form,
+    }
+    logger.debug(f"Render index")
+    return flask.render_template("projects/projects.html", **arguments)
 
 
 def get_new_project_form():
@@ -38,9 +44,9 @@ def get_new_project_form():
         drone_id = form.drone.data
         projects = Project.query.all()
         if project_title in [x.name for x in projects]:
-            flask.flash('A project with that name already exist!')
+            flask.flash("A project with that name already exist!")
         else:
-            logger.debug(f'Creating project with name {project_title}')
+            logger.debug(f"Creating project with name {project_title}")
             log_file = None
             if form.log_file.data:
                 log_error = None
@@ -51,13 +57,21 @@ def get_new_project_form():
                 if not success:
                     remove_file(log_file)
                     log_filename = None
-                    log_error = 'Error interpreting the drone log file. Try and upload the log file again.'
+                    log_error = "Error interpreting the drone log file. Try and upload the log file again."
             else:
-                log_error = 'No drone log file added. Please add a log file.'
-            project = Project(name=project_title, description=description, drone_id=drone_id, log_file=log_file, log_error=log_error)
+                log_error = "No drone log file added. Please add a log file."
+            project = Project(
+                name=project_title,
+                description=description,
+                drone_id=drone_id,
+                log_file=log_file,
+                log_error=log_error,
+            )
             db.session.add(project)
             db.session.commit()
-            return flask.redirect(flask.url_for('projects.projects', project_id=project.id)), form
+            return flask.redirect(
+                flask.url_for("projects.projects", project_id=project.id)
+            ), form
     return None, form
 
 
@@ -72,9 +86,9 @@ def get_edit_project_form():
         project_title = form.edit_name.data
         description = form.edit_description.data
         drone_id = form.edit_drone.data
-        logger.debug(f'Editing project {project_before} with new name {project_title}')
+        logger.debug(f"Editing project {project_before} with new name {project_title}")
         if project_title in projects and not project_title == project_before:
-            flask.flash('A project with that name already exist!')
+            flask.flash("A project with that name already exist!")
         else:
             project = Project.query.get_or_404(project_id)
             project.name = project_title
@@ -92,40 +106,42 @@ def get_edit_project_form():
                 else:
                     remove_file(log_file)
                     project.log_file = None
-                    log_error = 'Error interpreting the drone log file. Try and upload the log file again.'
+                    log_error = "Error interpreting the drone log file. Try and upload the log file again."
                 project.log_error = log_error
             db.session.commit()
     return form
 
 
-@projects_view.route('/projects/<project_id>/plot')
+@projects_view.route("/projects/<project_id>/plot")
 def plot_log(project_id):
     project = Project.query.get_or_404(project_id)
     drone_log.get_log_data(project.log_file)
     plot_script, plot_div = plot_log_data.get_log_plot(drone_log.log_data())
-    logger.debug(f'Render video plot for {project_id}')
-    return flask.render_template('projects/plot.html', 
-        plot_div=plot_div, 
-        plot_script=plot_script, 
-        project_id=project_id, 
-        drone_path=drone_log.pos)
+    logger.debug(f"Render video plot for {project_id}")
+    return flask.render_template(
+        "projects/plot.html",
+        plot_div=plot_div,
+        plot_script=plot_script,
+        project_id=project_id,
+        drone_path=drone_log.pos,
+    )
 
 
-@projects_view.route('/projects/<project_id>/download')
+@projects_view.route("/projects/<project_id>/download")
 def download(project_id):
-    with open('version.txt') as version_file:
+    with open("version.txt") as version_file:
         pro_version = version_file.read()
     project = Project.query.get_or_404(project_id)
     annotations = get_all_annotations(project, pro_version)
-    filename = os.path.join(data_dir, 'annotations.csv')
+    filename = os.path.join(data_dir, "annotations.csv")
     save_annotations_csv(annotations, filename)
-    logger.debug(f'Sending annotations.csv to user.')
+    logger.debug(f"Sending annotations.csv to user.")
     return flask.send_file(filename, as_attachment=True)
 
 
-@projects_view.route('/projects/<project_id>/remove')
+@projects_view.route("/projects/<project_id>/remove")
 def remove_project(project_id):
-    logger.debug(f'Removing project {project_id}')
+    logger.debug(f"Removing project {project_id}")
     project = Project.query.get_or_404(project_id)
     remove_file(project.log_file)
     for video in project.videos:
@@ -134,7 +150,7 @@ def remove_project(project_id):
         db.session.delete(video)
     db.session.delete(project)
     db.session.commit()
-    return flask.redirect(flask.url_for('projects.projects'))
+    return flask.redirect(flask.url_for("projects.projects"))
 
 
 def remove_file(f):
