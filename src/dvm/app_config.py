@@ -26,7 +26,7 @@ class AppConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-data_dir = os.path.abspath("data")
+data_dir = os.path.abspath('/app_data')
 
 celery = Celery(
     __name__,

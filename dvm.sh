@@ -50,9 +50,9 @@ add_sudo(){
 }
 
 get_docker_compose(){
-	local docker_compose="docker-compose -f docker-compose.yml"
+	local docker_compose="docker compose -f docker-compose.yml"
 	if [[ $platform = "Windows" ]]; then
-		docker_compose="docker-compose -f docker-compose.windows.yml"
+		docker_compose="docker compose -f docker-compose.windows.yml"
 	fi
 	docker_compose="$(add_sudo "$docker_compose")"
 	echo "$docker_compose"

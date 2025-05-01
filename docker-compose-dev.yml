@@ -1,15 +1,14 @@
-version: '3.3'
 services:
   webapp:
     command: /app/entrypoint.sh --dev
     volumes:
       - type: bind
-        source: .
+        source: ./src/dvm
         target: /app
   worker:
     volumes:
       - type: bind
-        source: .
+        source: ./src/dvm
         target: /app
   adminer:
     image: adminer

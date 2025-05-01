@@ -12,9 +12,9 @@ COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 COPY ./package.json /package.json
 RUN npm install
-COPY . /app
+COPY ./src/dvm /app
 RUN chmod u+x ./entrypoint.sh
-RUN mkdir data
+RUN mkdir /app_data
 
 EXPOSE 5000
 ENV PYTHONUNBUFFERED=1

@@ -1,4 +1,3 @@
-version: '3.3'
 services:
   webapp:
     build: .
@@ -8,7 +7,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - appmedia:/app/data
+      - appmedia:/app_data
     depends_on:
       - redis
       - worker
@@ -18,7 +17,7 @@ services:
     container_name: dvm_worker
     command: celery -A app.celery worker --loglevel=WARNING -c 1
     volumes:
-      - appmedia:/app/data
+      - appmedia:/app_data
     depends_on:
       - redis
   redis:
