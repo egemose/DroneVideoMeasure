@@ -27,7 +27,7 @@ class Fov:
     def set_image_size(self, width, height):
         self.image_size = (width, height)
 
-    def set_camera_params(self, camera_matrix, dist_coefficients, horizontal_fov, vertical_fov):
+    def set_camera_params(self, camera_matrix, dist_coefficients, horizontal_fov, vertical_fov, n_images=None):
         logger.debug("Setting camera params")
         self.camera_matrix = camera_matrix
         self.dist_coefficients = dist_coefficients
