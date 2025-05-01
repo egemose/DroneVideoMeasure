@@ -2,7 +2,7 @@ FROM python:3.13-slim
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y ffmpeg npm && \
+    apt-get --no-install-recommends install -y ffmpeg npm && \
     apt-get autoremove -y && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
