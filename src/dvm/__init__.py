@@ -25,7 +25,7 @@ logger.addHandler(fh)
 
 
 def serve_data_file(filename):
-    return send_from_directory(os.path.join("data"), os.path.split(filename)[-1])
+    return send_from_directory(os.path.join("..", "/app_data"), os.path.split(filename)[-1])
 
 
 def serve_node_modules(filename):

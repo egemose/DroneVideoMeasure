@@ -1,6 +1,7 @@
 import collections
 import logging
 import math
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -24,7 +25,9 @@ class ChessBoardCornerDetector:
         self.centers_kdtree = None
         self.points_to_examine_queue = None
 
-    def detect_chess_board_corners(self, img, debug=False, *, path_to_image=None, path_to_output_folder=None):
+    def detect_chess_board_corners(
+        self, img, debug=False, *, path_to_image=None, path_to_output_folder: Path | None = None
+    ):
         try:
             # Calculate corner response
             response = self.calculate_corner_responses(img)
@@ -48,33 +51,37 @@ class ChessBoardCornerDetector:
             ic(e)
         if debug:
             # Make output folders
-            path_to_output_response_folder = path_to_output_folder / "1_response"
+            path_to_output_response_folder = path_to_output_folder.joinpath("1_response")
             path_to_output_response_folder.mkdir(parents=False, exist_ok=True)
-            path_to_output_response_neighbourhood_folder = path_to_output_folder / "2_respond_relative_to_neighbourhood"
+            path_to_output_response_neighbourhood_folder = path_to_output_folder.joinpath(
+                "2_respond_relative_to_neighbourhood"
+            )
             path_to_output_response_neighbourhood_folder.mkdir(parents=False, exist_ok=True)
-            path_to_output_response_threshold_folder = path_to_output_folder / "3_relative_response_thresholded"
+            path_to_output_response_threshold_folder = path_to_output_folder.joinpath("3_relative_response_thresholded")
             path_to_output_response_threshold_folder.mkdir(parents=False, exist_ok=True)
-            path_to_output_located_centers_folder = path_to_output_folder / "4_located_centers"
+            path_to_output_located_centers_folder = path_to_output_folder.joinpath("4_located_centers")
             path_to_output_located_centers_folder.mkdir(parents=False, exist_ok=True)
-            path_to_output_local_maxima_folder = path_to_output_folder / "5_local_maxima"
+            path_to_output_local_maxima_folder = path_to_output_folder.joinpath("5_local_maxima")
             path_to_output_local_maxima_folder.mkdir(parents=False, exist_ok=True)
             # Write debug images
-            path_response_1 = path_to_output_response_folder / (path_to_image.stem + "_response.png")
+            path_response_1 = path_to_output_response_folder.joinpath(path_to_image.stem + "_response.png")
             cv2.imwrite(str(path_response_1), response)
-            path_response_2 = path_to_output_response_neighbourhood_folder / (
+            path_response_2 = path_to_output_response_neighbourhood_folder.joinpath(
                 path_to_image.stem + "_response_relative_to_neighbourhood.png"
             )
             cv2.imwrite(str(path_response_2), response_relative_to_neighbourhood * 255)
-            path_response_3 = path_to_output_response_threshold_folder / (
+            path_response_3 = path_to_output_response_threshold_folder.joinpath(
                 path_to_image.stem + "_relative_responses_thresholded.png"
             )
             cv2.imwrite(str(path_response_3), relative_responses_thresholded)
             located_centers = self.show_detected_points(img, centers)
-            path_response_4 = path_to_output_located_centers_folder / (path_to_image.stem + "_located_centers.png")
+            path_response_4 = path_to_output_located_centers_folder.joinpath(
+                path_to_image.stem + "_located_centers.png"
+            )
             cv2.imwrite(str(path_response_4), located_centers)
             canvas = self.show_detected_calibration_points(img, self.calibration_points)
             cv2.circle(canvas, tuple(selected_center.astype(int)), 10, (0, 0, 255), -1)
-            path_local_max = path_to_output_local_maxima_folder / (path_to_image.stem + "_local_maxima.png")
+            path_local_max = path_to_output_local_maxima_folder.joinpath(path_to_image.stem + "_local_maxima.png")
             cv2.imwrite(str(path_local_max), canvas)
 
         try:

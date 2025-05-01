@@ -21,7 +21,7 @@ class CalibrateCamera:
             img,
             debug=True,
             path_to_image=Path(filename),
-            path_to_output_folder=Path("/app/data/calibrationtemp"),
+            path_to_output_folder=Path("/app_data/calibrationtemp"),
         )
         obj_points = []
         img_points = []
