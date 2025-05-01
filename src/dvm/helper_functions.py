@@ -3,9 +3,9 @@ import json
 import logging
 import numpy as np
 import math
-from drone.drone_log_data import drone_log
-from drone.fov import fov
-from app_config import Drone
+from dvm.drone.drone_log_data import drone_log
+from dvm.drone.fov import fov
+from dvm.app_config import Drone
 from icecream import ic
 
 

@@ -4,12 +4,12 @@ services:
     volumes:
       - type: bind
         source: ./src/dvm
-        target: /app
+        target: /app/src/dvm
   worker:
     volumes:
       - type: bind
         source: ./src/dvm
-        target: /app
+        target: /app/src/dvm
   adminer:
     image: adminer
     container_name: dvm_adminer

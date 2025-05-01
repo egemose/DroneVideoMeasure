@@ -6,9 +6,9 @@ import flask
 import logging
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from forms import NewDroneForm, EditDroneForm
-from app_config import Project, data_dir, celery, Drone, Task, db, TaskFailure
-from calibration.calibration import CalibrateCamera
+from dvm.forms import NewDroneForm, EditDroneForm
+from dvm.app_config import Project, data_dir, celery, Drone, Task, db, TaskFailure
+from dvm.calibration.calibration import CalibrateCamera
 
 logger = logging.getLogger("app." + __name__)
 drones_view = flask.Blueprint("drones", __name__)

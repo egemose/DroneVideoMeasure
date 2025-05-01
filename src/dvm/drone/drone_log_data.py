@@ -5,7 +5,7 @@ import utm
 from datetime import datetime, timedelta
 import ffmpeg
 import numpy as np
-from app_config import data_dir
+from dvm.app_config import data_dir
 import logging
 
 logger = logging.getLogger("app." + __name__)

@@ -6,8 +6,8 @@ import subprocess
 import logging
 import flask
 import ffmpeg
-from app_config import data_dir, get_random_filename, celery, Task, Project, Video, db
-from helper_functions import save_annotations_csv, get_all_annotations
+from dvm.app_config import data_dir, get_random_filename, celery, Task, Project, Video, db
+from dvm.helper_functions import save_annotations_csv, get_all_annotations
 
 
 logger = logging.getLogger("app." + __name__)

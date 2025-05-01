@@ -8,11 +8,11 @@ RUN rm -rf /var/lib/apt/lists/*
 
 FROM base
 WORKDIR /app
-COPY ./requirements.txt /app/requirements.txt
-RUN pip install -r requirements.txt
 COPY ./package.json /package.json
 RUN npm install
-COPY ./src/dvm /app
+COPY ./pyproject.toml /app/pyproject.toml
+COPY . /app
+RUN pip install -e .
 RUN chmod u+x ./entrypoint.sh
 RUN mkdir /app_data
 

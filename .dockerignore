@@ -8,3 +8,14 @@
 /example-data/
 checkerboard.png
 dvm.sh
+
+documentation/
+dvm_runner/
+manual/
+paper/
+.pre-commit-config.yaml
+docker-compose*
+Dockerfile
+Makefile
+
+TODO.md

@@ -6,11 +6,11 @@ from collections import defaultdict
 from datetime import datetime, time
 import flask
 import logging
-from drone import plot_log_data
-from drone.drone_log_data import drone_log
-from drone.fov import fov
-from app_config import data_dir, Project, Video, Drone, db
-from video.annotations import Annotations
+from dvm.drone import plot_log_data
+from dvm.drone.drone_log_data import drone_log
+from dvm.drone.fov import fov
+from dvm.app_config import data_dir, Project, Video, Drone, db
+from dvm.video.annotations import Annotations
 
 logger = logging.getLogger("app." + __name__)
 annotation_class = Annotations(drone_log, fov)

@@ -4,8 +4,8 @@ import cv2
 import glob
 import logging
 from pathlib import Path
-from calibration.corner_detector import ChessBoardCornerDetector
-from app_config import data_dir
+from dvm.calibration.corner_detector import ChessBoardCornerDetector
+from dvm.app_config import data_dir
 
 logger = logging.getLogger("app." + __name__)
 

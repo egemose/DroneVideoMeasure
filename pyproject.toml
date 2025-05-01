@@ -1,0 +1,129 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "DVM"
+dynamic = ["version"]
+authors = [
+  { name="Henrik Dyrberg Egemose", email="hde@mmmi.sdu.dk" },
+]
+maintainers = [
+  { name="Henrik Skov Midtiby", email="hemi@mmmi.sdu.dk" },
+  { name="Henrik Dyrberg Egemose", email="hde@mmmi.sdu.dk" },
+]
+description = "Drone Video Measure."
+readme = "README.md"
+license-files = ["LICEN[CS]E*"]
+requires-python = ">=3.8"
+dependencies = [
+  "Flask",
+  "Flask_Dropzone",
+  "Flask_Obscure",
+  "Flask_WTF",
+  "flask-sqlalchemy",
+  "flask-migrate",
+  "flask-script",
+  "WTForms",
+  "Werkzeug",
+  "SQLAlchemy",
+  "numpy",
+  "jinja2",
+  "celery[redis]",
+  "utm",
+  "ffmpeg-python",
+  "bokeh",
+  "opencv-python",
+  "scikit-learn",
+  "gunicorn",
+  "gevent",
+  "icecream",
+  "psycopg2-binary",
+  "redis",
+]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/egemose/DroneVideoMeasure"
+Issues = "https://github.com/egemose/DroneVideoMeasure/issues"
+
+[project.optional-dependencies]
+dev = [
+  "pre-commit>=4.0.1",
+  "pytest>=8.3.4",
+  "pytest-cov>=6.0.0",
+  "mypy>=1.13.0",
+]
+test = [
+  "pytest>=8.3.4",
+  "pytest-cov>=6.0.0",
+]
+
+[tool.hatch.version]
+path = "src/dvm/__init__.py"
+
+[tool.codespell]
+check-hidden = true
+skip = ".git,venv,*.c"
+ignore-words-list = "mor, FPR"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+select = [
+  "A",
+  "B",
+  "C4",
+  "D",
+  "E",
+  "F",
+  "I",
+  "PGH",
+  "PT",
+  "SIM",
+  "UP",
+]
+
+ignore = [
+  # Doc string format currently not used
+  "D205",
+  "D401",
+  # Use ternary operator instead of if/else
+  "SIM108",
+  # docstring ignores - conflicting rules
+  "D203",
+  "D212",
+  # as recommended by https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+  "D206",
+  "D300",
+  "E111",
+  "E114",
+  "E117",
+  "E501",
+  # still using D102 since docstring inherited is not supported in ruff"
+  "D102",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+  "D104",
+  "F401",
+  "F403",
+]
+"tests/*" = ["D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.format]
+docstring-code-format = true

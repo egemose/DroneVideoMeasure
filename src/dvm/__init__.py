@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import os
 import logging.handlers
 from flask import Flask, send_from_directory, render_template
-from projects.projects import projects_view
-from projects.video_gallery import video_gallery_view
-from video.videos import videos_view
-from drone.drones import drones_view
-from home import home_view
-from app_config import AppConfig, data_dir, dropzone, obscure, make_celery, db, migrate
+from dvm.projects.projects import projects_view
+from dvm.projects.video_gallery import video_gallery_view
+from dvm.video.videos import videos_view
+from dvm.drone.drones import drones_view
+from dvm.home import home_view
+from dvm.app_config import AppConfig, data_dir, dropzone, obscure, make_celery, db, migrate
 
 logger = logging.getLogger("app")
 logger.setLevel(logging.DEBUG)
@@ -62,6 +64,5 @@ def create_app():
 
 manager, app, celery = create_app()
 
-if __name__ == "__main__":
-    # manager.run()
-    pass
+# Current version
+__version__ = "0.0.1"

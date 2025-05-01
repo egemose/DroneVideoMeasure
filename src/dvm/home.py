@@ -1,7 +1,7 @@
 import os
 import logging
 import flask
-from app_config import Project, Drone, data_dir
+from dvm.app_config import Project, Drone, data_dir
 from zipfile import ZipFile
 
 

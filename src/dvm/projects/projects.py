@@ -2,11 +2,11 @@ import os
 import random
 import logging
 import flask
-from drone.drone_log_data import drone_log
-from forms import NewProjectForm, EditProjectForm
-from drone import plot_log_data
-from app_config import data_dir, get_random_filename, Project, Drone, db
-from helper_functions import get_all_annotations, save_annotations_csv
+from dvm.drone.drone_log_data import drone_log
+from dvm.forms import NewProjectForm, EditProjectForm
+from dvm.drone import plot_log_data
+from dvm.app_config import data_dir, get_random_filename, Project, Drone, db
+from dvm.helper_functions import get_all_annotations, save_annotations_csv
 
 
 logger = logging.getLogger("app." + __name__)
