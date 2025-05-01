@@ -9,6 +9,8 @@
 checkerboard.png
 dvm.sh
 
+venv/
+.venv/
 documentation/
 dvm_runner/
 manual/
