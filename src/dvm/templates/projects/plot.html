@@ -41,7 +41,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 var marker = L.marker([51.5, -0.09]).addTo(map);
 var latlngs = [
 {% for position in drone_path %}
-  [{{ position[0] }}, {{ position[1] }}], 
+  [{{ position[0] }}, {{ position[1] }}],
 {% endfor %}
 ];
 var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);

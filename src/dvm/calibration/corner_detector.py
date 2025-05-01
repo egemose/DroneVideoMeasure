@@ -1,12 +1,12 @@
-import cv2
-import numpy as np
-from dvm.calibration.MarkerTracker import MarkerTracker
-import math
-import time
 import collections
 import logging
-from sklearn.neighbors import KDTree
+import math
+
+import cv2
+import numpy as np
 from icecream import ic
+
+from dvm.calibration.MarkerTracker import MarkerTracker
 from dvm.calibration.peak_enumerator import PeakEnumerator
 
 logger = logging.getLogger("app." + __name__)
@@ -24,22 +24,16 @@ class ChessBoardCornerDetector:
         self.centers_kdtree = None
         self.points_to_examine_queue = None
 
-    def detect_chess_board_corners(
-        self, img, debug=False, *, path_to_image=None, path_to_output_folder=None
-    ):
+    def detect_chess_board_corners(self, img, debug=False, *, path_to_image=None, path_to_output_folder=None):
         try:
             # Calculate corner response
             response = self.calculate_corner_responses(img)
             # print("%8.2f, convolution" % (time.time() - t_start))
             # Localized normalization of responses
-            response_relative_to_neighbourhood = self.local_normalization(
-                response, self.distance_scale
-            )
+            response_relative_to_neighbourhood = self.local_normalization(response, self.distance_scale)
             # print("%8.2f, relative response" % (time.time() - t_start))
             # Threshold responses
-            relative_responses_thresholded = self.threshold_responses(
-                response_relative_to_neighbourhood
-            )
+            relative_responses_thresholded = self.threshold_responses(response_relative_to_neighbourhood)
             # Locate centers of peaks
             centers = self.locate_centers_of_peaks(relative_responses_thresholded)
 
@@ -56,28 +50,16 @@ class ChessBoardCornerDetector:
             # Make output folders
             path_to_output_response_folder = path_to_output_folder / "1_response"
             path_to_output_response_folder.mkdir(parents=False, exist_ok=True)
-            path_to_output_response_neighbourhood_folder = (
-                path_to_output_folder / "2_respond_relative_to_neighbourhood"
-            )
-            path_to_output_response_neighbourhood_folder.mkdir(
-                parents=False, exist_ok=True
-            )
-            path_to_output_response_threshold_folder = (
-                path_to_output_folder / "3_relative_response_thresholded"
-            )
+            path_to_output_response_neighbourhood_folder = path_to_output_folder / "2_respond_relative_to_neighbourhood"
+            path_to_output_response_neighbourhood_folder.mkdir(parents=False, exist_ok=True)
+            path_to_output_response_threshold_folder = path_to_output_folder / "3_relative_response_thresholded"
             path_to_output_response_threshold_folder.mkdir(parents=False, exist_ok=True)
-            path_to_output_located_centers_folder = (
-                path_to_output_folder / "4_located_centers"
-            )
+            path_to_output_located_centers_folder = path_to_output_folder / "4_located_centers"
             path_to_output_located_centers_folder.mkdir(parents=False, exist_ok=True)
-            path_to_output_local_maxima_folder = (
-                path_to_output_folder / "5_local_maxima"
-            )
+            path_to_output_local_maxima_folder = path_to_output_folder / "5_local_maxima"
             path_to_output_local_maxima_folder.mkdir(parents=False, exist_ok=True)
             # Write debug images
-            path_response_1 = path_to_output_response_folder / (
-                path_to_image.stem + "_response.png"
-            )
+            path_response_1 = path_to_output_response_folder / (path_to_image.stem + "_response.png")
             cv2.imwrite(str(path_response_1), response)
             path_response_2 = path_to_output_response_neighbourhood_folder / (
                 path_to_image.stem + "_response_relative_to_neighbourhood.png"
@@ -88,25 +70,21 @@ class ChessBoardCornerDetector:
             )
             cv2.imwrite(str(path_response_3), relative_responses_thresholded)
             located_centers = self.show_detected_points(img, centers)
-            path_response_4 = path_to_output_located_centers_folder / (
-                path_to_image.stem + "_located_centers.png"
-            )
+            path_response_4 = path_to_output_located_centers_folder / (path_to_image.stem + "_located_centers.png")
             cv2.imwrite(str(path_response_4), located_centers)
             canvas = self.show_detected_calibration_points(img, self.calibration_points)
             cv2.circle(canvas, tuple(selected_center.astype(int)), 10, (0, 0, 255), -1)
-            path_local_max = path_to_output_local_maxima_folder / (
-                path_to_image.stem + "_local_maxima.png"
-            )
+            path_local_max = path_to_output_local_maxima_folder / (path_to_image.stem + "_local_maxima.png")
             cv2.imwrite(str(path_local_max), canvas)
-        
+
         try:
             # Detect image coverage
             percentage_image_covered = self.image_coverage(calibration_points, img)
             # How straight are the points?
             stats = self.statistics(calibration_points)
             return self.calibration_points, percentage_image_covered, stats
-        except Exception as e:
-            raise Exception("calibration_points was probably not calculated")
+        except Exception as exc:
+            raise Exception("calibration_points was probably not calculated") from exc
 
         # Not necessary to output the images when we just want the statistics after undistorting
 
@@ -114,25 +92,17 @@ class ChessBoardCornerDetector:
         # Calculate corner responses
         response = self.calculate_corner_responses(img)
         if debug:
-            path_to_output_undistorted_corner_response = (
-                output.parent / "91_undistorted_corner_response"
-            )
-            path_to_output_undistorted_corner_response.mkdir(
-                parents=False, exist_ok=True
-            )
+            path_to_output_undistorted_corner_response = output.parent / "91_undistorted_corner_response"
+            path_to_output_undistorted_corner_response.mkdir(parents=False, exist_ok=True)
             cv2.imwrite(
                 path_to_output_undistorted_corner_response / (fname.stem + ".png"),
                 response,
             )
 
         # Localized normalization of responses
-        response_relative_to_neighbourhood = self.local_normalization(
-            response, self.distance_scale
-        )
+        response_relative_to_neighbourhood = self.local_normalization(response, self.distance_scale)
         if debug:
-            path_to_output_undistorted_response = (
-                output.parent / "92_undistorted_relative_response"
-            )
+            path_to_output_undistorted_response = output.parent / "92_undistorted_relative_response"
             path_to_output_undistorted_response.mkdir(parents=False, exist_ok=True)
             cv2.imwrite(
                 path_to_output_undistorted_response / (fname.stem + ".png"),
@@ -140,13 +110,9 @@ class ChessBoardCornerDetector:
             )
 
         # Threshold responses
-        relative_responses_thresholded = self.threshold_responses(
-            response_relative_to_neighbourhood
-        )
+        relative_responses_thresholded = self.threshold_responses(response_relative_to_neighbourhood)
         if debug:
-            path_to_output_undistorted_thresholded = (
-                output.parent / "93_undistorted_thresholded"
-            )
+            path_to_output_undistorted_thresholded = output.parent / "93_undistorted_thresholded"
             path_to_output_undistorted_thresholded.mkdir(parents=False, exist_ok=True)
             cv2.imwrite(
                 path_to_output_undistorted_thresholded / (fname.stem + ".png"),
@@ -166,12 +132,8 @@ class ChessBoardCornerDetector:
         if debug:
             canvas = self.show_detected_calibration_points(img, self.calibration_points)
             cv2.circle(canvas, tuple(selected_center.astype(int)), 10, (0, 0, 255), -1)
-            path_to_output_undistorted_calibration_points = (
-                output.parent / "95_undistorted_calibration_points"
-            )
-            path_to_output_undistorted_calibration_points.mkdir(
-                parents=False, exist_ok=True
-            )
+            path_to_output_undistorted_calibration_points = output.parent / "95_undistorted_calibration_points"
+            path_to_output_undistorted_calibration_points.mkdir(parents=False, exist_ok=True)
             cv2.imwrite(
                 path_to_output_undistorted_calibration_points / (fname.stem + ".png"),
                 canvas,
@@ -243,39 +205,35 @@ class ChessBoardCornerDetector:
                     line_width,
                 )
 
-                if x_index + 1 in self.calibration_points:
-                    if y_index + 1 in self.calibration_points[x_index + 1]:
-                        other_corner = self.calibration_points[x_index + 1][y_index + 1]
-                        alpha = 0.3
-                        p1 = alpha * cal_point + (1 - alpha) * other_corner
-                        p2 = (1 - alpha) * cal_point + alpha * other_corner
-                        cv2.line(
-                            canvas,
-                            tuple(p1.astype(int)),
-                            tuple(p2.astype(int)),
-                            (0, 0, 255),
-                            line_width,
-                        )
-                if x_index + 1 in self.calibration_points:
-                    if y_index - 1 in self.calibration_points[x_index + 1]:
-                        other_corner = self.calibration_points[x_index + 1][y_index - 1]
-                        alpha = 0.3
-                        p1 = alpha * cal_point + (1 - alpha) * other_corner
-                        p2 = (1 - alpha) * cal_point + alpha * other_corner
-                        cv2.line(
-                            canvas,
-                            tuple(p1.astype(int)),
-                            tuple(p2.astype(int)),
-                            (0, 0, 255),
-                            line_width,
-                        )
+                if x_index + 1 in self.calibration_points and y_index + 1 in self.calibration_points[x_index + 1]:
+                    other_corner = self.calibration_points[x_index + 1][y_index + 1]
+                    alpha = 0.3
+                    p1 = alpha * cal_point + (1 - alpha) * other_corner
+                    p2 = (1 - alpha) * cal_point + alpha * other_corner
+                    cv2.line(
+                        canvas,
+                        tuple(p1.astype(int)),
+                        tuple(p2.astype(int)),
+                        (0, 0, 255),
+                        line_width,
+                    )
+                if x_index + 1 in self.calibration_points and y_index - 1 in self.calibration_points[x_index + 1]:
+                    other_corner = self.calibration_points[x_index + 1][y_index - 1]
+                    alpha = 0.3
+                    p1 = alpha * cal_point + (1 - alpha) * other_corner
+                    p2 = (1 - alpha) * cal_point + alpha * other_corner
+                    cv2.line(
+                        canvas,
+                        tuple(p1.astype(int)),
+                        tuple(p2.astype(int)),
+                        (0, 0, 255),
+                        line_width,
+                    )
         return canvas
 
     @staticmethod
     def distance_to_ref(ref_point):
-        return (
-            lambda c: ((c[0] - ref_point[0]) ** 2 + (c[1] - ref_point[1]) ** 2) ** 0.5
-        )
+        return lambda c: ((c[0] - ref_point[0]) ** 2 + (c[1] - ref_point[1]) ** 2) ** 0.5
 
     @staticmethod
     def get_center_of_mass(contour):
@@ -288,15 +246,9 @@ class ChessBoardCornerDetector:
             result = np.array([contour[0][0][0], contour[0][0][1]])
         return result
 
-    def peaks_relative_to_neighbourhood(
-        self, response, neighbourhoodsize, value_to_add
-    ):
-        local_min_image = self.minimum_image_value_in_neighbourhood(
-            response, neighbourhoodsize
-        )
-        local_max_image = self.maximum_image_value_in_neighbourhood(
-            response, neighbourhoodsize
-        )
+    def peaks_relative_to_neighbourhood(self, response, neighbourhoodsize, value_to_add):
+        local_min_image = self.minimum_image_value_in_neighbourhood(response, neighbourhoodsize)
+        local_max_image = self.maximum_image_value_in_neighbourhood(response, neighbourhoodsize)
         response_relative_to_neighbourhood = (response - local_min_image) / (
             value_to_add + local_max_image - local_min_image
         )
@@ -310,7 +262,7 @@ class ChessBoardCornerDetector:
         """
         kernel_1 = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         orig_size = response.shape
-        for x in range(int(math.log(neighbourhood_size, 2))):
+        for _ in range(int(math.log(neighbourhood_size, 2))):
             eroded_response = cv2.morphologyEx(response, cv2.MORPH_ERODE, kernel_1)
             response = cv2.resize(eroded_response, None, fx=0.5, fy=0.5)
         local_min_image_temp = cv2.resize(response, (orig_size[1], orig_size[0]))
@@ -324,7 +276,7 @@ class ChessBoardCornerDetector:
         """
         kernel_1 = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         orig_size = response.shape
-        for x in range(int(math.log(neighbourhood_size, 2))):
+        for _ in range(int(math.log(neighbourhood_size, 2))):
             eroded_response = cv2.morphologyEx(response, cv2.MORPH_DILATE, kernel_1)
             response = cv2.resize(eroded_response, None, fx=0.5, fy=0.5)
         local_min_image_temp = cv2.resize(response, (orig_size[1], orig_size[0]))
@@ -342,10 +294,10 @@ class ChessBoardCornerDetector:
             for x, y in calibration_point_dict.values():
                 points.append((x, y))
         points = np.array(points).reshape(-1, 1, 2).astype(np.float32)
-        convexHull = cv2.convexHull(points)
-        convexHullArea = cv2.contourArea(convexHull)
-        imageArea = h * w
-        coverage_ratio = convexHullArea / imageArea
+        # convexHull = cv2.convexHull(points)
+        # convexHullArea = cv2.contourArea(convexHull)
+        # imageArea = h * w
+        # coverage_ratio = convexHullArea / imageArea
         # ic(coverage_ratio)
 
         score = np.zeros((10, 10))
@@ -363,7 +315,7 @@ class ChessBoardCornerDetector:
 
     @staticmethod
     def shortest_distance(x1, y1, a, b, c):
-        d = abs((a * x1 + b * y1 + c)) / (math.sqrt(a * a + b * b))
+        d = abs(a * x1 + b * y1 + c) / (math.sqrt(a * a + b * b))
         return d
 
     def statistics(self, points):
@@ -372,11 +324,7 @@ class ChessBoardCornerDetector:
         # horizontal points, the second tuple is the same for the vertical points.
         return_list = []
         # Check if the outer key defines the rows or the columns, this is not always the same.
-        horizontal = (
-            1
-            if points[0][0][0] - points[0][1][0] < points[0][0][1] - points[0][1][1]
-            else 0
-        )
+        horizontal = 1 if points[0][0][0] - points[0][1][0] < points[0][0][1] - points[0][1][1] else 0
         # Flip the dictionary so we can do this statistic for horizontal and vertical points.
         flipped = collections.defaultdict(dict)
         for key, val in points.items():
@@ -385,28 +333,28 @@ class ChessBoardCornerDetector:
         # Make sure that we always have the same order, horizontal first in this case.
         horiz_first = (points, flipped) if horizontal else (flipped, points)
         for index, points_list in enumerate(horiz_first):
-            count, som = 0, 0
+            count, total = 0, 0
             for k in points_list.values():
                 single_col_x, single_col_y = [], []
                 if len(k) > 2:
-                    for l in k.values():
+                    for lp in k.values():
                         # for the vertical points, X and Y values are switched because polyfit
                         # does not work (well) for points (almost) vertical points
                         if index == 0:
-                            single_col_x.append(l[0])
-                            single_col_y.append(l[1])
+                            single_col_x.append(lp[0])
+                            single_col_y.append(lp[1])
                         else:
-                            single_col_x.append(l[1])
-                            single_col_y.append(l[0])
+                            single_col_x.append(lp[1])
+                            single_col_y.append(lp[0])
                     # Fit a line through the horizontal or vertical points
                     z = np.polynomial.polynomial.polyfit(single_col_x, single_col_y, 1)
                     # Calculate the distance for each point to the line
-                    for x, y in zip(single_col_x, single_col_y):
+                    for x, y in zip(single_col_x, single_col_y, strict=False):
                         d = self.shortest_distance(x, y, z[1], -1, z[0])
                         count += 1
-                        som += d
+                        total += d
             if count != 0:
-                return_list.append([count, som / count])
+                return_list.append([count, total / count])
             else:
                 return_list.append([count, 0])
         return return_list

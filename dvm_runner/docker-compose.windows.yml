@@ -31,8 +31,8 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: example
-  
+
 volumes:
   appmedia:
-  db: 
+  db:
     driver: local

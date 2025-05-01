@@ -2,12 +2,12 @@
 Here is a short guide on installing the Drone Video Measure programme.
 
 ## Install dependencies
-Prior to installing Drone Video Measure the following dependencies need to be installed. 
+Prior to installing Drone Video Measure the following dependencies need to be installed.
 - [Git](https://git-scm.com/downloads)
 - [Docker](https://www.docker.com/)
 - [Docker-compose](https://docs.docker.com/compose/install/) (only on Linux)
 
-Please verify that Docker Desktop is running properly before continuing. If the Docker window displays "Docker Desktop starting ..." for an extended amount of time, you might need to reboot your computer. 
+Please verify that Docker Desktop is running properly before continuing. If the Docker window displays "Docker Desktop starting ..." for an extended amount of time, you might need to reboot your computer.
 
 ## Install the Drone Video Measure programme
 From Powershell (windows) or command line (Mac / Linux):
@@ -17,7 +17,7 @@ cd DroneVideoMeasure
 ./dvm.sh start
 ```
 
-After running  the `./dvm.sh start` command, a new command line window should open, display some information and then dissapear. The first time the command is executed, all the dependencies for the drone video program is downloaded which can take up to ten minutes.
+After running  the `./dvm.sh start` command, a new command line window should open, display some information and then disappear. The first time the command is executed, all the dependencies for the drone video program is downloaded which can take up to ten minutes.
 
 The program is now running as a webserver. To access it do the following:
 - Open a Web Browser at [http://localhost:5000](http://localhost:5000).
@@ -58,7 +58,7 @@ If the source code is changes, the program can be rebuilt using the command
 
 And delete the DroneVideoMeasure directory.
 
-On Windows data is stored in a Docker volume and will persist even when DVM is closed. 
+On Windows data is stored in a Docker volume and will persist even when DVM is closed.
 To remove the data:
 
 ```bash
@@ -66,4 +66,3 @@ docker volume rm appmedia
 ```
 
 On Mac / Linux data is stored in the data directory and can be removed simply by deleting it.
-

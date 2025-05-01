@@ -1,13 +1,15 @@
+import contextlib
+import logging
 import os
 import random
-import logging
-import flask
-from dvm.drone.drone_log_data import drone_log
-from dvm.forms import NewProjectForm, EditProjectForm
-from dvm.drone import plot_log_data
-from dvm.app_config import data_dir, get_random_filename, Project, Drone, db
-from dvm.helper_functions import get_all_annotations, save_annotations_csv
 
+import flask
+
+from dvm.app_config import Drone, Project, data_dir, db, get_random_filename
+from dvm.drone import plot_log_data
+from dvm.drone.drone_log_data import drone_log
+from dvm.forms import EditProjectForm, NewProjectForm
+from dvm.helper_functions import get_all_annotations, save_annotations_csv
 
 logger = logging.getLogger("app." + __name__)
 projects_view = flask.Blueprint("projects", __name__)
@@ -30,7 +32,7 @@ def projects():
         "new_project_form": new_project_form,
         "edit_project_form": edit_project_form,
     }
-    logger.debug(f"Render index")
+    logger.debug("Render index")
     return flask.render_template("projects/projects.html", **arguments)
 
 
@@ -69,9 +71,7 @@ def get_new_project_form():
             )
             db.session.add(project)
             db.session.commit()
-            return flask.redirect(
-                flask.url_for("projects.projects", project_id=project.id)
-            ), form
+            return flask.redirect(flask.url_for("projects.projects", project_id=project.id)), form
     return None, form
 
 
@@ -87,7 +87,7 @@ def get_edit_project_form():
         description = form.edit_description.data
         drone_id = form.edit_drone.data
         logger.debug(f"Editing project {project_before} with new name {project_title}")
-        if project_title in projects and not project_title == project_before:
+        if project_title in projects and project_title != project_before:
             flask.flash("A project with that name already exist!")
         else:
             project = Project.query.get_or_404(project_id)
@@ -135,7 +135,7 @@ def download(project_id):
     annotations = get_all_annotations(project, pro_version)
     filename = os.path.join(data_dir, "annotations.csv")
     save_annotations_csv(annotations, filename)
-    logger.debug(f"Sending annotations.csv to user.")
+    logger.debug("Sending annotations.csv to user.")
     return flask.send_file(filename, as_attachment=True)
 
 
@@ -153,9 +153,7 @@ def remove_project(project_id):
     return flask.redirect(flask.url_for("projects.projects"))
 
 
-def remove_file(f):
-    if f:
-        try:
-            os.remove(f)
-        except FileNotFoundError:
-            pass
+def remove_file(file):
+    if file:
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(file)

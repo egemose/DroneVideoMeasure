@@ -39,7 +39,7 @@ When exporting annotations from a project a .csv file with a lot of details abou
 	- **Easting** coordinate to the end of the drawn arrow
 - end_north
 	- **Northing** coordinate to the end of the drawn arrow
-- heading	
+- heading
 	- Compas heading of the drawn arrow
 - video
 	- Name of the video file which was annotated - this is not the original filename of the video, but an internal filename

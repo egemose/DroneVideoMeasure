@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-import os
 import logging.handlers
-from flask import Flask, send_from_directory, render_template
+import os
+
+from flask import Flask, render_template, send_from_directory
+
+from dvm.app_config import AppConfig, data_dir, db, dropzone, make_celery, migrate, obscure
+from dvm.drone.drones import drones_view
+from dvm.home import home_view
 from dvm.projects.projects import projects_view
 from dvm.projects.video_gallery import video_gallery_view
 from dvm.video.videos import videos_view
-from dvm.drone.drones import drones_view
-from dvm.home import home_view
-from dvm.app_config import AppConfig, data_dir, dropzone, obscure, make_celery, db, migrate
 
 logger = logging.getLogger("app")
 logger.setLevel(logging.DEBUG)
@@ -17,9 +19,7 @@ log_file = os.path.join(log_dir, "python.log")
 if not os.path.exists(log_dir):
     os.mkdir(log_dir)
 fh = logging.handlers.TimedRotatingFileHandler(log_file, when="midnight", backupCount=2)
-formatter = logging.Formatter(
-    "{asctime} | {name:<20} | {levelname:<8} - {message}", style="{"
-)
+formatter = logging.Formatter("{asctime} | {name:<20} | {levelname:<8} - {message}", style="{")
 fh.setFormatter(formatter)
 logger.addHandler(fh)
 
@@ -40,9 +40,7 @@ def create_app():
     app = Flask(__name__)
     app.register_error_handler(404, page_not_found)
     app.config.from_object(AppConfig)
-    app.add_url_rule(
-        "/data/<path:filename>", endpoint="data", view_func=serve_data_file
-    )
+    app.add_url_rule("/data/<path:filename>", endpoint="data", view_func=serve_data_file)
     app.add_url_rule(
         "/node_modules/<path:filename>",
         endpoint="node_modules",

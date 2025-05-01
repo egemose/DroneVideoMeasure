@@ -18,5 +18,3 @@ To build Drone Video Measure if changes is made to the code:
 ```bash
 ./dvm.sh build
 ```
-
-

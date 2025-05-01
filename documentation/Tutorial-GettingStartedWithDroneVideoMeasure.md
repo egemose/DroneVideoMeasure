@@ -1,7 +1,7 @@
 # Tutorial - Getting stared with Drone Video Measure
 
 This tutorial will guide you through the steps of using the Drone Video Measure programme. The following dataset on zenodo will be used as an example.
-- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3604005.svg)](https://doi.org/10.5281/zenodo.3604005) 
+- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3604005.svg)](https://doi.org/10.5281/zenodo.3604005)
 
 The dataset contains the following elements that will be used in this tutorial
 - A video of a chess board calibration target
@@ -17,7 +17,7 @@ This tutorial assumes that you already have installed the Drone Video Measure pr
 ![Image](pic/main_menu.png)
 
 ## Overview
-To analyse the video, the following three steps should be taken.
+To analyze the video, the following three steps should be taken.
 1. Determine the camera parameters of the used camera
 2. Add a new project based on the logfile from the drone
 3. Add a new video that matches the uploaded logfile
@@ -26,7 +26,7 @@ To analyse the video, the following three steps should be taken.
 In this step camera parameters like field of view, focal length and lens distortions are estimated. All these parameters can be determined based on a video of a chessboard calibration target. The process is described here.
 
 ### 1.1 Create a new drone in DVM
-Click on the "Drones" tap in the top most part and then click on the "Add Drone" button. This will open a new dialog, where information about the drone can be entered. 
+Click on the "Drones" tap in the top most part and then click on the "Add Drone" button. This will open a new dialog, where information about the drone can be entered.
 Fill out the Drone Name with "Phantom 4 Pro" and then click "Add Drone".
 ![Image](pic/create_new_drone.png)
 
@@ -36,7 +36,7 @@ From the file explorer drag the `calibration.MOV` file onto the white rectangle 
 ![Image](pic/uploading_calibration_video.png)
 
 ### 1.3 Calibrate the camera
-When the upload is finished you can click on the "Calibration Camera" button at the lower right corner. This will start the camera calibration process. As long as the calibration process is active an animation will be shown next to the "Phantom 4 Pro" entry in the Drones tap. The camera calibration can take a few minutes. 
+When the upload is finished you can click on the "Calibration Camera" button at the lower right corner. This will start the camera calibration process. As long as the calibration process is active an animation will be shown next to the "Phantom 4 Pro" entry in the Drones tap. The camera calibration can take a few minutes.
 
 ### 1.4 Examine the obtained results
 When the calibration process is finished, you can see the calibration results by selecting the "View Camera Calibration" option in the blue drop down menu. You will now see the following screen.
@@ -57,10 +57,10 @@ Locate the video file  `DJI_0013.MOV` on your computer and drag it into the whit
 ![Image](pic/video_gallery.png)
 
 ## 4. Annotate two objects in the video
-In the videe gallery click on the "DJI_0013.MOV", which is the name of the video that was just uploaded to the system. This opens the annotation view, which is where the central task of the video analysis takes place. The steps taken until now is only to ensure that everything is in place before the actual analysis is performed. The annotation view looks liks this.
+In the videe gallery click on the "DJI_0013.MOV", which is the name of the video that was just uploaded to the system. This opens the annotation view, which is where the central task of the video analysis takes place. The steps taken until now is only to ensure that everything is in place before the actual analysis is performed. The annotation view looks like this.
 ![Annotation view](pic/annotation_view.jpg)
 
-The warning message shown in the light yellow bos at the top, tells us that the GPS coordinate extracted from the video file and the GPS coordinate from the log file differes by 3.6 meters. This difference is safe to ignore, but if the difference is larger than 100m it could be an indication that the logfile and video does not match. Close the warning message by clicking on the x in its top right corner.
+The warning message shown in the light yellow bos at the top, tells us that the GPS coordinate extracted from the video file and the GPS coordinate from the log file differs by 3.6 meters. This difference is safe to ignore, but if the difference is larger than 100m it could be an indication that the logfile and video does not match. Close the warning message by clicking on the x in its top right corner.
 
 Now activate the artificial horizon, by clicking on the third lowest button in the left panel and then start the video player. This will show an artificial horizon on top of the video. The position and orientation of the artificial horizon is determined by the values from the logfile. The motion of the artificial horizon and the actual horizon should follow each other. This is a further check to ensure that the logfile and the video actually matches. The artificial horizon consists of the following elements:
 - A red line indicates the direction North - South
@@ -73,7 +73,7 @@ In the image below the video has been stopped at the time 10.67 seconds into the
 At this point you can add a some more annotations. The annotations will be shown as red arrows and points in the annotation view. You can also move to a different moment in the video and then annotate objects there.
 
 ## 5. Exporting the annotations
-When the annotations are completed, they can be exported as a csv (comma seperated values) file as follows. Go to the projects view and under the project "Example project - Maale beach" select "Download Annotations". At this point a file named "annotations.csv" will be saved on your computer. The downloaded file contains the following information about each annotation
+When the annotations are completed, they can be exported as a csv (comma separated values) file as follows. Go to the projects view and under the project "Example project - Maale beach" select "Download Annotations". At this point a file named "annotations.csv" will be saved on your computer. The downloaded file contains the following information about each annotation
 - name
 - time
 - length
@@ -89,13 +89,13 @@ When the annotations are completed, they can be exported as a csv (comma seperat
 - start_north
 - end_east
 - end_north
-- heading	
+- heading
 - video
 - project
 - pro. version
 
 
-## Whats next?
+## What's next?
 For more information about how to create a suitable calibration video see this howto:
 * [Howto - Record a calibration video](Howto-RecordACalibrationVideo.md)
 For information about how to convert a logfile to the proper format, see this howto:

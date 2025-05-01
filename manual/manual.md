@@ -25,7 +25,7 @@ To get the flight logs from a DJI drone the following guide can be used.
 
 - [HOW TO: Retrieve DJI Phantom Flight Logs from an Apple Device](https://www.phantomhelp.com/tips/how-to-retrieve-dji-go-flight-logs-from-itunes.29)
 
-The flight log needs to be converted to csv format before they can be used by the Drone Video Measure software. 
+The flight log needs to be converted to csv format before they can be used by the Drone Video Measure software.
 Earlier that conversion could be done by uploading the flight log to [PhantomHelp](https://www.phantomhelp.com/LogViewer/Upload/) and Downloading the verbose csv. The verbose version is needed since the normal version lack video timestamps.
 Currently PhantomHelp does not support the export of "verbose csv".
 
@@ -59,7 +59,7 @@ Before a project can be created a drone needs to be calibrated.
 
 - Under the menu "Drones" click "Add Drone".
 - Add the drone with a name and description (optional).
-- A upload screen apears where a video of a checkerboard can be uploaded for calibration. A checkerboard is included in the repository [checkerboard.png](checkerboard.png).
+- A upload screen appears where a video of a checkerboard can be uploaded for calibration. A checkerboard is included in the repository [checkerboard.png](checkerboard.png).
 - Drag and drop or click to select a video file.
 - After the files is uploaded click "calibrate Camera". The drone camera is now calibrated in the background and a spinner will show the status.
 - The calibration parameters can be viewed when the calibration is done by clicking "View Calibration" in the dropdown list for the given drone.
@@ -73,13 +73,13 @@ After a drone is calibrated a project can be created. The program is structured 
 - When the project is added, open it by clicking "open"
 - Clicking "add Videos" will redirect to a upload page where videos can be uploaded.
 - Drag and drop or click to select one or more video file.
-- After all videos are done uploading clicking "Convert Videos" will convert the videos into a format more sutable for playing in a browser.
-- The videos will apear in the project and a spinner will indicate if the videos is still being converted. 
+- After all videos are done uploading clicking "Convert Videos" will convert the videos into a format more suitable for playing in a browser.
+- The videos will appear in the project and a spinner will indicate if the videos is still being converted.
 - After a video have been converted it can be open for annotations.
 
 ### Annotating on Video
 
-After opening a video for annotation a screen like this will be showen:
+After opening a video for annotation a screen like this will be shown:
 
 ![video](pic/dvm_video_annotation.png)
 
@@ -92,7 +92,7 @@ From top to Bottom:
 - Zoom out.
 - Return to normal zoom level.
 - Toggle annotation mode vs drag mode.
-- Save annotations. (Annotations are automatily saved).
+- Save annotations. (Annotations are automatically saved).
 - Undo last annotation.
 - Redo last undo.
 - If an annotation is selected, change the color.
@@ -177,5 +177,3 @@ All the data from a project can be downloaded by clicking "Download annotations"
 Lack of free space on harddrive.
 
 Logfile was not converted before uploading it to Drone Video Measure.
-
-

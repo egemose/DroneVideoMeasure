@@ -1,14 +1,16 @@
+import contextlib
 import json
+import logging
 import os
 import random
 import re
 import subprocess
-import logging
-import flask
-import ffmpeg
-from dvm.app_config import data_dir, get_random_filename, celery, Task, Project, Video, db
-from dvm.helper_functions import save_annotations_csv, get_all_annotations
 
+import ffmpeg
+import flask
+
+from dvm.app_config import Project, Task, Video, celery, data_dir, db, get_random_filename
+from dvm.helper_functions import get_all_annotations, save_annotations_csv
 
 logger = logging.getLogger("app." + __name__)
 video_gallery_view = flask.Blueprint("video_gallery", __name__)
@@ -30,9 +32,7 @@ def upload(project_id):
                     temp_file = os.path.join(data_dir, temp_filename)
                     file_obj.save(temp_file)
                     logger.debug(f"Upload done for file: {video_file}")
-                    logger.debug(
-                        f"Calling celery to convert file: {temp_filename} and save as {video_file}"
-                    )
+                    logger.debug(f"Calling celery to convert file: {temp_filename} and save as {video_file}")
                     video = Video(
                         file=video_file,
                         name=file_obj.filename,
@@ -41,9 +41,7 @@ def upload(project_id):
                     )
                     db.session.add(video)
                     db.session.commit()
-                    task = convert_after_upload_task.apply_async(
-                        args=(temp_file, video.file)
-                    )
+                    task = convert_after_upload_task.apply_async(args=(temp_file, video.file))
                     task_db = Task(
                         task_id=task.id,
                         function="convert_after_upload_task",
@@ -52,11 +50,9 @@ def upload(project_id):
                     db.session.add(task_db)
                     db.session.commit()
                     return flask.jsonify({}), 202
-    logger.debug(f"Render upload after a GET request")
+    logger.debug("Render upload after a GET request")
     project = Project.query.get_or_404(project_id)
-    return flask.render_template(
-        "video_gallery/upload.html", project_id=project.id, project_name=project.name
-    )
+    return flask.render_template("video_gallery/upload.html", project_id=project.id, project_name=project.name)
 
 
 def get_video_data(video_file, location_video_file=None):
@@ -90,7 +86,7 @@ def convert_after_upload_task(self, temp_path, video_path):
     cmd = [
         "ffmpeg",
         "-i",
-        r"{}".format(temp_path),
+        rf"{temp_path}",
         "-preset",
         "ultrafast",
         "-tune",
@@ -101,14 +97,14 @@ def convert_after_upload_task(self, temp_path, video_path):
         "-movflags",
         "+faststart",
         "-y",
-        r"{}".format(video_path),
+        rf"{video_path}",
     ]
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(cmd, capture_output=True)
     os.remove(temp_path)
     cmd = [
         "ffmpeg",
         "-i",
-        r"{}".format(video_path),
+        rf"{video_path}",
         "-vframes",
         "1",
         "-an",
@@ -116,9 +112,9 @@ def convert_after_upload_task(self, temp_path, video_path):
         "300x200",
         "-ss",
         "0",
-        r"{}.jpg".format(video_path),
+        rf"{video_path}.jpg",
     ]
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(cmd, capture_output=True)
 
 
 @celery.task(bind=True)
@@ -138,16 +134,16 @@ def concat_videos_task(self, videos, output_file):
         "-safe",
         "0",
         "-i",
-        r"{}".format(concat_file),
+        rf"{concat_file}",
         "-c",
         "copy",
-        r"{}".format(output_file),
+        rf"{output_file}",
     ]
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(cmd, capture_output=True)
     cmd = [
         "ffmpeg",
         "-i",
-        r"{}".format(output_file),
+        rf"{output_file}",
         "-vframes",
         "1",
         "-an",
@@ -155,17 +151,15 @@ def concat_videos_task(self, videos, output_file):
         "300x200",
         "-ss",
         "0",
-        r"{}.jpg".format(output_file),
+        rf"{output_file}.jpg",
     ]
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(cmd, capture_output=True)
 
 
 def remove_file(file):
     if file:
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.remove(file)
-        except FileNotFoundError:
-            pass
 
 
 @video_gallery_view.route("/videos/status/<task_id>")
@@ -214,9 +208,7 @@ def video_gallery(project_id):
 def concat_videos(project_id):
     videos = Video.query.filter_by(project_id=project_id).all()
     logger.debug(f"Render concat_videos for {project_id}")
-    return flask.render_template(
-        "video_gallery/concat_videos.html", project_id=project_id, videos=videos
-    )
+    return flask.render_template("video_gallery/concat_videos.html", project_id=project_id, videos=videos)
 
 
 @video_gallery_view.route("/videos/<project_id>/concatenating", methods=["POST"])
@@ -228,7 +220,7 @@ def do_concat_videos(project_id):
     video_ids = json.loads(videos_json)
     videos = [Video.query.get_or_404(i) for i in video_ids]
     video_files = [v.file for v in videos]
-    logger.debug(f"Calling celery task for concat")
+    logger.debug("Calling celery task for concat")
     video_file = os.path.join(data_dir, get_random_filename(output_file_name))
     video = Video(
         file=video_file,
@@ -255,11 +247,9 @@ def download(video_id):
     annotations = get_all_annotations(project, pro_version, video)
     filename = os.path.join(data_dir, "annotations.csv")
     save_annotations_csv(annotations, filename)
-    logger.debug(f"Sending annotations.csv to user.")
+    logger.debug("Sending annotations.csv to user.")
     annotated_filename = f"annotations - {project.name} - {video.name}.csv"
-    return flask.send_file(
-        filename, as_attachment=True, download_name=annotated_filename
-    )
+    return flask.send_file(filename, as_attachment=True, download_name=annotated_filename)
 
 
 @video_gallery_view.route("/videos/<video_id>/remove")
@@ -271,6 +261,4 @@ def remove_video(video_id):
     remove_file(video.image)
     db.session.delete(video)
     db.session.commit()
-    return flask.redirect(
-        flask.url_for("video_gallery.video_gallery", project_id=project_id)
-    )
+    return flask.redirect(flask.url_for("video_gallery.video_gallery", project_id=project_id))

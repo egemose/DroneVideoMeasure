@@ -4,17 +4,17 @@
 
 ## Observations
 
-There seems to be a data structure for undo and redo. 
-This can be found in the file static/video_annotator.js 
+There seems to be a data structure for undo and redo.
+This can be found in the file static/video_annotator.js
 around line 412 in the functions on_undo and on_redo.
-Eash time the annotations are updated, the new state is 
+Eash time the annotations are updated, the new state is
 added to the `this.states` list.
 
 If this is used for each individual annotation that is
-added from the uploaded csv file, the memory consumption 
+added from the uploaded csv file, the memory consumption
 will scale quadratically - O(n^2).
 
-One approach for dealing with this is to avoid adding 
+One approach for dealing with this is to avoid adding
 states to `this.states` when uploading annotations
 from a csv file.
 
@@ -30,6 +30,6 @@ Table with observations on number of annotations and memory usage:
 
 ## Solution
 
-The implemented solution is to avoid saving the state on 
-the undo stack for each new annotation added from the 
+The implemented solution is to avoid saving the state on
+the undo stack for each new annotation added from the
 uploaded csv file.

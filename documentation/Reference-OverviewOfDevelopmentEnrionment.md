@@ -1,6 +1,6 @@
 # Reference - Overview of development environment
 
-The Drone Video Measure program environment is placed in a docker container. 
+The Drone Video Measure program environment is placed in a docker container.
 
 The docker container is constructed based on the description in the file `Dockerfile`.
 
@@ -18,4 +18,3 @@ CONTAINER ID   IMAGE                COMMAND                  CREATED         STA
 $ docker exec -it 162279d49321 bash
 root@162279d49321:/app#
 ```
-

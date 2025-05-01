@@ -1,15 +1,17 @@
 import json
+import logging
 import os
 import re
-import numpy as np
 from collections import defaultdict
 from datetime import datetime, time
+
 import flask
-import logging
+import numpy as np
+
+from dvm.app_config import Drone, Project, Video, data_dir, db
 from dvm.drone import plot_log_data
 from dvm.drone.drone_log_data import drone_log
 from dvm.drone.fov import fov
-from dvm.app_config import data_dir, Project, Video, Drone, db
 from dvm.video.annotations import Annotations
 
 logger = logging.getLogger("app." + __name__)
@@ -102,19 +104,19 @@ def video(video_id):
         drone_log.video_duration,
         drone_log.video_nb_frames,
     )
-    args = dict(
-        project_id=project.id,
-        video=video,
-        json_data=json.loads(json_data),
-        plot_script=plot_script,
-        plot_div=plot_div,
-        video_width=drone_log.video_size[0],
-        video_height=drone_log.video_size[1],
-        num_frames=drone_log.video_nb_frames,
-        fps=drone_log.video_nb_frames / drone_log.video_duration,
-        takeoff_altitude=video.takeoff_altitude,
-        video_start_time=video_start_time,
-    )
+    args = {
+        "project_id": project.id,
+        "video": video,
+        "json_data": json.loads(json_data),
+        "plot_script": plot_script,
+        "plot_div": plot_div,
+        "video_width": drone_log.video_size[0],
+        "video_height": drone_log.video_size[1],
+        "num_frames": drone_log.video_nb_frames,
+        "fps": drone_log.video_nb_frames / drone_log.video_duration,
+        "takeoff_altitude": video.takeoff_altitude,
+        "video_start_time": video_start_time,
+    }
     logger.debug(f"Render video {video.file}")
     return flask.render_template("videos/video.html", **args)
 
@@ -131,7 +133,7 @@ def save_fabric_json(video_id):
 
 @videos_view.route("/markings_modified", methods=["POST"])
 def markings_modified():
-    logger.debug(f"markings_modified called")
+    logger.debug("markings_modified called")
     fabric_json = flask.request.form.get("fabric_json")
     annotation_class.from_fabric_json(fabric_json)
     return flask.jsonify(annotation_class.tree_json)
@@ -139,7 +141,7 @@ def markings_modified():
 
 @videos_view.route("/get_horizon_fabricjs", methods=["POST"])
 def get_horizon_fabricjs():
-    logger.debug(f"get_horizon_fabricjs called")
+    logger.debug("get_horizon_fabricjs called")
     frame = int(flask.request.form.get("frame"))
     _, _, rotation, _ = drone_log.get_log_data_from_frame(frame)
     horizon_points = fov.get_horizon_and_world_corners(horizon_dict, rotation)
@@ -171,7 +173,7 @@ def save_start_time(video_id):
         db.session.commit()
         drone_log.video_start_time = new_video_start_time
     elif start_time_str == "1":
-        logger.debug(f"Attempting automatic matching of video with logfile")
+        logger.debug("Attempting automatic matching of video with logfile")
         drone_log.video_start_time = None
         new_video_start_time, message = drone_log.match_log_and_video()
         if message:
@@ -179,13 +181,13 @@ def save_start_time(video_id):
         video.start_time = new_video_start_time
         db.session.commit()
     elif start_time_str == "0":
-        logger.debug(f"Set video start time to start of logfile")
+        logger.debug("Set video start time to start of logfile")
         minimum = min([(x, x) for x in drone_log.time_stamp], key=lambda z: z[0])
         video.start_time = minimum[0]
         db.session.commit()
     else:
         flask.flash("Error setting the video time.", "error")
-        logger.debug(f"Error setting the video time")
+        logger.debug("Error setting the video time")
     return ""
 
 
@@ -201,7 +203,7 @@ def save_takeoff_altitude(video_id):
         logger.debug(f"video.takeoff_altitude: {video.takeoff_altitude}")
         drone_log.takeoff_altitude = new_takeoff_altitude
         db.session.commit()
-    except:
+    except Exception:
         flask.flash("Error setting the takeoff altitude.", "error")
-        logger.debug(f"Error setting the takeoff altitude")
+        logger.debug("Error setting the takeoff altitude")
     return ""

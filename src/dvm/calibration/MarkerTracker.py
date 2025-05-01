@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Marker tracker for locating n-fold edges in images using convolution.
 
@@ -7,19 +6,14 @@ Marker tracker for locating n-fold edges in images using convolution.
 
 import cv2
 import numpy as np
-import math
 
 
 class MarkerTracker:
-    """
-    Purpose: Locate a certain marker in an image.
-    """
+    """Purpose: Locate a certain marker in an image."""
 
     def __init__(self, order, kernel_size, scale_factor):
         self.kernel_size = kernel_size
-        (kernel_real, kernel_imag) = self.generate_symmetry_detector_kernel(
-            order, kernel_size
-        )
+        (kernel_real, kernel_imag) = self.generate_symmetry_detector_kernel(order, kernel_size)
 
         self.order = order
         self.mat_real = kernel_real / scale_factor
@@ -49,13 +43,7 @@ class MarkerTracker:
         # Calculate convolution and determine response strength.
         self.frame_real = cv2.filter2D(self.frame_real, cv2.CV_32F, self.mat_real)
         self.frame_imag = cv2.filter2D(self.frame_imag, cv2.CV_32F, self.mat_imag)
-        frame_real_squared = cv2.multiply(
-            self.frame_real, self.frame_real, dtype=cv2.CV_32F
-        )
-        frame_imag_squared = cv2.multiply(
-            self.frame_imag, self.frame_imag, dtype=cv2.CV_32F
-        )
-        self.frame_sum_squared = cv2.add(
-            frame_real_squared, frame_imag_squared, dtype=cv2.CV_32F
-        )
+        frame_real_squared = cv2.multiply(self.frame_real, self.frame_real, dtype=cv2.CV_32F)
+        frame_imag_squared = cv2.multiply(self.frame_imag, self.frame_imag, dtype=cv2.CV_32F)
+        self.frame_sum_squared = cv2.add(frame_real_squared, frame_imag_squared, dtype=cv2.CV_32F)
         return self.frame_sum_squared

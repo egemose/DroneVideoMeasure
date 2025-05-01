@@ -1,11 +1,12 @@
-import os
-import numpy as np
-import cv2
 import glob
 import logging
+import os
 from pathlib import Path
+
+import cv2
+import numpy as np
+
 from dvm.calibration.corner_detector import ChessBoardCornerDetector
-from dvm.app_config import data_dir
 
 logger = logging.getLogger("app." + __name__)
 
@@ -47,17 +48,19 @@ class CalibrateCamera:
                     obj_points_list.append(obj_points)
                     img_points_list.append(img_points)
                 else:
-                    logger.debug(f'{image_file} only has {coverage}% coverage minimum set to {self.min_percentage_coverage}')
+                    logger.debug(
+                        f"{image_file} only has {coverage}% coverage minimum set to {self.min_percentage_coverage}"
+                    )
             except Exception as e:
                 print("Something failed in calibrate_camera_from_images")
                 print(e)
         if obj_points_list:
             n_images_used_for_calibration = len(obj_points_list)
-            logger.debug(f'Using {n_images_used_for_calibration} images to calibrate')
+            logger.debug(f"Using {n_images_used_for_calibration} images to calibrate")
             _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
             return mtx, dist, image_size, n_images_used_for_calibration
         else:
-            logger.debug(f"No usable images found")
+            logger.debug("No usable images found")
             return None, None, None
 
     def calibrate_camera_from_video(self, video_files):
@@ -79,25 +82,17 @@ class CalibrateCamera:
                 # Read frame
                 ret_val, frame = cap.read()
                 if ret_val:
-                    logger.debug(
-                        f"Examining frame {count} for calibration pattern coverage"
-                    )
+                    logger.debug(f"Examining frame {count} for calibration pattern coverage")
                     image_size = (frame.shape[1], frame.shape[0])
-                    obj_points, img_points, coverage = (
-                        self.detect_calibration_pattern_in_image(
-                            frame, filename=f"frame_from_video_{count}.png"
-                        )
+                    obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(
+                        frame, filename=f"frame_from_video_{count}.png"
                     )
                     if coverage > self.min_percentage_coverage:
-                        logger.debug(
-                            f"Calibration pattern coverage is fine ({coverage})"
-                        )
+                        logger.debug(f"Calibration pattern coverage is fine ({coverage})")
                         obj_points_list.append(obj_points)
                         img_points_list.append(img_points)
                     else:
-                        logger.debug(
-                            f"Calibration pattern coverage too low in image ({coverage})"
-                        )
+                        logger.debug(f"Calibration pattern coverage too low in image ({coverage})")
                         num_images = num_images + 1 if num_images < 30 else 30
 
                 # Calculate next frame to extract
@@ -107,11 +102,11 @@ class CalibrateCamera:
             cap.release()
         if obj_points_list:
             n_images_used_for_calibration = len(obj_points_list)
-            logger.debug(f'Using {n_images_used_for_calibration} images from video to calibrate')
+            logger.debug(f"Using {n_images_used_for_calibration} images from video to calibrate")
             _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
             return mtx, dist, image_size, n_images_used_for_calibration
         else:
-            logger.debug(f"No usable images found in the video")
+            logger.debug("No usable images found in the video")
             return None, None, None
 
     @staticmethod
@@ -120,7 +115,7 @@ class CalibrateCamera:
         return fov_x, fov_y
 
     def __call__(self, in_folder, *args, **kwargs):
-        logger.debug(f"Calibrating camera")
+        logger.debug("Calibrating camera")
         image_files = []
         for file_format in [
             "*.jpg",

@@ -1,5 +1,5 @@
 # Reference - Drone logfile input format
-To get information about the location, altitude and orientation of the camera, information from the drone log file is used. The format exported from `AirData.com` is described in this document. 
+To get information about the location, altitude and orientation of the camera, information from the drone log file is used. The format exported from `AirData.com` is described in this document.
 
 DVM expects that the uploaded drone log file is a comma separated file, containing the following columns:
 - `time(millisecond)`
@@ -17,7 +17,7 @@ DVM expects that the uploaded drone log file is a comma separated file, containi
 
 ## Descriptions of the data columns
 ### `time(millisecond)`
-The `time(millisecond)` column contains the number of miliseconds since the UAV was turned on. Usually there is a new line in the logfile every `200 ms`.
+The `time(millisecond)` column contains the number of milliseconds since the UAV was turned on. Usually there is a new line in the logfile every `200 ms`.
 Example value: `15600`
 
 ### `datetime(utc)`
@@ -50,5 +50,3 @@ Example value: `-90`.
 ### `gimbal_roll(degrees)`
 The roll of the camera. If zero the horizon is level in the recorded video and images.
 Example value: `0`.
-
-

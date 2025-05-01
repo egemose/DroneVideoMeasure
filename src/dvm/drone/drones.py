@@ -1,14 +1,17 @@
+import contextlib
+import logging
 import os
 import re
 import shutil
-import numpy as np
-import flask
-import logging
 from datetime import datetime
+
+import flask
+import numpy as np
 from werkzeug.utils import secure_filename
-from dvm.forms import NewDroneForm, EditDroneForm
-from dvm.app_config import Project, data_dir, celery, Drone, Task, db, TaskFailure
+
+from dvm.app_config import Drone, Project, Task, TaskFailure, celery, data_dir, db
 from dvm.calibration.calibration import CalibrateCamera
+from dvm.forms import EditDroneForm, NewDroneForm
 
 logger = logging.getLogger("app." + __name__)
 drones_view = flask.Blueprint("drones", __name__)
@@ -21,7 +24,7 @@ def drones():
         return res
     edit_drone_form = get_edit_drone_form()
     drones = Drone.query.all()
-    logger.debug(f"Render drone index")
+    logger.debug("Render drone index")
     return flask.render_template(
         "drones/drones.html",
         drones=drones,
@@ -42,9 +45,7 @@ def get_new_drone_form():
             drone = Drone(name=drone_name, description=camera_settings)
             db.session.add(drone)
             db.session.commit()
-            return flask.redirect(
-                flask.url_for("drones.add_calibration", drone_id=drone.id)
-            ), form
+            return flask.redirect(flask.url_for("drones.add_calibration", drone_id=drone.id)), form
     return None, form
 
 
@@ -57,10 +58,7 @@ def get_edit_drone_form():
         new_drone_name = form.edit_name.data
         new_camera_settings = form.edit_camera_settings.data
         drone = Drone.query.get_or_404(drone_id)
-        if (
-            drone.name in [x.name for x in drones]
-            and not drone.name == drone_name_before
-        ):
+        if drone.name in [x.name for x in drones] and drone.name != drone_name_before:
             flask.flash("A drone with that name already exist!")
         else:
             drone.name = new_drone_name
@@ -75,25 +73,20 @@ def add_calibration(drone_id):
     logger.debug("add_calibration")
     calibration_folder = os.path.join(data_dir, "calibration")
     if not os.path.exists(calibration_folder):
-        logger.debug(f"Creating calibration folder")
+        logger.debug("Creating calibration folder")
         os.mkdir(calibration_folder)
-    if flask.request.method == "GET":
-        if os.path.isdir(calibration_folder):
-            logger.debug(f"Removing calibration folder")
-            shutil.rmtree(calibration_folder)
-            logger.debug(f"Creating calibration folder")
-            os.mkdir(calibration_folder)
+    if flask.request.method == "GET" and os.path.isdir(calibration_folder):
+        logger.debug("Removing calibration folder")
+        shutil.rmtree(calibration_folder)
+        logger.debug("Creating calibration folder")
+        os.mkdir(calibration_folder)
     if flask.request.method == "POST":
         file_obj = flask.request.files
         for file in file_obj.values():
-            file_location = os.path.join(
-                calibration_folder, secure_filename(file.filename)
-            )
+            file_location = os.path.join(calibration_folder, secure_filename(file.filename))
             image_mimetype = re.compile("image/*")
             video_mimetype = re.compile("video/*")
-            if image_mimetype.match(file.mimetype) or video_mimetype.match(
-                file.mimetype
-            ):
+            if image_mimetype.match(file.mimetype) or video_mimetype.match(file.mimetype):
                 file.save(file_location)
                 logger.debug(f"Saving file: {file_location}")
     logger.debug(f"Render drone calibration for {flask.request.method} request")
@@ -119,10 +112,8 @@ def calibration_task(self, drone_id):
     self.update_state(state="PROCESSING")
     in_folder = os.path.join(data_dir, "calibration")
     in_folder_temp = os.path.join(data_dir, "calibrationtemp")
-    try:
+    with contextlib.suppress(Exception):
         shutil.rmtree(in_folder_temp)
-    except Exception:
-        pass
     os.mkdir(in_folder_temp)
     calibrate_cam = CalibrateCamera()
     try:
@@ -131,9 +122,7 @@ def calibration_task(self, drone_id):
         if result == -1:
             shutil.rmtree(in_folder)
             os.mkdir(in_folder)
-            raise TaskFailure(
-                "Error: Could not find any checkerboards in the images/video. Try with a new video."
-            )
+            raise TaskFailure("Error: Could not find any checkerboards in the images/video. Try with a new video.")
         if not result:
             shutil.rmtree(in_folder)
             os.mkdir(in_folder)
@@ -143,10 +132,10 @@ def calibration_task(self, drone_id):
         db.session.commit()
         shutil.rmtree(in_folder)
         os.mkdir(in_folder)
-    except AttributeError:
+    except AttributeError as exc:
         shutil.rmtree(in_folder)
         os.mkdir(in_folder)
-        raise TaskFailure("Error: Loading video or images failed. Please try again.")
+        raise TaskFailure("Error: Loading video or images failed. Please try again.") from exc
 
 
 @drones_view.route("/drones/status/<task_id>")
@@ -174,7 +163,7 @@ def task_status(task_id):
 def view_calibration(drone_id):
     drone = Drone.query.get_or_404(drone_id)
     try:
-        # From 2025-03-31 Five values are stored in 
+        # From 2025-03-31 Five values are stored in
         # drone.calibration, earlier it was only four.
         # This try catch block is to support both cases.
         mtx, dist, fov_x, fov_y, n_images = drone.calibration
@@ -182,14 +171,14 @@ def view_calibration(drone_id):
         mtx, dist, fov_x, fov_y = drone.calibration
         n_images = -1
 
-    logger.debug(f"Render view_calibration")
+    logger.debug("Render view_calibration")
     return flask.render_template(
         "drones/view_calibration.html",
         mtx=np.around(mtx, 1),
         dist=np.around(dist, 5),
         fov_x=np.round(fov_x, 2),
         fov_y=np.round(fov_y, 2),
-        n_images=n_images
+        n_images=n_images,
     )
 
 
@@ -217,7 +206,5 @@ def remove_drone(drone_id):
 
 def remove_file(file):
     if file:
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.remove(file)
-        except FileNotFoundError:
-            pass

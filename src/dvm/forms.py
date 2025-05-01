@@ -4,9 +4,7 @@ from flask_wtf.file import FileField
 
 
 class NewProjectForm(flask_wtf.FlaskForm):
-    name = wtforms.fields.StringField(
-        "Project Name", validators=[wtforms.validators.DataRequired()]
-    )
+    name = wtforms.fields.StringField("Project Name", validators=[wtforms.validators.DataRequired()])
     description = wtforms.fields.TextAreaField(
         "Description", render_kw={"placeholder": "Optional short project description"}
     )
@@ -18,9 +16,7 @@ class NewProjectForm(flask_wtf.FlaskForm):
 class EditProjectForm(flask_wtf.FlaskForm):
     edit_project_before = wtforms.fields.HiddenField()
     edit_project_id = wtforms.fields.HiddenField()
-    edit_name = wtforms.fields.StringField(
-        "Project Name", validators=[wtforms.validators.DataRequired()]
-    )
+    edit_name = wtforms.fields.StringField("Project Name", validators=[wtforms.validators.DataRequired()])
     edit_description = wtforms.fields.TextAreaField(
         "Description", render_kw={"placeholder": "Optional short project description"}
     )
@@ -30,9 +26,7 @@ class EditProjectForm(flask_wtf.FlaskForm):
 
 
 class NewDroneForm(flask_wtf.FlaskForm):
-    name = wtforms.fields.StringField(
-        "Drone Name", validators=[wtforms.validators.DataRequired()]
-    )
+    name = wtforms.fields.StringField("Drone Name", validators=[wtforms.validators.DataRequired()])
     camera_settings = wtforms.fields.TextAreaField(
         "Camera Settings",
         render_kw={
@@ -48,9 +42,7 @@ class NewDroneForm(flask_wtf.FlaskForm):
 class EditDroneForm(flask_wtf.FlaskForm):
     edit_drone_before = wtforms.fields.HiddenField()
     edit_drone_id = wtforms.fields.HiddenField()
-    edit_name = wtforms.fields.StringField(
-        "Drone Name", validators=[wtforms.validators.DataRequired()]
-    )
+    edit_name = wtforms.fields.StringField("Drone Name", validators=[wtforms.validators.DataRequired()])
     edit_camera_settings = wtforms.fields.TextAreaField(
         "Camera Settings",
         render_kw={

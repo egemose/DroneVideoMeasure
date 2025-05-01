@@ -1,10 +1,11 @@
 import os
 import secrets
+
 from celery import Celery
 from flask_dropzone import Dropzone
+from flask_migrate import Migrate
 from flask_obscure import Obscure
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 
 
@@ -21,17 +22,17 @@ class AppConfig:
     DROPZONE_PARALLEL_UPLOADS = 1
     DROPZONE_TIMEOUT = 1800000
     CELERY_BROKER_URL = "redis://redis:6379/0"
-    CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+    result_backend = "redis://redis:6379/0"
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:example@db:5432/postgres"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-data_dir = os.path.abspath('/app_data')
+data_dir = os.path.abspath("/app_data")
 
 celery = Celery(
     __name__,
     broker=AppConfig.CELERY_BROKER_URL,
-    backend=AppConfig.CELERY_RESULT_BACKEND,
+    backend=AppConfig.result_backend,
 )
 
 

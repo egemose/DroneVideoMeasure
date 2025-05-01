@@ -10382,7 +10382,7 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
      * @private
      */
     _initEventListeners: function () {
-      
+
       var eventMapping = {};
       if ( window.PointerEvent) {
         // IE11 and other W3C Pointer Event implementations (see http://www.w3.org/TR/pointerevents)
@@ -10422,7 +10422,7 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
             eventMapping.leave = ' mouseleave';
         }*/
       }
-      
+
       fabric.eventMapping = eventMapping;
       // in case we initialized the class twice. This should not happen normally
       // but in some kind of applications where the canvas element may be changed
@@ -27105,4 +27105,3 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
   }
 
 })();
-

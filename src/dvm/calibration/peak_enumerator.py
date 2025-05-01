@@ -1,8 +1,9 @@
-from sklearn.neighbors import KDTree
+import collections
+
+import cv2
 import numpy as np
 from icecream import ic
-import collections
-import cv2
+from sklearn.neighbors import KDTree
 
 
 class PeakEnumerator:
@@ -16,10 +17,9 @@ class PeakEnumerator:
 
         central_center = np.array(
             sorted(
-                list(self.centers),
+                self.centers,
                 key=lambda c: np.sqrt(
-                    (c[0] - mean_position_of_centers[0]) ** 2
-                    + (c[1] - mean_position_of_centers[1]) ** 2
+                    (c[0] - mean_position_of_centers[0]) ** 2 + (c[1] - mean_position_of_centers[1]) ** 2
                 ),
             )
         )
@@ -29,9 +29,7 @@ class PeakEnumerator:
 
     def enumerate_peaks(self):
         self.centers_kdtree = KDTree(np.array(self.centers))
-        self.calibration_points = self.initialize_calibration_points(
-            self.central_peak_location
-        )
+        self.calibration_points = self.initialize_calibration_points(self.central_peak_location)
         self.enumerate_central_square()
         self.build_examination_queue()
         self.analyse_elements_in_queue()
@@ -107,7 +105,7 @@ class PeakEnumerator:
             p01 = self.calibration_points[x_index][y_index + 1]
             p10 = self.calibration_points[x_index + 1][y_index]
             p11 = self.calibration_points[x_index + 1][y_index + 1]
-        except Exception as e:
+        except Exception:
             # print(e)
             return
 
@@ -134,17 +132,13 @@ class PeakEnumerator:
         if y_idx not in self.calibration_points[x_idx]:
             pxx = H @ np.array([[point[0]], [point[1]], [1]])
             pxx = pxx / pxx[2]
-            location, distance = self.locate_nearest_neighbour(
-                pxx[0:2], minimum_distance_from_selected_center=-1
-            )
+            location, distance = self.locate_nearest_neighbour(pxx[0:2], minimum_distance_from_selected_center=-1)
             if distance / reference_distance < self.distance_threshold:
                 # ic(distance / reference_distance)
                 self.calibration_points[x_idx][y_idx] = location
                 self.points_to_examine_queue.append((x_idx, y_idx))
 
-    def locate_nearest_neighbour(
-        self, selected_center, minimum_distance_from_selected_center=0
-    ):
+    def locate_nearest_neighbour(self, selected_center, minimum_distance_from_selected_center=0):
         reshaped_query_array = np.array(selected_center).reshape(1, -1)
         (distances, indices) = self.centers_kdtree.query(reshaped_query_array, 2)
         if distances[0][0] <= minimum_distance_from_selected_center:

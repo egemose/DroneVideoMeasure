@@ -72,12 +72,15 @@ path = "src/dvm/__init__.py"
 [tool.codespell]
 check-hidden = true
 skip = ".git,venv,*.c"
-ignore-words-list = "mor, FPR"
+ignore-words-list = "mor, FPR, fo"
 
 [tool.ruff]
 line-length = 120
 target-version = "py310"
 fix = true
+
+exclude=["src/dvm/migrations"]
+force-exclude = true
 
 [tool.ruff.lint]
 select = [
@@ -112,6 +115,13 @@ ignore = [
   "E501",
   # still using D102 since docstring inherited is not supported in ruff"
   "D102",
+  # missing docstrings
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D105",
+  "D107",
 ]
 
 [tool.ruff.lint.per-file-ignores]
