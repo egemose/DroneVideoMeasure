@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-requirements-txt"]
 build-backend = "hatchling.build"
 
 [project]
 name = "DVM"
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 authors = [
   { name="Henrik Dyrberg Egemose", email="hde@mmmi.sdu.dk" },
 ]
@@ -16,31 +16,6 @@ description = "Drone Video Measure."
 readme = "README.md"
 license-files = ["LICEN[CS]E*"]
 requires-python = ">=3.8"
-dependencies = [
-  "Flask",
-  "Flask_Dropzone",
-  "Flask_Obscure",
-  "Flask_WTF",
-  "flask-sqlalchemy",
-  "flask-migrate",
-  "flask-script",
-  "WTForms",
-  "Werkzeug",
-  "SQLAlchemy",
-  "numpy",
-  "jinja2",
-  "celery[redis]",
-  "utm",
-  "ffmpeg-python",
-  "bokeh",
-  "opencv-python",
-  "scikit-learn",
-  "gunicorn",
-  "gevent",
-  "icecream",
-  "psycopg2-binary",
-  "redis",
-]
 classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -49,6 +24,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Image Processing",
     "Operating System :: OS Independent",
 ]
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
 
 [project.urls]
 Homepage = "https://github.com/egemose/DroneVideoMeasure"

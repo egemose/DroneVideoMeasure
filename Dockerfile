@@ -1,21 +1,24 @@
-FROM python:3.8 as base
-RUN apt-get update
-RUN apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
-RUN apt-get install -y ffmpeg
-RUN apt-get install -y nodejs
-RUN rm -rf /var/lib/apt/lists/*
+FROM python:3.13-slim
 
-FROM base
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y ffmpeg npm && \
+    apt-get autoremove -y && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY ./package.json /package.json
-RUN npm install
-COPY ./pyproject.toml /app/pyproject.toml
+RUN npm install && npm cache clean --force
+
+COPY ./requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
-RUN pip install -e .
+RUN pip install --no-cache-dir -e .
+
 RUN chmod u+x ./entrypoint.sh
 RUN mkdir /app_data
 
 EXPOSE 5000
 ENV PYTHONUNBUFFERED=1
-CMD gunicorn -b 0.0.0.0:5000 -k gevent -t 10000 "app:app"
+CMD ["gunicorn", "-b 0.0.0.0:5000", "-k gevent", "-t 10000", "'dvm:app'"]
