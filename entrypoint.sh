@@ -23,7 +23,7 @@ done
 
 
 
-run "flask db upgrade"
+run "flask --app dvm db upgrade --directory /app/src/dvm/migrations"
 if [[ $dev_mode = true ]]; then
   run "flask --app dvm run --host 0.0.0.0 --debug"
 else
