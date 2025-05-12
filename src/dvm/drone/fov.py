@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import logging
 from collections import defaultdict
+from typing import Any
 
 import cv2
 import numpy as np
@@ -9,25 +12,30 @@ logger = logging.getLogger("app." + __name__)
 
 
 # https://stackoverflow.com/a/2150512/185475
-def shift(seq, n):
+def shift(seq: list[Any], n: int) -> list[Any]:
     return seq[n:] + seq[:n]
 
 
 class Fov:
-    def __init__(self):
+    def __init__(self) -> None:
         logger.debug(f"Creating instance of Fov {self}")
-        self.image_size = None
-        self.horizontal_fov = None
-        self.vertical_fov = None
-        self.camera_matrix = None
-        self.dist_coefficients = None
-        self.camera_matrix = None
-        self.dist_coefficients = None
+        self.image_size: tuple[int, int]
+        self.horizontal_fov: float
+        self.vertical_fov: float
+        self.camera_matrix: np.ndarray
+        self.dist_coefficients: np.ndarray
 
-    def set_image_size(self, width, height):
+    def set_image_size(self, width: int, height: int) -> None:
         self.image_size = (width, height)
 
-    def set_camera_params(self, camera_matrix, dist_coefficients, horizontal_fov, vertical_fov, n_images=None):
+    def set_camera_params(
+        self,
+        camera_matrix: np.ndarray,
+        dist_coefficients: np.ndarray,
+        horizontal_fov: float,
+        vertical_fov: float,
+        n_images: int | None = None,
+    ) -> None:
         logger.debug("Setting camera params")
         self.camera_matrix = camera_matrix
         self.dist_coefficients = dist_coefficients
@@ -35,7 +43,7 @@ class Fov:
         self.vertical_fov = vertical_fov * np.pi / 180
 
     @staticmethod
-    def roll(roll):
+    def roll(roll: float) -> np.ndarray:
         return np.array(
             [
                 [np.cos(roll), 0, np.sin(roll)],
@@ -45,7 +53,7 @@ class Fov:
         )
 
     @staticmethod
-    def pitch(pitch):
+    def pitch(pitch: float) -> np.ndarray:
         return np.array(
             [
                 [1, 0, 0],
@@ -55,13 +63,13 @@ class Fov:
         )
 
     @staticmethod
-    def yaw(yaw):
+    def yaw(yaw: float) -> np.ndarray:
         return np.array([[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]])
 
-    def rotation(self, yaw, pitch, roll):
+    def rotation(self, yaw: float, pitch: float, roll: float) -> np.ndarray:
         return np.matmul(self.yaw(yaw), np.matmul(self.pitch(pitch), self.roll(roll)))
 
-    def get_unit_vector(self, image_point):
+    def get_unit_vector(self, image_point: tuple[float, float]) -> np.ndarray:
         if self.camera_matrix is not None:
             undist_point = cv2.undistortPoints(
                 np.array([[image_point]], dtype=np.float32),
@@ -81,7 +89,9 @@ class Fov:
         vector = np.array([x, y, z])
         return vector
 
-    def get_horizon_and_world_corners(self, world_point_dict, yaw_pitch_roll):
+    def get_horizon_and_world_corners(
+        self, world_point_dict: dict[Any, Any], yaw_pitch_roll: tuple[float, float, float]
+    ) -> defaultdict[Any, list[dict[str, int]]]:
         margin = 200
         yaw_pitch_roll = (-yaw_pitch_roll[0], yaw_pitch_roll[1], yaw_pitch_roll[2])
         rotation_matrix = self.rotation(*yaw_pitch_roll)
@@ -114,38 +124,57 @@ class Fov:
             image_points[direction + "_pos"].append({"top": top, "left": left})
         return image_points
 
-    def get_world_point(self, image_point, drone_height, yaw_pitch_roll, pos, return_zone=False):
+    def get_world_point(
+        self,
+        image_point: tuple[float, float],
+        drone_height: float,
+        yaw_pitch_roll: tuple[float, float, float],
+        pos: tuple[float, float],
+        return_zone: bool = False,
+    ) -> tuple[np.ndarray, tuple[int, str]] | np.ndarray:
         unit_vector = self.get_unit_vector(image_point)
         yaw_pitch_roll = (-yaw_pitch_roll[0], yaw_pitch_roll[1], yaw_pitch_roll[2])
         rotation_matrix = self.rotation(*yaw_pitch_roll)
         rotated_vector = np.matmul(rotation_matrix, unit_vector)
         ground_vector = rotated_vector / rotated_vector[2] * -drone_height
         east_north_zone = self.convert_gps(*pos)
-        world_point = ground_vector[:2] + np.array(east_north_zone[:2])
+        world_point: np.ndarray = ground_vector[:2] + np.array(east_north_zone[:2])
         if return_zone:
             return world_point, east_north_zone[2:]
         else:
             return world_point
 
-    def get_world_points(self, image_points, drone_height, yaw_pitch_roll, pos):
+    def get_world_points(
+        self,
+        image_points: list[tuple[int, int]],
+        drone_height: float,
+        yaw_pitch_roll: tuple[float, float, float],
+        pos: tuple[float, float],
+    ) -> list[np.ndarray | tuple[np.ndarray, str]]:
         world_points = []
         for image_point in image_points:
             world_point = self.get_world_point(image_point, drone_height, yaw_pitch_roll, pos)
             world_points.append(world_point)
         return world_points
 
-    def get_gps_point(self, image_point, drone_height, yaw_pitch_roll, pos):
+    def get_gps_point(
+        self,
+        image_point: tuple[int, int],
+        drone_height: float,
+        yaw_pitch_roll: tuple[float, float, float],
+        pos: tuple[float, float],
+    ) -> tuple[float, float]:
         world_point, zone = self.get_world_point(image_point, drone_height, yaw_pitch_roll, pos, True)
         lat, lon = self.convert_utm(world_point[0], world_point[1], zone)
         return lat, lon
 
     @staticmethod
-    def convert_gps(lat, lon):
-        east_north_zone = utm.from_latlon(lat, lon)
+    def convert_gps(lat: float, lon: float) -> tuple[float, float, int, str]:
+        east_north_zone: tuple[float, float, int, str] = utm.from_latlon(lat, lon)
         return east_north_zone
 
     @staticmethod
-    def convert_utm(east, north, zone):
+    def convert_utm(east: float, north: float, zone: tuple[int, str]) -> tuple[float, float]:
         lat, lon = utm.to_latlon(east, north, *zone)
         return lat, lon
 

@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import logging
 from datetime import datetime
+from typing import Any
 
 from bokeh.embed import components
 from bokeh.layouts import gridplot
@@ -11,7 +14,9 @@ from dvm.drone.drone_log_data import get_video_ranges
 logger = logging.getLogger("app." + __name__)
 
 
-def get_log_plot(log_data):
+def get_log_plot(
+    log_data: tuple[list[datetime], list[float], list[float], list[float], list[float], list[bool]],
+) -> tuple[str, str]:
     logger.debug("Getting log plot")
     height_plot, yaw_plot, pitch_plot, roll_plot = _get_log_plots(log_data)
     grid = gridplot(
@@ -23,7 +28,12 @@ def get_log_plot(log_data):
     return script, div
 
 
-def get_log_plot_with_video(log_data, video_start, video_duration, video_frames):
+def get_log_plot_with_video(
+    log_data: tuple[list[datetime], list[float], list[float], list[float], list[float], list[bool]],
+    video_start: datetime,
+    video_duration: float,
+    video_frames: int,
+) -> tuple[str, str]:
     """
     Arrange the log file plots and add annotations to them that shows
     the current time in the video and the duration of the current video.
@@ -76,7 +86,9 @@ def get_log_plot_with_video(log_data, video_start, video_duration, video_frames)
     return script, div
 
 
-def _get_log_plots(log_data):
+def _get_log_plots(
+    log_data: tuple[list[datetime], list[float], list[float], list[float], list[float], list[bool]],
+) -> tuple[figure, figure, figure, figure]:
     """Make plots for visualizing data from the drone log file."""
     time_stamp = log_data[0]
     height = log_data[1]
@@ -112,7 +124,7 @@ def _get_log_plots(log_data):
     return height_plot, yaw_plot, pitch_plot, roll_plot
 
 
-def _update_video_plot(dict_arguments):
+def _update_video_plot(dict_arguments: dict[Any, Any]) -> CustomJS:
     return CustomJS(
         args=dict_arguments,
         code="""
@@ -125,10 +137,10 @@ def _update_video_plot(dict_arguments):
     )
 
 
-def _shift_yaw(yaw):
+def _shift_yaw(yaw: list[float]) -> list[float]:
     new_yaw = []
-    last_point = 0
-    shift = 0
+    last_point = 0.0
+    shift = 0.0
     for point in yaw:
         if (last_point > 150 and point < -150) or (last_point < -150 and point > 150):
             if point < 0:

@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 import contextlib
 import logging
 import os
 import random
+from pathlib import Path
 
 import flask
+from werkzeug.wrappers.response import Response
 
 from dvm.app_config import Drone, Project, data_dir, db, get_random_filename
 from dvm.drone import plot_log_data
@@ -15,8 +19,8 @@ logger = logging.getLogger("app." + __name__)
 projects_view = flask.Blueprint("projects", __name__)
 
 
-@projects_view.route("/projects", methods=["GET", "POST"])
-def projects():
+@projects_view.route("/projects", methods=["GET", "POST"])  # type: ignore[misc]
+def projects() -> str | Response:
     random_int = random.randint(1, 10000000)
     res, new_project_form = get_new_project_form()
     if res:
@@ -36,7 +40,7 @@ def projects():
     return flask.render_template("projects/projects.html", **arguments)
 
 
-def get_new_project_form():
+def get_new_project_form() -> tuple[Response | None, NewProjectForm]:
     form = NewProjectForm()
     drones = Drone.query.all()
     form.drone.choices = [(x.id, x.name) for x in drones if x.calibration]
@@ -53,12 +57,12 @@ def get_new_project_form():
             if form.log_file.data:
                 log_error = None
                 log_filename = get_random_filename(form.log_file.data.filename)
-                log_file = os.path.join(data_dir, log_filename)
+                log_file = data_dir.joinpath(log_filename)
                 form.log_file.data.save(log_file)
                 success = drone_log.test_log(log_file)
                 if not success:
                     remove_file(log_file)
-                    log_filename = None
+                    log_filename = None  # type: ignore[assignment]
                     log_error = "Error interpreting the drone log file. Try and upload the log file again."
             else:
                 log_error = "No drone log file added. Please add a log file."
@@ -66,7 +70,7 @@ def get_new_project_form():
                 name=project_title,
                 description=description,
                 drone_id=drone_id,
-                log_file=log_file,
+                log_file=str(log_file),
                 log_error=log_error,
             )
             db.session.add(project)
@@ -75,7 +79,7 @@ def get_new_project_form():
     return None, form
 
 
-def get_edit_project_form():
+def get_edit_project_form() -> EditProjectForm:
     form = EditProjectForm()
     drones = Drone.query.all()
     form.edit_drone.choices = [(x.id, x.name) for x in drones]
@@ -98,7 +102,7 @@ def get_edit_project_form():
                 remove_file(project.log_file)
                 log_error = None
                 log_filename = get_random_filename(form.edit_log_file.data.filename)
-                log_file = os.path.join(data_dir, log_filename)
+                log_file = data_dir.joinpath(log_filename)
                 form.edit_log_file.data.save(log_file)
                 success = drone_log.test_log(log_file)
                 if success:
@@ -112,8 +116,8 @@ def get_edit_project_form():
     return form
 
 
-@projects_view.route("/projects/<project_id>/plot")
-def plot_log(project_id):
+@projects_view.route("/projects/<project_id>/plot")  # type: ignore[misc]
+def plot_log(project_id: int) -> Response:
     project = Project.query.get_or_404(project_id)
     drone_log.get_log_data(project.log_file)
     plot_script, plot_div = plot_log_data.get_log_plot(drone_log.log_data())
@@ -127,8 +131,8 @@ def plot_log(project_id):
     )
 
 
-@projects_view.route("/projects/<project_id>/download")
-def download(project_id):
+@projects_view.route("/projects/<project_id>/download")  # type: ignore[misc]
+def download(project_id: int) -> Response:
     with open("version.txt") as version_file:
         pro_version = version_file.read()
     project = Project.query.get_or_404(project_id)
@@ -139,8 +143,8 @@ def download(project_id):
     return flask.send_file(filename, as_attachment=True)
 
 
-@projects_view.route("/projects/<project_id>/remove")
-def remove_project(project_id):
+@projects_view.route("/projects/<project_id>/remove")  # type: ignore[misc]
+def remove_project(project_id: int) -> Response:
     logger.debug(f"Removing project {project_id}")
     project = Project.query.get_or_404(project_id)
     remove_file(project.log_file)
@@ -153,7 +157,7 @@ def remove_project(project_id):
     return flask.redirect(flask.url_for("projects.projects"))
 
 
-def remove_file(file):
+def remove_file(file: Path) -> None:
     if file:
         with contextlib.suppress(FileNotFoundError):
             os.remove(file)

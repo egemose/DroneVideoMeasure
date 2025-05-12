@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import glob
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import cv2
 import numpy as np
@@ -12,11 +15,13 @@ logger = logging.getLogger("app." + __name__)
 
 
 class CalibrateCamera:
-    def __init__(self):
+    def __init__(self) -> None:
         self.min_percentage_coverage = 15
         self.detector = ChessBoardCornerDetector()
 
-    def detect_calibration_pattern_in_image(self, img, filename):
+    def detect_calibration_pattern_in_image(
+        self, img: np.ndarray, filename: Path
+    ) -> tuple[np.ndarray, np.ndarray, int]:
         corners, coverage, _ = self.detector.detect_chess_board_corners(
             img,
             debug=True,
@@ -35,12 +40,13 @@ class CalibrateCamera:
             coverage,
         )
 
-    def calibrate_camera_from_images(self, image_files):
+    def calibrate_camera_from_images(
+        self, image_files: list[Path]
+    ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], int] | None:
         obj_points_list = []
         img_points_list = []
-        image_size = None
         for image_file in image_files:
-            img = cv2.imread(image_file)
+            img = cv2.imread(str(image_file))
             image_size = (img.shape[1], img.shape[0])
             try:
                 obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(img, filename=image_file)
@@ -61,14 +67,15 @@ class CalibrateCamera:
             return mtx, dist, image_size, n_images_used_for_calibration
         else:
             logger.debug("No usable images found")
-            return None, None, None
+            return None
 
-    def calibrate_camera_from_video(self, video_files):
+    def calibrate_camera_from_video(
+        self, video_files: list[Path]
+    ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], int] | None:
         obj_points_list = []
         img_points_list = []
-        image_size = None
         for video_file in video_files:
-            cap = cv2.VideoCapture(video_file)
+            cap = cv2.VideoCapture(str(video_file))
             num_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
             num_images = 30
             logger.debug(f"Number of frames in video: {num_frames}")
@@ -85,7 +92,7 @@ class CalibrateCamera:
                     logger.debug(f"Examining frame {count} for calibration pattern coverage")
                     image_size = (frame.shape[1], frame.shape[0])
                     obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(
-                        frame, filename=f"frame_from_video_{count}.png"
+                        frame, filename=Path(f"frame_from_video_{count}.png")
                     )
                     if coverage > self.min_percentage_coverage:
                         logger.debug(f"Calibration pattern coverage is fine ({coverage})")
@@ -107,14 +114,16 @@ class CalibrateCamera:
             return mtx, dist, image_size, n_images_used_for_calibration
         else:
             logger.debug("No usable images found in the video")
-            return None, None, None
+            return None
 
     @staticmethod
-    def calculate_camera_fov(mtx, image_size):
+    def calculate_camera_fov(mtx: np.ndarray, image_size: tuple[int, int]) -> tuple[float, float]:
         fov_x, fov_y, _, _, _ = cv2.calibrationMatrixValues(mtx, image_size, 1, 1)
         return fov_x, fov_y
 
-    def __call__(self, in_folder, *args, **kwargs):
+    def __call__(
+        self, in_folder: Path, *args: tuple[Any, ...], **kwargs: dict[str, Any]
+    ) -> tuple[np.ndarray, np.ndarray, float, float, int] | int | None:
         logger.debug("Calibrating camera")
         image_files = []
         for file_format in [
@@ -127,8 +136,8 @@ class CalibrateCamera:
             "*.tiff",
             "*.tif",
         ]:
-            image_files.extend(glob.glob(os.path.join(in_folder, file_format)))
-            image_files.extend(glob.glob(os.path.join(in_folder, file_format.upper())))
+            image_files.extend([Path(p) for p in glob.iglob(os.path.join(in_folder, file_format))])
+            image_files.extend([Path(p) for p in glob.iglob(os.path.join(in_folder, file_format.upper()))])
         video_files = []
         for file_format in [
             "*.mp4",
@@ -144,16 +153,17 @@ class CalibrateCamera:
             "*.wma",
             "*.webm",
         ]:
-            video_files.extend(glob.glob(os.path.join(in_folder, file_format)))
-            video_files.extend(glob.glob(os.path.join(in_folder, file_format.upper())))
+            video_files.extend([Path(p) for p in glob.iglob(os.path.join(in_folder, file_format))])
+            video_files.extend([Path(p) for p in glob.iglob(os.path.join(in_folder, file_format.upper()))])
         if image_files:
-            mtx, dist, image_size, n_images = self.calibrate_camera_from_images(image_files)
+            res = self.calibrate_camera_from_images(image_files)
         elif video_files:
-            mtx, dist, image_size, n_images = self.calibrate_camera_from_video(video_files)
+            res = self.calibrate_camera_from_video(video_files)
         else:
-            return
-        if mtx is not None:
+            return None
+        if res is None:
+            return -1
+        else:
+            mtx, dist, image_size, n_images = res
             fov_x, fov_y = self.calculate_camera_fov(mtx, image_size)
             return mtx, dist, fov_x, fov_y, n_images
-        else:
-            return -1

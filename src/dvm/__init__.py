@@ -3,7 +3,9 @@ from __future__ import annotations
 import logging.handlers
 import os
 
-from flask import Flask, render_template, send_from_directory
+import werkzeug.exceptions
+from celery import Celery
+from flask import Flask, Response, render_template, send_from_directory
 
 from dvm.app_config import AppConfig, data_dir, db, dropzone, make_celery, migrate, obscure
 from dvm.drone.drones import drones_view
@@ -24,19 +26,19 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 
 
-def serve_data_file(filename):
+def serve_data_file(filename: str) -> Response:
     return send_from_directory(os.path.join("..", "/app_data"), os.path.split(filename)[-1])
 
 
-def serve_node_modules(filename):
+def serve_node_modules(filename: str) -> Response:
     return send_from_directory(os.path.join("..", "/node_modules"), filename)
 
 
-def page_not_found(e):
+def page_not_found(e: werkzeug.exceptions.NotFound) -> tuple[str, int]:
     return render_template("404.html"), 404
 
 
-def create_app():
+def create_app() -> tuple[None, Flask, Celery]:
     app = Flask(__name__)
     app.register_error_handler(404, page_not_found)
     app.config.from_object(AppConfig)

@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import contextlib
 import logging
 import os
 import re
 import shutil
 from datetime import datetime
+from pathlib import Path
 
 import flask
 import numpy as np
+from celery.app.task import Task as CeleryTask
 from werkzeug.utils import secure_filename
+from werkzeug.wrappers.response import Response
 
 from dvm.app_config import Drone, Project, Task, TaskFailure, celery, data_dir, db
 from dvm.calibration.calibration import CalibrateCamera
@@ -17,8 +22,8 @@ logger = logging.getLogger("app." + __name__)
 drones_view = flask.Blueprint("drones", __name__)
 
 
-@drones_view.route("/drones", methods=["GET", "POST"])
-def drones():
+@drones_view.route("/drones", methods=["GET", "POST"])  # type: ignore[misc]
+def drones() -> str | Response:
     res, drone_form = get_new_drone_form()
     if res:
         return res
@@ -33,7 +38,7 @@ def drones():
     )
 
 
-def get_new_drone_form():
+def get_new_drone_form() -> tuple[Response | None, NewDroneForm]:
     drones = Drone.query.all()
     form = NewDroneForm()
     if form.validate_on_submit():
@@ -49,7 +54,7 @@ def get_new_drone_form():
     return None, form
 
 
-def get_edit_drone_form():
+def get_edit_drone_form() -> EditDroneForm:
     drones = Drone.query.all()
     form = EditDroneForm()
     if form.validate_on_submit():
@@ -68,8 +73,8 @@ def get_edit_drone_form():
     return form
 
 
-@drones_view.route("/drones/<drone_id>/calibrate", methods=["GET", "POST"])
-def add_calibration(drone_id):
+@drones_view.route("/drones/<drone_id>/calibrate", methods=["GET", "POST"])  # type: ignore[misc]
+def add_calibration(drone_id: int) -> Response:
     logger.debug("add_calibration")
     calibration_folder = os.path.join(data_dir, "calibration")
     if not os.path.exists(calibration_folder):
@@ -93,8 +98,8 @@ def add_calibration(drone_id):
     return flask.render_template("drones/calibration.html", drone=drone_id)
 
 
-@drones_view.route("/dones/<drone_id>/do_calibration", methods=["POST"])
-def do_calibration(drone_id):
+@drones_view.route("/dones/<drone_id>/do_calibration", methods=["POST"])  # type: ignore[misc]
+def do_calibration(drone_id: int) -> str:
     logger.debug(f"do_calibration is called for drone {drone_id}")
     drone = Drone.query.get_or_404(drone_id)
     drone.calibration = None
@@ -107,10 +112,10 @@ def do_calibration(drone_id):
     return ""
 
 
-@celery.task(bind=True)
-def calibration_task(self, drone_id):
+@celery.task(bind=True)  # type: ignore[misc]
+def calibration_task(self: CeleryTask, drone_id: int) -> None:
     self.update_state(state="PROCESSING")
-    in_folder = os.path.join(data_dir, "calibration")
+    in_folder = Path(os.path.join(data_dir, "calibration"))
     in_folder_temp = os.path.join(data_dir, "calibrationtemp")
     with contextlib.suppress(Exception):
         shutil.rmtree(in_folder_temp)
@@ -138,8 +143,8 @@ def calibration_task(self, drone_id):
         raise TaskFailure("Error: Loading video or images failed. Please try again.") from exc
 
 
-@drones_view.route("/drones/status/<task_id>")
-def task_status(task_id):
+@drones_view.route("/drones/status/<task_id>")  # type: ignore[misc]
+def task_status(task_id: int) -> Response:
     task_db = Task.query.get_or_404(task_id)
     task = eval(task_db.function + '.AsyncResult("' + task_db.task_id + '")')
     if task.state == "PENDING":
@@ -159,8 +164,8 @@ def task_status(task_id):
     return flask.jsonify(response)
 
 
-@drones_view.route("/drones/<drone_id>/view_calibration")
-def view_calibration(drone_id):
+@drones_view.route("/drones/<drone_id>/view_calibration")  # type: ignore[misc]
+def view_calibration(drone_id: int) -> Response:
     drone = Drone.query.get_or_404(drone_id)
     try:
         # From 2025-03-31 Five values are stored in
@@ -182,8 +187,8 @@ def view_calibration(drone_id):
     )
 
 
-@drones_view.route("/drones/<drone_id>/remove")
-def remove_drone(drone_id):
+@drones_view.route("/drones/<drone_id>/remove")  # type: ignore[misc]
+def remove_drone(drone_id: int) -> Response:
     logger.debug(f"Removing drone {drone_id}")
     drone = Drone.query.get_or_404(drone_id)
     if drone.task:
@@ -204,7 +209,7 @@ def remove_drone(drone_id):
     return flask.redirect(flask.url_for("drones.drones"))
 
 
-def remove_file(file):
+def remove_file(file: Path | str) -> None:
     if file:
         with contextlib.suppress(FileNotFoundError):
             os.remove(file)

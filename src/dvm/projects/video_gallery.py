@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import json
 import logging
@@ -5,9 +7,12 @@ import os
 import random
 import re
 import subprocess
+from pathlib import Path
 
 import ffmpeg
 import flask
+from celery.app.task import Task as CeleryTask
+from werkzeug.wrappers.response import Response
 
 from dvm.app_config import Project, Task, Video, celery, data_dir, db, get_random_filename
 from dvm.helper_functions import get_all_annotations, save_annotations_csv
@@ -16,8 +21,8 @@ logger = logging.getLogger("app." + __name__)
 video_gallery_view = flask.Blueprint("video_gallery", __name__)
 
 
-@video_gallery_view.route("/videos/<project_id>/upload", methods=["GET", "POST"])
-def upload(project_id):
+@video_gallery_view.route("/videos/<project_id>/upload", methods=["GET", "POST"])  # type: ignore[misc]
+def upload(project_id: int) -> tuple[Response, int] | Response:
     if flask.request.method == "POST":
         for key, file_obj in flask.request.files.items():
             if key.startswith("file"):
@@ -55,7 +60,9 @@ def upload(project_id):
     return flask.render_template("video_gallery/upload.html", project_id=project.id, project_name=project.name)
 
 
-def get_video_data(video_file, location_video_file=None):
+def get_video_data(
+    video_file: Path, location_video_file: Path | None = None
+) -> tuple[float, int, tuple[int, int], tuple[float, float] | tuple[None, None]]:
     logger.debug(f"Reading video data for video {video_file}")
     ffprobe_res = ffmpeg.probe(video_file, cmd="ffprobe")
     video_duration = float(ffprobe_res["format"]["duration"])
@@ -72,7 +79,7 @@ def get_video_data(video_file, location_video_file=None):
             location_string = ffprobe_res["format"]["tags"]["location"]
         else:
             location_string = None
-    video_pos = (None, None)
+    video_pos: tuple[float, float] | tuple[None, None] = (None, None)
     if location_string:
         match = re.match(r"([-+]\d+.\d+)([-+]\d+.\d+)([-+]\d+.\d+)", location_string)
         if match:
@@ -80,8 +87,8 @@ def get_video_data(video_file, location_video_file=None):
     return video_duration, video_nb_frames, video_size, video_pos
 
 
-@celery.task(bind=True)
-def convert_after_upload_task(self, temp_path, video_path):
+@celery.task(bind=True)  # type: ignore[misc]
+def convert_after_upload_task(self: CeleryTask, temp_path: Path, video_path: Path) -> None:
     self.update_state(state="PROCESSING")
     cmd = [
         "ffmpeg",
@@ -117,8 +124,8 @@ def convert_after_upload_task(self, temp_path, video_path):
     subprocess.run(cmd, capture_output=True)
 
 
-@celery.task(bind=True)
-def concat_videos_task(self, videos, output_file):
+@celery.task(bind=True)  # type: ignore[misc]
+def concat_videos_task(self: CeleryTask, videos: list[str], output_file: Path) -> None:
     self.update_state(state="PROCESSING")
     video_str = ""
     for video in videos:
@@ -156,14 +163,14 @@ def concat_videos_task(self, videos, output_file):
     subprocess.run(cmd, capture_output=True)
 
 
-def remove_file(file):
+def remove_file(file: Path) -> None:
     if file:
         with contextlib.suppress(FileNotFoundError):
             os.remove(file)
 
 
-@video_gallery_view.route("/videos/status/<task_id>")
-def task_status(task_id):
+@video_gallery_view.route("/videos/status/<task_id>")  # type: ignore[misc]
+def task_status(task_id: int) -> Response:
     task_db = Task.query.get_or_404(task_id)
     task = eval(task_db.function + '.AsyncResult("' + task_db.task_id + '")')
     if task.state == "PENDING":
@@ -191,8 +198,8 @@ def task_status(task_id):
     return flask.jsonify(response)
 
 
-@video_gallery_view.route("/videos/<project_id>/video_gallery")
-def video_gallery(project_id):
+@video_gallery_view.route("/videos/<project_id>/video_gallery")  # type: ignore[misc]
+def video_gallery(project_id: int) -> Response:
     videos = Video.query.filter_by(project_id=project_id).all()
     random_int = random.randint(1, 10000000)
     logger.debug(f"Render video_gallery for {project_id}")
@@ -204,17 +211,17 @@ def video_gallery(project_id):
     )
 
 
-@video_gallery_view.route("/videos/<project_id>/concatenate_videos")
-def concat_videos(project_id):
+@video_gallery_view.route("/videos/<project_id>/concatenate_videos")  # type: ignore[misc]
+def concat_videos(project_id: int) -> Response:
     videos = Video.query.filter_by(project_id=project_id).all()
     logger.debug(f"Render concat_videos for {project_id}")
     return flask.render_template("video_gallery/concat_videos.html", project_id=project_id, videos=videos)
 
 
-@video_gallery_view.route("/videos/<project_id>/concatenating", methods=["POST"])
-def do_concat_videos(project_id):
-    videos_json = flask.request.form.get("videos")
-    output_file_name = flask.request.form.get("output_name")
+@video_gallery_view.route("/videos/<project_id>/concatenating", methods=["POST"])  # type: ignore[misc]
+def do_concat_videos(project_id: int) -> tuple[Response, int]:
+    videos_json = flask.request.form["videos"]
+    output_file_name = flask.request.form["output_name"]
     if output_file_name[-4:] != ".mp4":
         output_file_name += ".mp4"
     video_ids = json.loads(videos_json)
@@ -237,8 +244,8 @@ def do_concat_videos(project_id):
     return flask.jsonify({}), 202
 
 
-@video_gallery_view.route("/videos/<video_id>/download")
-def download(video_id):
+@video_gallery_view.route("/videos/<video_id>/download")  # type: ignore[misc]
+def download(video_id: int) -> Response:
     with open("version.txt") as version_file:
         pro_version = version_file.read()
         pro_version = pro_version.strip()
@@ -252,8 +259,8 @@ def download(video_id):
     return flask.send_file(filename, as_attachment=True, download_name=annotated_filename)
 
 
-@video_gallery_view.route("/videos/<video_id>/remove")
-def remove_video(video_id):
+@video_gallery_view.route("/videos/<video_id>/remove")  # type: ignore[misc]
+def remove_video(video_id: int) -> Response:
     logger.debug(f"Removing video {video_id}")
     video = Video.query.get_or_404(video_id)
     project_id = video.project_id

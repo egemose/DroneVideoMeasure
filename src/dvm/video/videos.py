@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import json
 import logging
-import os
 import re
 from collections import defaultdict
 from datetime import datetime, time
 
 import flask
 import numpy as np
+from werkzeug.wrappers.response import Response
 
 from dvm.app_config import Drone, Project, Video, data_dir, db
 from dvm.drone import plot_log_data
@@ -19,48 +21,48 @@ annotation_class = Annotations(drone_log, fov)
 videos_view = flask.Blueprint("videos", __name__)
 
 
-def get_horizon_dict():
+def get_horizon_dict() -> dict[str, list[tuple[float, float, float]]]:
     world_points = defaultdict(list)
     # Points for North - South line
     for x in np.linspace(-np.pi, np.pi, 100):
-        point = (0, np.cos(x), np.sin(x))
+        point = (0.0, float(np.cos(x)), float(np.sin(x)))
         world_points["NS"].append(point)
     # Points for East - West line
     for x in np.linspace(-np.pi, np.pi, 100):
-        point = (np.cos(x), 0, np.sin(x))
+        point = (float(np.cos(x)), 0.0, float(np.sin(x)))
         world_points["EW"].append(point)
     # Points for North East - South West line
     for x in np.linspace(-np.pi, np.pi, 100):
-        point = (np.cos(x), np.cos(x), np.sin(x))
+        point = (float(np.cos(x)), float(np.cos(x)), float(np.sin(x)))
         world_points["NESW"].append(point)
     for x in np.linspace(-np.pi, np.pi, 100):
-        point = (np.cos(x), -np.cos(x), np.sin(x))
+        point = (float(np.cos(x)), float(-np.cos(x)), float(np.sin(x)))
         world_points["NWSE"].append(point)
     # Points for the artificial horizon
-    pitch_angle = 0
+    pitch_angle = 0.0
     for x in np.linspace(-np.pi, np.pi, 100):
         point = (
-            np.cos(x) * np.cos(pitch_angle),
-            np.sin(x) * np.cos(pitch_angle),
-            np.sin(pitch_angle),
+            float(np.cos(x) * np.cos(pitch_angle)),
+            float(np.sin(x) * np.cos(pitch_angle)),
+            float(np.sin(pitch_angle)),
         )
         world_points["pitch0"].append(point)
     # Points for the minus 22.5 degree pitch
     pitch_angle = -22.5 * np.pi / 180
     for x in np.linspace(-np.pi, np.pi, 100):
         point = (
-            np.cos(x) * np.cos(pitch_angle),
-            np.sin(x) * np.cos(pitch_angle),
-            np.sin(pitch_angle),
+            float(np.cos(x) * np.cos(pitch_angle)),
+            float(np.sin(x) * np.cos(pitch_angle)),
+            float(np.sin(pitch_angle)),
         )
         world_points["pitch22"].append(point)
     # Points for the minus 45 degree pitch
     pitch_angle = -45 * np.pi / 180
     for x in np.linspace(-np.pi, np.pi, 100):
         point = (
-            np.cos(x) * np.cos(pitch_angle),
-            np.sin(x) * np.cos(pitch_angle),
-            np.sin(pitch_angle),
+            float(np.cos(x) * np.cos(pitch_angle)),
+            float(np.sin(x) * np.cos(pitch_angle)),
+            float(np.sin(pitch_angle)),
         )
         world_points["pitch45"].append(point)
     return world_points
@@ -69,14 +71,14 @@ def get_horizon_dict():
 horizon_dict = get_horizon_dict()
 
 
-@videos_view.route("/<video_id>/annotate")
-def video(video_id):
+@videos_view.route("/<video_id>/annotate")  # type: ignore[misc]
+def video(video_id: int) -> Response:
     logger.debug(f"Video called with video: {video_id}")
     video = Video.query.get_or_404(video_id)
     project = Project.query.get_or_404(video.project_id)
     drone = Drone.query.get_or_404(project.drone_id)
     fov.set_camera_params(*drone.calibration)
-    log_file = os.path.join(data_dir, project.log_file)
+    log_file = data_dir.joinpath(project.log_file)
     drone_log.get_log_data(log_file)
     drone_log.set_video_data(
         video.duration,
@@ -121,8 +123,8 @@ def video(video_id):
     return flask.render_template("videos/video.html", **args)
 
 
-@videos_view.route("/<video_id>/save", methods=["POST"])
-def save_fabric_json(video_id):
+@videos_view.route("/<video_id>/save", methods=["POST"])  # type: ignore[misc]
+def save_fabric_json(video_id: int) -> Response:
     logger.debug(f"Saving annotations to json file for {video_id}")
     json_data = flask.request.form.get("fabric_json")
     video = Video.query.get_or_404(video_id)
@@ -131,16 +133,16 @@ def save_fabric_json(video_id):
     return ""
 
 
-@videos_view.route("/markings_modified", methods=["POST"])
-def markings_modified():
+@videos_view.route("/markings_modified", methods=["POST"])  # type: ignore[misc]
+def markings_modified() -> Response:
     logger.debug("markings_modified called")
     fabric_json = flask.request.form.get("fabric_json")
     annotation_class.from_fabric_json(fabric_json)
     return flask.jsonify(annotation_class.tree_json)
 
 
-@videos_view.route("/get_horizon_fabricjs", methods=["POST"])
-def get_horizon_fabricjs():
+@videos_view.route("/get_horizon_fabricjs", methods=["POST"])  # type: ignore[misc]
+def get_horizon_fabricjs() -> Response:
     logger.debug("get_horizon_fabricjs called")
     frame = int(flask.request.form.get("frame"))
     _, _, rotation, _ = drone_log.get_log_data_from_frame(frame)
@@ -148,8 +150,8 @@ def get_horizon_fabricjs():
     return flask.jsonify(horizon_points)
 
 
-@videos_view.route("/<video_id>/save_start_time", methods=["POST"])
-def save_start_time(video_id):
+@videos_view.route("/<video_id>/save_start_time", methods=["POST"])  # type: ignore[misc]
+def save_start_time(video_id: int) -> Response:
     logger.debug(f"save_start_time called for {video_id}")
     start_time_str = flask.request.form.get("new_start_time")
     logger.debug(f'start_time_str: "{start_time_str}"')
@@ -191,8 +193,8 @@ def save_start_time(video_id):
     return ""
 
 
-@videos_view.route("/<video_id>/save_takeoff_altitude", methods=["POST"])
-def save_takeoff_altitude(video_id):
+@videos_view.route("/<video_id>/save_takeoff_altitude", methods=["POST"])  # type: ignore[misc]
+def save_takeoff_altitude(video_id: int) -> Response:
     logger.debug(f"save_takeoff_altitude called for {video_id}")
     takeoff_altitude_str = flask.request.form.get("new_takeoff_altitude")
     logger.debug(f"takeoff_altitude_str: {takeoff_altitude_str}")

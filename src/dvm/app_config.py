@@ -1,7 +1,12 @@
+from __future__ import annotations
+
 import os
 import secrets
+from pathlib import Path
+from typing import Any
 
 from celery import Celery
+from flask import Flask
 from flask_dropzone import Dropzone
 from flask_migrate import Migrate
 from flask_obscure import Obscure
@@ -27,7 +32,7 @@ class AppConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-data_dir = os.path.abspath("/app_data")
+data_dir = Path(os.path.abspath("/app_data"))
 
 celery = Celery(
     __name__,
@@ -36,17 +41,17 @@ celery = Celery(
 )
 
 
-def make_celery(app):
+def make_celery(app: Flask) -> Celery:
     global celery
     celery.conf.update(app.config)
-    TaskBase = celery.Task
+    BaseTask = celery.Task
 
-    class ContextTask(TaskBase):
+    class ContextTask(BaseTask):  # type: ignore[valid-type, misc]
         abstract = True
 
-        def __call__(self, *args, **kwargs):
+        def __call__(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> Any:
             with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
+                return BaseTask.__call__(self, *args, **kwargs)
 
     celery.Task = ContextTask
     return celery
@@ -58,15 +63,15 @@ db = SQLAlchemy()
 migrate = Migrate(compare_type=True)
 
 
-def get_random_filename(file):
+def get_random_filename(file: str) -> str:
     while True:
         name = secrets.token_urlsafe(8)
         file_type = "." + file.rsplit(".", 1)[-1]
-        filename = secure_filename(name + file_type)
+        filename = str(secure_filename(name + file_type))
         return filename
 
 
-class Project(db.Model):
+class Project(db.Model):  # type: ignore[name-defined, misc]
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), unique=True, nullable=False)
     description = db.Column(db.Text())
@@ -75,11 +80,11 @@ class Project(db.Model):
     videos = db.relationship("Video", backref="project", lazy=True)
     log_error = db.Column(db.String(), nullable=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Project {self.name}>"
 
 
-class Video(db.Model):
+class Video(db.Model):  # type: ignore[name-defined, misc]
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
     file = db.Column(db.String(), unique=True, nullable=False)
@@ -97,11 +102,11 @@ class Video(db.Model):
     task = db.relationship("Task", backref="Video", lazy=True, uselist=False)
     task_error = db.Column(db.String(), nullable=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Video {self.file}>"
 
 
-class Drone(db.Model):
+class Drone(db.Model):  # type: ignore[name-defined, misc]
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), unique=True, nullable=False)
     description = db.Column(db.Text())
@@ -110,16 +115,16 @@ class Drone(db.Model):
     task = db.relationship("Task", backref="Drone", lazy=True, uselist=False)
     task_error = db.Column(db.String(), nullable=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Drone {self.name}>"
 
 
-class Task(db.Model):
+class Task(db.Model):  # type: ignore[name-defined, misc]
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.String(), unique=True, nullable=False)
     function = db.Column(db.String())
     video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=True)
     drone_id = db.Column(db.Integer, db.ForeignKey("drone.id"), nullable=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Task {self.task_id}>"

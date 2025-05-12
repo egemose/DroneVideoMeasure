@@ -1,6 +1,7 @@
 default_stages: [pre-commit, pre-push]
 default_install_hook_types: [pre-commit, pre-push]
 fail_fast: false
+exclude: "src/dvm/migrations/.*"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -30,3 +31,9 @@ repos:
         files: ^.*\.(py|md|rst)$
         additional_dependencies:
           - tomli
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        args: [--strict, --ignore-missing-imports]

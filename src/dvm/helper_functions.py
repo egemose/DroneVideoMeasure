@@ -1,18 +1,21 @@
+from __future__ import annotations
+
 import csv
 import json
 import logging
 import math
+from typing import Any
 
 import numpy as np
 
-from dvm.app_config import Drone
+from dvm.app_config import Drone, Project, Video
 from dvm.drone.drone_log_data import drone_log
 from dvm.drone.fov import fov
 
 logger = logging.getLogger("app." + __name__)
 
 
-def save_annotations_csv(annotations, filename):
+def save_annotations_csv(annotations: list[list[Any] | None], filename: str) -> None:
     logger.debug(f"Saving annotations in {filename}")
     with open(filename, "w") as fp:
         csv_writer = csv.writer(fp, delimiter=",")
@@ -48,13 +51,13 @@ def save_annotations_csv(annotations, filename):
                 csv_writer.writerow(annotation)
 
 
-def get_all_annotations(project, pro_version, video=None):
+def get_all_annotations(project: Project, pro_version: str, video: Video | None = None) -> list[list[Any] | None]:
     logger.debug("Getting all annotations")
     annotations = []
     drone = Drone.query.get_or_404(project.drone_id)
     fov.set_camera_params(*drone.calibration)
     drone_log.get_log_data(project.log_file)
-    videos = [video] if video else project.videos
+    videos = [video] if video else list(project.videos)
     for video in videos:
         try:
             json_data = json.loads(video.json_data)
@@ -71,7 +74,8 @@ def get_all_annotations(project, pro_version, video=None):
                 for obj in objects:
                     if obj["type"] == "FrameLine" or obj["type"] == "FramePoint":
                         annotation = get_frame_obj_data(obj)
-                        annotation.extend([video.file, project.name, pro_version])
+                        if annotation is not None:
+                            annotation.extend([video.file, project.name, pro_version])
                     else:
                         logger.debug(f"Unknown annotation found of type: {obj['type']}")
                         annotation = None
@@ -82,17 +86,17 @@ def get_all_annotations(project, pro_version, video=None):
     return annotations
 
 
-def get_frame_obj_data(obj):
-    name = obj.get("name")
-    frame_number = obj.get("frame")
+def get_frame_obj_data(obj: dict[str, Any]) -> list[Any] | None:
+    name = obj["name"]
+    frame_number = obj["frame"]
     log_data = drone_log.get_log_data_from_frame(frame_number)
     if obj["type"] == "FrameLine":
-        x1 = obj.get("x1")
-        x2 = obj.get("x2")
-        y1 = obj.get("y1")
-        y2 = obj.get("y2")
-        xoffset = obj.get("left") + obj.get("width") / 2
-        yoffset = obj.get("top") + obj.get("height") / 2
+        x1 = obj["x1"]
+        x2 = obj["x2"]
+        y1 = obj["y1"]
+        y2 = obj["y2"]
+        xoffset = obj["left"] + obj["width"] / 2
+        yoffset = obj["top"] + obj["height"] / 2
         image_point1 = (x1 + xoffset, y1 + yoffset)
         image_point2 = (x2 + xoffset, y2 + yoffset)
         image_point = (
@@ -101,16 +105,16 @@ def get_frame_obj_data(obj):
         )
         wp1, zone = fov.get_world_point(image_point1, *log_data[1:], return_zone=True)
         wp2 = fov.get_world_point(image_point2, *log_data[1:])
-        wp = ((wp1[0] + wp2[0]) / 2, (wp1[1] + wp2[1]) / 2)
+        wp = np.array([(wp1[0] + wp2[0]) / 2, (wp1[1] + wp2[1]) / 2])
         length = np.sqrt((wp1[0] - wp2[0]) ** 2 + (wp1[1] - wp2[1]) ** 2)
         dx = wp2[0] - wp1[0]
         dy = wp2[1] - wp1[1]
         heading = 180 / math.pi * math.atan2(dx, dy)
     elif obj["type"] == "FramePoint":
-        image_point = (obj.get("left"), obj.get("top"))
+        image_point = (obj["left"], obj["top"])
         wp, zone = fov.get_world_point(image_point, *log_data[1:], return_zone=True)
         length = "NA"
-        heading = "NA"
+        heading = "NA"  # type: ignore[assignment]
         wp1 = ["NA", "NA"]
         wp2 = ["NA", "NA"]
     else:

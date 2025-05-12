@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 
 import cv2
@@ -7,12 +9,12 @@ from sklearn.neighbors import KDTree
 
 
 class PeakEnumerator:
-    def __init__(self, centers):
+    def __init__(self, centers: np.ndarray) -> None:
         self.centers = centers
-        self.central_peak_location = None
+        self.central_peak_location: np.ndarray
         self.distance_threshold = 0.06
 
-    def select_central_peak_location(self):
+    def select_central_peak_location(self) -> np.ndarray:
         mean_position_of_centers = np.mean(self.centers, axis=0)
 
         central_center = np.array(
@@ -27,7 +29,7 @@ class PeakEnumerator:
         self.central_peak_location = central_center[0]
         return self.central_peak_location
 
-    def enumerate_peaks(self):
+    def enumerate_peaks(self) -> dict[int, dict[int, np.ndarray]]:
         self.centers_kdtree = KDTree(np.array(self.centers))
         self.calibration_points = self.initialize_calibration_points(self.central_peak_location)
         self.enumerate_central_square()
@@ -35,14 +37,14 @@ class PeakEnumerator:
         self.analyse_elements_in_queue()
         return self.calibration_points
 
-    def initialize_calibration_points(self, selected_center):
+    def initialize_calibration_points(self, selected_center: np.ndarray) -> dict[int, dict[int, np.ndarray]]:
         closest_neighbour, _ = self.locate_nearest_neighbour(selected_center)
         direction = selected_center - closest_neighbour
         rotation_matrix = np.array([[0, 1], [-1, 0]])
         hat_vector = np.matmul(direction, rotation_matrix)
         # Check if selected_center and direction_b_neighbour are identical.
         # If that is the case, search for a point further away.
-        ratio = 1
+        ratio = 1.0
         while True:
             direction_b_neighbour, _ = self.locate_nearest_neighbour(
                 selected_center + hat_vector * ratio,
@@ -60,14 +62,14 @@ class PeakEnumerator:
                 ic(closest_neighbour)
                 ic(direction_b_neighbour)
                 raise Exception("Square locator failed")
-        calibration_points = collections.defaultdict(dict)
+        calibration_points: dict[int, dict[int, np.ndarray]] = collections.defaultdict(dict)
         calibration_points[0][0] = selected_center
         calibration_points[1][0] = closest_neighbour
         calibration_points[0][1] = direction_b_neighbour
 
         return calibration_points
 
-    def enumerate_central_square(self):
+    def enumerate_central_square(self) -> None:
         p00 = self.calibration_points[0][0]
         p01 = self.calibration_points[0][1]
         p10 = self.calibration_points[1][0]
@@ -86,17 +88,17 @@ class PeakEnumerator:
             pass
             # Throw error
 
-    def build_examination_queue(self):
+    def build_examination_queue(self) -> None:
         self.points_to_examine_queue = []
         for x_key, value in self.calibration_points.items():
             for y_key, _ in value.items():
                 self.points_to_examine_queue.append((x_key, y_key))
 
-    def analyse_elements_in_queue(self):
+    def analyse_elements_in_queue(self) -> None:
         for x_index, y_index in self.points_to_examine_queue:
             self.expand_calibration_grid(x_index, y_index)
 
-    def expand_calibration_grid(self, x_index, y_index):
+    def expand_calibration_grid(self, x_index: int, y_index: int) -> None:
         # This rule tries to estimate the perspective distortion of four points
         # and then use this distortion model to locate new points of the
         # chessboard pattern.
@@ -109,7 +111,7 @@ class PeakEnumerator:
             # print(e)
             return
 
-        reference_distance = np.linalg.norm(p01 - p00)
+        reference_distance: float = float(np.linalg.norm(p01 - p00))
 
         src = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=float)
         dst = np.array([p00, p01, p10, p11], dtype=float)
@@ -125,7 +127,9 @@ class PeakEnumerator:
         self.search_for_point(x_index, y_index, reference_distance, H, (-1, 0))
         self.search_for_point(x_index, y_index, reference_distance, H, (-1, 1))
 
-    def search_for_point(self, x_index, y_index, reference_distance, H, point):
+    def search_for_point(
+        self, x_index: int, y_index: int, reference_distance: float, H: np.ndarray, point: tuple[int, int]
+    ) -> None:
         x_idx = x_index + point[0]
         y_idx = y_index + point[1]
 
@@ -138,7 +142,9 @@ class PeakEnumerator:
                 self.calibration_points[x_idx][y_idx] = location
                 self.points_to_examine_queue.append((x_idx, y_idx))
 
-    def locate_nearest_neighbour(self, selected_center, minimum_distance_from_selected_center=0):
+    def locate_nearest_neighbour(
+        self, selected_center: np.ndarray, minimum_distance_from_selected_center: float = 0
+    ) -> tuple[np.ndarray, np.ndarray]:
         reshaped_query_array = np.array(selected_center).reshape(1, -1)
         (distances, indices) = self.centers_kdtree.query(reshaped_query_array, 2)
         if distances[0][0] <= minimum_distance_from_selected_center:

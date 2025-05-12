@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import flask_wtf
 import wtforms
 from flask_wtf.file import FileField
 
 
-class NewProjectForm(flask_wtf.FlaskForm):
+class NewProjectForm(flask_wtf.FlaskForm):  # type: ignore[misc]
     name = wtforms.fields.StringField("Project Name", validators=[wtforms.validators.DataRequired()])
     description = wtforms.fields.TextAreaField(
         "Description", render_kw={"placeholder": "Optional short project description"}
@@ -13,7 +15,7 @@ class NewProjectForm(flask_wtf.FlaskForm):
     submit = wtforms.fields.SubmitField("Add Project")
 
 
-class EditProjectForm(flask_wtf.FlaskForm):
+class EditProjectForm(flask_wtf.FlaskForm):  # type: ignore[misc]
     edit_project_before = wtforms.fields.HiddenField()
     edit_project_id = wtforms.fields.HiddenField()
     edit_name = wtforms.fields.StringField("Project Name", validators=[wtforms.validators.DataRequired()])
@@ -25,7 +27,7 @@ class EditProjectForm(flask_wtf.FlaskForm):
     edit_submit = wtforms.fields.SubmitField("Edit Project")
 
 
-class NewDroneForm(flask_wtf.FlaskForm):
+class NewDroneForm(flask_wtf.FlaskForm):  # type: ignore[misc]
     name = wtforms.fields.StringField("Drone Name", validators=[wtforms.validators.DataRequired()])
     camera_settings = wtforms.fields.TextAreaField(
         "Camera Settings",
@@ -39,7 +41,7 @@ class NewDroneForm(flask_wtf.FlaskForm):
     submit = wtforms.fields.SubmitField("Add Drone")
 
 
-class EditDroneForm(flask_wtf.FlaskForm):
+class EditDroneForm(flask_wtf.FlaskForm):  # type: ignore[misc]
     edit_drone_before = wtforms.fields.HiddenField()
     edit_drone_id = wtforms.fields.HiddenField()
     edit_name = wtforms.fields.StringField("Drone Name", validators=[wtforms.validators.DataRequired()])
