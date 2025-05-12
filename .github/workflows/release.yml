@@ -64,6 +64,9 @@ jobs:
             contents: write  # IMPORTANT: mandatory for making GitHub Releases
 
         steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
             - name: Create GitHub Release
               env:
                 GITHUB_TOKEN: ${{ github.token }}
