@@ -80,5 +80,5 @@ jobs:
                 GITHUB_TOKEN: ${{ github.token }}
               run: >-
                 gh release upload
-                "$GITHUB_REF_NAME" docker-compose**
+                "$GITHUB_REF_NAME" docker-compose.yml
                 --repo "$GITHUB_REPOSITORY"

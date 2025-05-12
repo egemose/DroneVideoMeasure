@@ -7,6 +7,9 @@ services:
       - type: bind
         source: ./src/dvm
         target: /app/src/dvm
+      - type: bind
+        source: ./data
+        target: /app_data
   worker:
     build: .
     pull_policy: build
@@ -14,6 +17,9 @@ services:
       - type: bind
         source: ./src/dvm
         target: /app/src/dvm
+      - type: bind
+        source: ./data
+        target: /app_data
   adminer:
     image: adminer
     container_name: dvm_adminer

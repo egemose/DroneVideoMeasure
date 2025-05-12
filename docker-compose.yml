@@ -6,8 +6,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - type: bind
-        source: ./data
+      - type: volume
+        source: dvm_app_media
         target: /app_data
     depends_on:
       - redis
@@ -18,8 +18,8 @@ services:
     container_name: dvm_worker
     command: celery -A dvm.celery worker --loglevel=WARNING -c 1
     volumes:
-      - type: bind
-        source: ./data
+      - type: volume
+        source: dvm_app_media
         target: /app_data
     depends_on:
       - redis
@@ -31,11 +31,12 @@ services:
     container_name: dvm_db
     volumes:
       - type: volume
-        source: dvm_dbdata
+        source: dvm_db_data_v12
         target: /var/lib/postgresql/data
     restart: always
     environment:
       POSTGRES_PASSWORD: example
 
 volumes:
-  dvm_dbdata:
+  dvm_app_media:
+  dvm_db_data_v12:
