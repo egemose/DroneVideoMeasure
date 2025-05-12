@@ -1,11 +1,15 @@
 services:
   webapp:
+    build: .
+    pull_policy: build
     command: /app/entrypoint.sh --dev
     volumes:
       - type: bind
         source: ./src/dvm
         target: /app/src/dvm
   worker:
+    build: .
+    pull_policy: build
     volumes:
       - type: bind
         source: ./src/dvm

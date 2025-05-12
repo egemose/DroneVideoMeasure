@@ -98,6 +98,7 @@ stop(){
 build(){
 	echo "Rebuilding DVM docker image"
 	local docker_compose="$(get_docker_compose)"
+	docker_compose="$docker_compose -f docker-compose-dev.yml"
 	run "$docker_compose build"
 }
 

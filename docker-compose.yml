@@ -1,6 +1,6 @@
 services:
   webapp:
-    build: .
+    image: ghcr.io/egemose/dronevideomeasure:latest
     container_name: dvm_app
     command: /app/entrypoint.sh
     ports:
@@ -14,7 +14,7 @@ services:
       - worker
       - db
   worker:
-    build: .
+    image: ghcr.io/egemose/dronevideomeasure:latest
     container_name: dvm_worker
     command: celery -A dvm.celery worker --loglevel=WARNING -c 1
     volumes:
