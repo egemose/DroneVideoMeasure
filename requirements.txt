@@ -1,4 +1,4 @@
-Flask==3.1.0
+Flask==3.1.1
 Flask_Dropzone==2.0.0
 Flask_Obscure==0.1.3
 Flask_WTF==1.2.2
