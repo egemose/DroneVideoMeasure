@@ -27,11 +27,11 @@ services:
     image: redis:alpine
     container_name: dvm_redis
   db:
-    image: postgres:12-alpine
+    image: postgres:17-alpine
     container_name: dvm_db
     volumes:
       - type: volume
-        source: dvm_db_data_v12
+        source: dvm_db_data_v17
         target: /var/lib/postgresql/data
     restart: always
     environment:
@@ -39,4 +39,4 @@ services:
 
 volumes:
   dvm_app_media:
-  dvm_db_data_v12:
+  dvm_db_data_v17:

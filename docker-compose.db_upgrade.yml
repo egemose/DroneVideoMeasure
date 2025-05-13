@@ -1,0 +1,41 @@
+services:
+  db_backup:
+    image: postgres:12-alpine
+    container_name: dvm_db_old
+    volumes:
+      - type: volume
+        source: dvm_dbdata
+        target: /var/lib/postgresql/data
+      - type: volume
+        source: dvm_db_dump
+        target: /db_dump
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+    healthcheck:
+      test: ["CMD", "pg_dump", "-U", "postgres", "-f", "/db_dump/dump.sql"]
+      interval: 30m
+      timeout: 30m
+      retries: 1
+      start_period: 30s
+  db_restore:
+    image: postgres:17-alpine
+    container_name: dvm_db_new
+    volumes:
+      - type: volume
+        source: dvm_db_data_17
+        target: /var/lib/postgresql/data
+      - type: volume
+        source: dvm_db_dump
+        target: /docker-entrypoint-initdb.d/
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+    depends_on:
+      db_backup:
+        condition: service_healthy
+
+volumes:
+  dvm_db_dump:
+  dvm_dbdata:
+  dvm_db_data_17:
