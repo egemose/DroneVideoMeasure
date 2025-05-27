@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import contextlib
 import logging
-import os
 import re
 import shutil
 from datetime import datetime
@@ -76,19 +75,19 @@ def get_edit_drone_form() -> EditDroneForm:
 @drones_view.route("/drones/<drone_id>/calibrate", methods=["GET", "POST"])  # type: ignore[misc]
 def add_calibration(drone_id: int) -> Response:
     logger.debug("add_calibration")
-    calibration_folder = os.path.join(data_dir, "calibration")
-    if not os.path.exists(calibration_folder):
+    calibration_folder = data_dir / "calibration"
+    if not Path.exists(calibration_folder):
         logger.debug("Creating calibration folder")
-        os.mkdir(calibration_folder)
-    if flask.request.method == "GET" and os.path.isdir(calibration_folder):
+        Path.mkdir(calibration_folder)
+    if flask.request.method == "GET" and Path.is_dir(calibration_folder):
         logger.debug("Removing calibration folder")
         shutil.rmtree(calibration_folder)
         logger.debug("Creating calibration folder")
-        os.mkdir(calibration_folder)
+        Path.mkdir(calibration_folder)
     if flask.request.method == "POST":
         file_obj = flask.request.files
         for file in file_obj.values():
-            file_location = os.path.join(calibration_folder, secure_filename(file.filename))
+            file_location = calibration_folder / secure_filename(file.filename)
             image_mimetype = re.compile("image/*")
             video_mimetype = re.compile("video/*")
             if image_mimetype.match(file.mimetype) or video_mimetype.match(file.mimetype):
@@ -115,31 +114,31 @@ def do_calibration(drone_id: int) -> str:
 @celery.task(bind=True)  # type: ignore[misc]
 def calibration_task(self: CeleryTask, drone_id: int) -> None:
     self.update_state(state="PROCESSING")
-    in_folder = Path(os.path.join(data_dir, "calibration"))
-    in_folder_temp = os.path.join(data_dir, "calibrationtemp")
+    in_folder = data_dir / "calibration"
+    in_folder_temp = data_dir / "calibrationtemp"
     with contextlib.suppress(Exception):
         shutil.rmtree(in_folder_temp)
-    os.mkdir(in_folder_temp)
+    Path.mkdir(in_folder_temp)
     calibrate_cam = CalibrateCamera()
     try:
         result = calibrate_cam(in_folder)
         logger.debug(f"calibration result {result}")
         if result == -1:
             shutil.rmtree(in_folder)
-            os.mkdir(in_folder)
+            Path.mkdir(in_folder)
             raise TaskFailure("Error: Could not find any checkerboards in the images/video. Try with a new video.")
         if not result:
             shutil.rmtree(in_folder)
-            os.mkdir(in_folder)
+            Path.mkdir(in_folder)
             raise TaskFailure("Error: No video or images found. Please try again.")
         drone_db = Drone.query.get(drone_id)
         drone_db.calibration = result
         db.session.commit()
         shutil.rmtree(in_folder)
-        os.mkdir(in_folder)
+        Path.mkdir(in_folder)
     except AttributeError as exc:
         shutil.rmtree(in_folder)
-        os.mkdir(in_folder)
+        Path.mkdir(in_folder)
         raise TaskFailure("Error: Loading video or images failed. Please try again.") from exc
 
 
@@ -209,7 +208,5 @@ def remove_drone(drone_id: int) -> Response:
     return flask.redirect(flask.url_for("drones.drones"))
 
 
-def remove_file(file: Path | str) -> None:
-    if file:
-        with contextlib.suppress(FileNotFoundError):
-            os.remove(file)
+def remove_file(file: Path) -> None:
+    Path.unlink(file, missing_ok=True)

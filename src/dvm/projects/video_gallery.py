@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import contextlib
 import json
 import logging
-import os
 import random
 import re
 import subprocess
@@ -27,27 +25,24 @@ def upload(project_id: int) -> tuple[Response, int] | Response:
     if flask.request.method == "POST":
         for key, file_obj in flask.request.files.items():
             if key.startswith("file"):
-                video_file = os.path.join(
-                    data_dir,
-                    get_random_filename(file_obj.filename.rsplit(".", 1)[0] + ".mp4"),
-                )
+                video_file = data_dir / get_random_filename(file_obj.filename.rsplit(".", 1)[0] + ".mp4")
                 video_mime_type = re.compile("video/*")
                 if video_mime_type.match(file_obj.mimetype):
                     temp_filename = get_random_filename(file_obj.filename)
                     logger.debug(f"Uploading file: {video_file}")
-                    temp_file = os.path.join(data_dir, temp_filename)
+                    temp_file = data_dir / temp_filename
                     file_obj.save(temp_file)
                     logger.debug(f"Upload done for file: {video_file}")
                     logger.debug(f"Calling celery to convert file: {temp_filename} and save as {video_file}")
                     video = Video(
-                        file=video_file,
+                        file=str(video_file),
                         name=file_obj.filename,
                         project_id=project_id,
-                        image=video_file + ".jpg",
+                        image=str(video_file.with_suffix(".jpg")),
                     )
                     db.session.add(video)
                     db.session.commit()
-                    task = convert_after_upload_task.apply_async(args=(temp_file, video.file))
+                    task = convert_after_upload_task.apply_async(args=(str(temp_file), str(video.file)))
                     task_db = Task(
                         task_id=task.id,
                         function="convert_after_upload_task",
@@ -89,7 +84,9 @@ def get_video_data(
 
 
 @celery.task(bind=True)  # type: ignore[misc]
-def convert_after_upload_task(self: CeleryTask, temp_path: Path, video_path: Path) -> None:
+def convert_after_upload_task(self: CeleryTask, temp_path_str: str, video_path_str: str) -> None:
+    temp_path = Path(temp_path_str)
+    video_path = Path(video_path_str)
     self.update_state(state="PROCESSING")
     cmd = [
         "ffmpeg",
@@ -108,7 +105,7 @@ def convert_after_upload_task(self: CeleryTask, temp_path: Path, video_path: Pat
         rf"{video_path}",
     ]
     subprocess.run(cmd, capture_output=True)
-    os.remove(temp_path)
+    Path.unlink(temp_path, missing_ok=True)
     cmd = [
         "ffmpeg",
         "-i",
@@ -120,19 +117,20 @@ def convert_after_upload_task(self: CeleryTask, temp_path: Path, video_path: Pat
         "300x200",
         "-ss",
         "0",
-        rf"{video_path}.jpg",
+        rf"{video_path.with_suffix('.jpg')}",
     ]
     subprocess.run(cmd, capture_output=True)
 
 
 @celery.task(bind=True)  # type: ignore[misc]
-def concat_videos_task(self: CeleryTask, videos: list[str], output_file: Path) -> None:
+def concat_videos_task(self: CeleryTask, videos: list[str], output_file_str: str) -> None:
+    output_file = Path(output_file_str)
     self.update_state(state="PROCESSING")
     video_str = ""
     for video in videos:
         video_str += "file " + video + "\n"
-    concat_file = os.path.join(data_dir, "concat.txt")
-    with open(concat_file, "w") as file:
+    concat_file = data_dir / "concat.txt"
+    with concat_file.open("w") as file:
         file.write(video_str)
     cmd = [
         "ffmpeg",
@@ -159,15 +157,13 @@ def concat_videos_task(self: CeleryTask, videos: list[str], output_file: Path) -
         "300x200",
         "-ss",
         "0",
-        rf"{output_file}.jpg",
+        rf"{output_file.with_suffix('.jpg')}",
     ]
     subprocess.run(cmd, capture_output=True)
 
 
 def remove_file(file: Path) -> None:
-    if file:
-        with contextlib.suppress(FileNotFoundError):
-            os.remove(file)
+    Path.unlink(file, missing_ok=True)
 
 
 @video_gallery_view.route("/videos/status/<task_id>")  # type: ignore[misc]
@@ -229,16 +225,16 @@ def do_concat_videos(project_id: int) -> tuple[Response, int]:
     videos = [Video.query.get_or_404(i) for i in video_ids]
     video_files = [v.file for v in videos]
     logger.debug("Calling celery task for concat")
-    video_file = os.path.join(data_dir, get_random_filename(output_file_name))
+    video_file = data_dir / get_random_filename(output_file_name)
     video = Video(
-        file=video_file,
+        file=str(video_file),
         name=output_file_name,
         project_id=project_id,
-        image=video_file + ".jpg",
+        image=str(video_file.with_suffix(".jpg")),
     )
     db.session.add(video)
     db.session.commit()
-    task = concat_videos_task.apply_async(args=(video_files, video_file))
+    task = concat_videos_task.apply_async(args=(video_files, str(video_file)))
     task_db = Task(task_id=task.id, function="concat_videos_task", video_id=video.id)
     db.session.add(task_db)
     db.session.commit()
@@ -250,7 +246,7 @@ def download(video_id: int) -> Response:
     video = Video.query.get_or_404(video_id)
     project = Project.query.get_or_404(video.project_id)
     annotations = get_all_annotations(project, dvm.__version__, video)
-    filename = os.path.join(data_dir, "annotations.csv")
+    filename = data_dir / "annotations.csv"
     save_annotations_csv(annotations, filename)
     logger.debug("Sending annotations.csv to user.")
     annotated_filename = f"annotations - {project.name} - {video.name}.csv"

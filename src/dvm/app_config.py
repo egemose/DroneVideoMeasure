@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import secrets
 from pathlib import Path
 from typing import Any
@@ -32,7 +31,7 @@ class AppConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-data_dir = Path(os.path.abspath("/app_data"))
+data_dir = Path("/app_data").resolve()
 
 celery = Celery(
     __name__,

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import contextlib
 import logging
-import os
 import random
 from pathlib import Path
 
@@ -136,7 +134,7 @@ def plot_log(project_id: int) -> Response:
 def download(project_id: int) -> Response:
     project = Project.query.get_or_404(project_id)
     annotations = get_all_annotations(project, dvm.__version__)
-    filename = os.path.join(data_dir, "annotations.csv")
+    filename = data_dir / "annotations.csv"
     save_annotations_csv(annotations, filename)
     logger.debug("Sending annotations.csv to user.")
     return flask.send_file(filename, as_attachment=True)
@@ -157,6 +155,4 @@ def remove_project(project_id: int) -> Response:
 
 
 def remove_file(file: Path) -> None:
-    if file:
-        with contextlib.suppress(FileNotFoundError):
-            os.remove(file)
+    Path.unlink(file, missing_ok=True)

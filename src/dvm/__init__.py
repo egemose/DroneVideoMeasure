@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging.handlers
 import os
+from pathlib import Path
 
 import werkzeug.exceptions
 from celery import Celery
@@ -16,10 +17,10 @@ from dvm.video.videos import videos_view
 
 logger = logging.getLogger("app")
 logger.setLevel(logging.DEBUG)
-log_dir = os.path.join(data_dir, "logs")
-log_file = os.path.join(log_dir, "python.log")
-if not os.path.exists(log_dir):
-    os.mkdir(log_dir)
+log_dir = data_dir / "logs"
+log_file = log_dir / "python.log"
+if not Path.exists(log_dir):
+    Path.mkdir(log_dir)
 fh = logging.handlers.TimedRotatingFileHandler(log_file, when="midnight", backupCount=2)
 formatter = logging.Formatter("{asctime} | {name:<20} | {levelname:<8} - {message}", style="{")
 fh.setFormatter(formatter)
@@ -27,11 +28,11 @@ logger.addHandler(fh)
 
 
 def serve_data_file(filename: str) -> Response:
-    return send_from_directory(os.path.join("..", "/app_data"), os.path.split(filename)[-1])
+    return send_from_directory(Path("..") / "/app_data", os.path.split(filename)[-1])
 
 
 def serve_node_modules(filename: str) -> Response:
-    return send_from_directory(os.path.join("..", "/node_modules"), filename)
+    return send_from_directory(Path("..") / "/node_modules", filename)
 
 
 def page_not_found(e: werkzeug.exceptions.NotFound) -> tuple[str, int]:

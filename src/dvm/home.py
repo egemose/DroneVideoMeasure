@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-import os
+from pathlib import Path
 from zipfile import ZipFile
 
 import flask
@@ -31,19 +31,19 @@ def version() -> Response:
 @home_view.route("/download_logs")  # type: ignore[misc]
 def download_logs() -> Response:
     logger.debug("Downloading logs")
-    log_dir = os.path.join(data_dir, "logs")
+    log_dir = data_dir / "logs"
     file_paths = get_all_file_paths(log_dir)
-    log_zip = os.path.join(data_dir, "logs.zip")
+    log_zip = data_dir / "logs.zip"
     with ZipFile(log_zip, "w") as zip_file:
         for file in file_paths:
             zip_file.write(file)
     return flask.send_file(log_zip, as_attachment=True, download_name="logs.zip")
 
 
-def get_all_file_paths(directory: str) -> list[str]:
+def get_all_file_paths(directory: Path) -> list[Path]:
     file_paths = []
-    for root, _, files in os.walk(directory):
+    for root, _, files in Path.walk(directory):
         for filename in files:
-            filepath = os.path.join(root, filename)
+            filepath = root / filename
             file_paths.append(filepath)
     return file_paths

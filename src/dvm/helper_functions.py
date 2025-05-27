@@ -4,6 +4,7 @@ import csv
 import json
 import logging
 import math
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -15,9 +16,9 @@ from dvm.drone.fov import fov
 logger = logging.getLogger("app." + __name__)
 
 
-def save_annotations_csv(annotations: list[list[Any] | None], filename: str) -> None:
+def save_annotations_csv(annotations: list[list[Any] | None], filename: Path) -> None:
     logger.debug(f"Saving annotations in {filename}")
-    with open(filename, "w") as fp:
+    with filename.open("w") as fp:
         csv_writer = csv.writer(fp, delimiter=",")
         header = (
             "name",
@@ -56,7 +57,7 @@ def get_all_annotations(project: Project, pro_version: str, video: Video | None 
     annotations = []
     drone = Drone.query.get_or_404(project.drone_id)
     fov.set_camera_params(*drone.calibration)
-    drone_log.get_log_data(project.log_file)
+    drone_log.get_log_data(Path(project.log_file))
     videos = [video] if video else list(project.videos)
     for video in videos:
         try:

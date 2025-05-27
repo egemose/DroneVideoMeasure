@@ -5,11 +5,11 @@
 
 from __future__ import annotations
 
-import os
 import sys
 from datetime import datetime
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, str(Path().resolve()))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import glob
 import logging
-import os
 from pathlib import Path
 from typing import Any
 
@@ -125,7 +123,7 @@ class CalibrateCamera:
         self, in_folder: Path, *args: tuple[Any, ...], **kwargs: dict[str, Any]
     ) -> tuple[np.ndarray, np.ndarray, float, float, int] | int | None:
         logger.debug("Calibrating camera")
-        image_files = []
+        image_files: list[Path] = []
         for file_format in [
             "*.jpg",
             "*.jpeg",
@@ -136,9 +134,8 @@ class CalibrateCamera:
             "*.tiff",
             "*.tif",
         ]:
-            image_files.extend([Path(p) for p in glob.iglob(os.path.join(in_folder, file_format))])
-            image_files.extend([Path(p) for p in glob.iglob(os.path.join(in_folder, file_format.upper()))])
-        video_files = []
+            image_files.extend(in_folder.glob(file_format, case_sensitive=False))
+        video_files: list[Path] = []
         for file_format in [
             "*.mp4",
             "*.m4a",
@@ -153,8 +150,7 @@ class CalibrateCamera:
             "*.wma",
             "*.webm",
         ]:
-            video_files.extend([Path(p) for p in glob.iglob(os.path.join(in_folder, file_format))])
-            video_files.extend([Path(p) for p in glob.iglob(os.path.join(in_folder, file_format.upper()))])
+            video_files.extend(in_folder.glob(file_format, case_sensitive=False))
         if image_files:
             res = self.calibrate_camera_from_images(image_files)
         elif video_files:

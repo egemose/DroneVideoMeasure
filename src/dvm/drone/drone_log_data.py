@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import logging
-import os
 import re
 from collections.abc import Generator
 from datetime import datetime, timedelta
@@ -66,7 +65,7 @@ class DroneLog:
         ]
         # remove_null_bytes(log)
         logger.debug(f'Opening log "{log}" to test - assuming it contains data from airdata.com ')
-        with open(log, encoding="iso8859_10") as csv_file:
+        with log.open(encoding="iso8859_10") as csv_file:
             reader = csv.DictReader(csv_file)
             row = next(reader)
             for idx in indexes:
@@ -90,7 +89,7 @@ class DroneLog:
         ]
         remove_null_bytes(log)
         logger.debug(f'Opening log "{log}" to test - assuming it contains data from TXTlogToCSVtool.exe')
-        with open(log, encoding="iso8859_10") as csv_file:
+        with log.open(encoding="iso8859_10") as csv_file:
             reader = csv.DictReader(csv_file)
             row = next(reader)
             for idx in indexes:
@@ -133,7 +132,7 @@ class DroneLog:
         remove_null_bytes(log)
         number_of_parsed_lines = 0
         first_row = None
-        with open(log, encoding="iso8859_10") as csv_file:
+        with log.open(encoding="iso8859_10") as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
                 if row[time_idx]:
@@ -176,7 +175,7 @@ class DroneLog:
         longitude_idx = "OSD.longitude"
         remove_null_bytes(log)
         number_of_parsed_lines = 0
-        with open(log, encoding="iso8859_10") as csv_file:
+        with log.open(encoding="iso8859_10") as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
                 if row[time_idx]:
@@ -202,7 +201,7 @@ class DroneLog:
 
     def get_video_data(self, project: str, video_file: str) -> None:
         logger.debug(f"Reading video data for video {video_file} in {project}")
-        file = os.path.join(data_dir, "projects", project, video_file)
+        file = data_dir / "projects" / project / video_file
         ffprobe_res = ffmpeg.probe(file, cmd="ffprobe")
         self.video_duration = float(ffprobe_res["format"]["duration"])
         self.video_nb_frames = int(ffprobe_res["streams"][0]["nb_frames"])
@@ -218,8 +217,8 @@ class DroneLog:
 
     def get_video_data_from_data_file(self, project: str, video_file: str) -> None:
         logger.debug(f"Reading video data from data file for video {video_file} from {project}")
-        video_data_file = os.path.join(data_dir, "projects", project, video_file + "_data.txt")
-        with open(video_data_file, newline="") as data_file:
+        video_data_file = data_dir / "projects" / project / (video_file + "_data.txt")
+        with video_data_file.open(newline="") as data_file:
             reader = csv.DictReader(data_file)
             for row in reader:
                 self.video_duration = float(row["duration"])
@@ -312,9 +311,9 @@ class DroneLog:
 
 def remove_null_bytes(log: Path) -> None:
     logger.debug(f"Removing null bytes from log: {log}")
-    with open(log, "rb") as fi:
+    with log.open("rb") as fi:
         data = fi.read()
-    with open(log, "wb") as fo:
+    with log.open("wb") as fo:
         fo.write(data.replace(b"\x00", b""))
 
 
