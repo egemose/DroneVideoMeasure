@@ -14,6 +14,7 @@ import flask
 from celery.app.task import Task as CeleryTask
 from werkzeug.wrappers.response import Response
 
+import dvm
 from dvm.app_config import Project, Task, Video, celery, data_dir, db, get_random_filename
 from dvm.helper_functions import get_all_annotations, save_annotations_csv
 
@@ -246,12 +247,9 @@ def do_concat_videos(project_id: int) -> tuple[Response, int]:
 
 @video_gallery_view.route("/videos/<video_id>/download")  # type: ignore[misc]
 def download(video_id: int) -> Response:
-    with open("version.txt") as version_file:
-        pro_version = version_file.read()
-        pro_version = pro_version.strip()
     video = Video.query.get_or_404(video_id)
     project = Project.query.get_or_404(video.project_id)
-    annotations = get_all_annotations(project, pro_version, video)
+    annotations = get_all_annotations(project, dvm.__version__, video)
     filename = os.path.join(data_dir, "annotations.csv")
     save_annotations_csv(annotations, filename)
     logger.debug("Sending annotations.csv to user.")

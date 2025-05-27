@@ -65,4 +65,4 @@ def create_app() -> tuple[None, Flask, Celery]:
 manager, app, celery = create_app()
 
 # Current version
-__version__ = "0.0.1"
+__version__ = "2.0.2"

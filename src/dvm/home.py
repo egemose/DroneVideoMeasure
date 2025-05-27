@@ -7,6 +7,7 @@ from zipfile import ZipFile
 import flask
 from werkzeug.wrappers.response import Response
 
+import dvm
 from dvm.app_config import Drone, Project, data_dir
 
 logger = logging.getLogger("app." + __name__)
@@ -23,10 +24,8 @@ def index() -> Response:
 
 @home_view.route("/version")  # type: ignore[misc]
 def version() -> Response:
-    with open("version.txt") as version_file:
-        ver = version_file.read()
     logger.debug("Render version")
-    return flask.render_template("version.html", version=ver)
+    return flask.render_template("version.html", version=dvm.__version__)
 
 
 @home_view.route("/download_logs")  # type: ignore[misc]

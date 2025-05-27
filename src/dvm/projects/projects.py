@@ -9,6 +9,7 @@ from pathlib import Path
 import flask
 from werkzeug.wrappers.response import Response
 
+import dvm
 from dvm.app_config import Drone, Project, data_dir, db, get_random_filename
 from dvm.drone import plot_log_data
 from dvm.drone.drone_log_data import drone_log
@@ -106,7 +107,7 @@ def get_edit_project_form() -> EditProjectForm:
                 form.edit_log_file.data.save(log_file)
                 success = drone_log.test_log(log_file)
                 if success:
-                    project.log_file = log_file
+                    project.log_file = str(log_file)
                 else:
                     remove_file(log_file)
                     project.log_file = None
@@ -133,10 +134,8 @@ def plot_log(project_id: int) -> Response:
 
 @projects_view.route("/projects/<project_id>/download")  # type: ignore[misc]
 def download(project_id: int) -> Response:
-    with open("version.txt") as version_file:
-        pro_version = version_file.read()
     project = Project.query.get_or_404(project_id)
-    annotations = get_all_annotations(project, pro_version)
+    annotations = get_all_annotations(project, dvm.__version__)
     filename = os.path.join(data_dir, "annotations.csv")
     save_annotations_csv(annotations, filename)
     logger.debug("Sending annotations.csv to user.")
