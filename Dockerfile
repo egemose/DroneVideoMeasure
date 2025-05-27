@@ -14,7 +14,7 @@ RUN npm install && npm cache clean --force
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -e .[dev]
 
 RUN chmod u+x ./entrypoint.sh
 RUN mkdir /app_data
