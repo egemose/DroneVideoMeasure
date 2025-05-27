@@ -1,4 +1,7 @@
+# Data export format
+
 When exporting annotations from a project a .csv file with a lot of details about the annotated objects will be saved. Here is a more detailed description of each of the columns in the saved file.
+
 - name
 	- The name of the annotation
 - time

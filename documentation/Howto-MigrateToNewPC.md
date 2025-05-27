@@ -1,1 +1,0 @@
-# Windows with Docker Desktop

@@ -1,11 +1,15 @@
-# Howto - Install Drone Video Measure
-Here is a short guide on installing the Drone Video Measure programme.
+# Install Drone Video Measure from source code
+
+Here is a short guide on installing the Drone Video Measure programme from source.
+
+```{Note}
+If you just want to run the program the easiest solution is to follow this [guide](install.md).
+```
 
 ## Install dependencies
 Prior to installing Drone Video Measure the following dependencies need to be installed.
 - [Git](https://git-scm.com/downloads)
-- [Docker](https://www.docker.com/)
-- [Docker-compose](https://docs.docker.com/compose/install/) (only on Linux)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 Please verify that Docker Desktop is running properly before continuing. If the Docker window displays "Docker Desktop starting ..." for an extended amount of time, you might need to reboot your computer.
 
@@ -22,6 +26,13 @@ After running  the `./dvm.sh start` command, a new command line window should op
 The program is now running as a webserver. To access it do the following:
 - Open a Web Browser at [http://localhost:5000](http://localhost:5000).
 If Drone Video Measure appears all is set and up and running.
+
+Drone Video Measure runs the following containers:
+
+- Drone Video Measure - Main app
+- Drone VIdeo Measure - As background worker
+- Redis - for Celery broker
+- PostgreSQL - as database storage
 
 ## Stopping the programme
 To stop a running instance of the programme enter the following command in the terminal.
@@ -43,26 +54,15 @@ If the source code is changes, the program can be rebuilt using the command
 ./dvm.sh build
 ```
 
-
-## Updating Drone Video Measure
-
-```bash
-./dvm.sh update
-```
-
 ## Uninstalling Drone Video Measure
 
-```bash
-./dvm.sh remove
+To uninstall Drone Video Measure remove all docker containers, images and volumes.
+```{WARNING}
+Running the following commands will permanently delete all Drone Video Measure data.
+If using docker for other project then Drone Video Measure the following commands will also remove their container, images and volumes. Instead use docker desktop to only delete Drone Video Measure containers, images and volumes.
 ```
 
-And delete the DroneVideoMeasure directory.
-
-On Windows data is stored in a Docker volume and will persist even when DVM is closed.
-To remove the data:
-
 ```bash
-docker volume rm appmedia
+docker system prune --all
+docker volume prune --all
 ```
-
-On Mac / Linux data is stored in the data directory and can be removed simply by deleting it.

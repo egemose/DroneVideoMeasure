@@ -31,7 +31,7 @@ If you want support for other drones please create a issue with a flight log att
 
 ## Author
 
-Written by Henrik Dyrberg Egemose (hesc@mmmi.sdu.dk) as part of the InvaDrone and Back2Nature projects,
+Written by Henrik Dyrberg Egemose (hde@mmmi.sdu.dk) as part of the InvaDrone and Back2Nature projects,
 research projects by the University of Southern Denmark UAS Center (SDU UAS Center).
 Now maintained by Henrik Skov Midtiby (hemi@mmmi.sdu.dk).
 

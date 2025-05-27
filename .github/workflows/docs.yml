@@ -1,0 +1,42 @@
+name: Generate Docs and upload to pages.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build docs
+        id: build
+        run: |
+          pip install .[docs]
+          make -C docs html
+
+      - name: Upload doc build as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/build/html
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
