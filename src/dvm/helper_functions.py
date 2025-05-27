@@ -76,7 +76,7 @@ def get_all_annotations(project: Project, pro_version: str, video: Video | None 
                     if obj["type"] == "FrameLine" or obj["type"] == "FramePoint":
                         annotation = get_frame_obj_data(obj)
                         if annotation is not None:
-                            annotation.extend([video.file, project.name, pro_version])
+                            annotation.extend([video.name, project.name, pro_version])
                     else:
                         logger.debug(f"Unknown annotation found of type: {obj['type']}")
                         annotation = None
