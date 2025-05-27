@@ -1,14 +1,4 @@
 #!/bin/bash
-platform="Linux"
-uname=$(uname)
-case $uname in
-	"Darwin")
-	platform="MacOS / OSX"
-	;;
-	MINGW*)
-	platform="Windows"
-	;;
-esac
 
 run(){
 	echo $1
@@ -21,53 +11,19 @@ display_help() {
 	echo "   start                Start DVM"
 	echo "   stop                 Stop DVM"
 	echo "   build                Rebuild the Docker image if changes where made to the code"
-	echo "   update               Get the latest version of DVM from github"
 	echo "   shell                Start a bash shell inside the docker container"
-	echo "   remove               Remove Docker images and volumes belonging to DVM"
 	echo
 	echo "   --dev                Run DVM in development mode"
 	echo "   -h, --help           Show this help message"
 }
 
 create_data_dir(){
-	if [[ $platform != "Windows" ]]; then
-		run "mkdir -p data"
-	fi
-}
-
-user_in_group(){
-	groups $USER | grep &>/dev/null "\bdocker\b"
-}
-
-add_sudo(){
-	local sudo_cmd="$1"
-	if [[ $platform = "Linux" ]]; then
-		if [[ ! user_in_group ]]; then
-			sudo_cmd="sudo $1"
-		fi
-	fi
-	echo "$sudo_cmd"
+	run "mkdir -p data"
 }
 
 get_docker_compose(){
 	local docker_compose="docker compose -f docker-compose.yml"
-	if [[ $platform = "Windows" ]]; then
-		docker_compose="docker compose -f docker-compose.windows.yml"
-	fi
-	docker_compose="$(add_sudo "$docker_compose")"
 	echo "$docker_compose"
-}
-
-get_docker_image_rm(){
-	local docker_rm_image="docker image rm  python:3.8 redis:alpine dvm dvm_worker postgres:alpine"
-	docker_rm_image="$(add_sudo "$docker_rm_image")"
-	echo "$docker_rm_image"
-}
-
-get_docker_volume_rm(){
-	local docker_rm_volume="docker volume rm dvm_appmedia dvm_dbdata"
-	docker_rm_volume="$(add_sudo "$docker_rm_volume")"
-	echo "$docker_rm_volume"
 }
 
 start(){
@@ -102,13 +58,6 @@ build(){
 	run "$docker_compose build"
 }
 
-update(){
-	stop
-	echo "Updating DVM"
-	run "git pull origin master"
-	echo "You can start DVM now"
-}
-
 shell(){
 	local docker_compose="$(get_docker_compose)"
 	if [[ $dev_mode = true ]]; then
@@ -116,18 +65,6 @@ shell(){
 	fi
 	docker_compose="$docker_compose run webapp /bin/bash"
 	run "$docker_compose"
-}
-
-remove(){
-	stop
-	echo "Removing docker image"
-	local docker_rm_image="$(get_docker_image_rm)"
-	run "$docker_rm_image"
-	echo "Removing docker volume"
-	local docker_rm_volume="$(get_docker_volume_rm)"
-	run "$docker_rm_volume"
-
-	echo "Removed docker content DVM directory can now be removed"
 }
 
 POSITIONAL=()
@@ -171,14 +108,8 @@ case "$1" in
 	build)
 		build
 		;;
-	update)
-		update
-		;;
 	shell)
 		shell
-		;;
-	remove)
-		remove
 		;;
 	*)
 		echo "Error: Unknown argument: $1" >&2
