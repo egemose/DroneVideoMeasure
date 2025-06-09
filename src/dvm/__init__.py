@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import logging.handlers
 import os
+from logging import Logger
 from pathlib import Path
 
 import werkzeug.exceptions
-from celery import Celery
+from celery import Celery, Task
 from flask import Flask, Response, render_template, send_from_directory
 
 from dvm.app_config import AppConfig, data_dir, db, dropzone, make_celery, migrate, obscure
@@ -15,16 +16,21 @@ from dvm.projects.projects import projects_view
 from dvm.projects.video_gallery import video_gallery_view
 from dvm.video.videos import videos_view
 
-logger = logging.getLogger("app")
-logger.setLevel(logging.DEBUG)
-log_dir = data_dir / "logs"
-log_file = log_dir / "python.log"
-if not Path.exists(log_dir):
-    Path.mkdir(log_dir)
-fh = logging.handlers.TimedRotatingFileHandler(log_file, when="midnight", backupCount=2)
-formatter = logging.Formatter("{asctime} | {name:<20} | {levelname:<8} - {message}", style="{")
-fh.setFormatter(formatter)
-logger.addHandler(fh)
+def setup_logger(testing: bool = False) -> Logger:
+    logger = logging.getLogger("app")
+    logger.setLevel(logging.DEBUG)
+    if not testing:
+        log_dir = data_dir / "logs"
+        log_file = log_dir / "python.log"
+        if not Path.exists(log_dir):
+            Path.mkdir(log_dir)
+        fh = logging.handlers.TimedRotatingFileHandler(log_file, when="midnight", backupCount=2)
+        formatter = logging.Formatter("{asctime} | {name:<20} | {levelname:<8} - {message}", style="{")
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
+    else:
+        logger.addHandler(logging.NullHandler())
+    return logger
 
 
 def serve_data_file(filename: str) -> Response:
@@ -39,19 +45,36 @@ def page_not_found(e: werkzeug.exceptions.NotFound) -> tuple[str, int]:
     return render_template("404.html"), 404
 
 
-def create_app() -> tuple[None, Flask, Celery]:
+def celery_init_app(app: Flask) -> Celery:
+    class FlaskTask(Task):  # type: ignore[misc]
+        def __call__(self, *args: object, **kwargs: object) -> object:
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery_app = Celery(app.name, task_cls=FlaskTask)
+    celery_app.config_from_object(app.config["CELERY"])
+    celery_app.set_default()
+    app.extensions["celery"] = celery_app
+    return celery_app
+
+
+def create_app(testing: bool = False) -> Flask:
     app = Flask(__name__)
+    setup_logger(testing)
+    if not testing:
+        app.config.from_object(AppConfig)
+    else:
+        app.config.from_object(TestConfig)
     app.register_error_handler(404, page_not_found)
-    app.config.from_object(AppConfig)
     app.add_url_rule("/data/<path:filename>", endpoint="data", view_func=serve_data_file)
     app.add_url_rule(
         "/node_modules/<path:filename>",
         endpoint="node_modules",
         view_func=serve_node_modules,
     )
+    celery_init_app(app)
     dropzone.init_app(app)
     obscure.init_app(app)
-    celery = make_celery(app)
     db.init_app(app)
     migrate.init_app(app, db)
     app.register_blueprint(projects_view)
@@ -59,11 +82,7 @@ def create_app() -> tuple[None, Flask, Celery]:
     app.register_blueprint(drones_view)
     app.register_blueprint(home_view)
     app.register_blueprint(video_gallery_view)
-    manager = None
-    return manager, app, celery
-
-
-manager, app, celery = create_app()
+    return app
 
 # Current version
 __version__ = "2.0.2"

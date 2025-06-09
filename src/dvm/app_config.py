@@ -4,7 +4,6 @@ import secrets
 from pathlib import Path
 from typing import Any
 
-from celery import Celery
 from flask import Flask
 from flask_dropzone import Dropzone
 from flask_migrate import Migrate
@@ -13,8 +12,6 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 
 
-class TaskFailure(Exception):
-    pass
 
 
 class AppConfig:
@@ -25,36 +22,15 @@ class AppConfig:
     DROPZONE_MAX_FILE_SIZE = 100000
     DROPZONE_PARALLEL_UPLOADS = 1
     DROPZONE_TIMEOUT = 1800000
-    CELERY_BROKER_URL = "redis://redis:6379/0"
-    result_backend = "redis://redis:6379/0"
+    CELERY = {
+        "broker_url": "redis://redis:6379/0",
+        "result_backend": "redis://redis:6379/0",
+    }
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:example@db:5432/postgres"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 data_dir = Path("/app_data").resolve()
-
-celery = Celery(
-    __name__,
-    broker=AppConfig.CELERY_BROKER_URL,
-    backend=AppConfig.result_backend,
-)
-
-
-def make_celery(app: Flask) -> Celery:
-    global celery
-    celery.conf.update(app.config)
-    BaseTask = celery.Task
-
-    class ContextTask(BaseTask):  # type: ignore[valid-type, misc]
-        abstract = True
-
-        def __call__(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> Any:
-            with app.app_context():
-                return BaseTask.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
-
 
 dropzone = Dropzone()
 obscure = Obscure()
@@ -127,3 +103,11 @@ class Task(db.Model):  # type: ignore[name-defined, misc]
 
     def __repr__(self) -> str:
         return f"<Task {self.task_id}>"
+class TestConfig(AppConfig):
+    TESTING = True
+    CELERY = {
+        "broker_url": "redis://",
+        "result_backend": "redis://",
+    }
+    SQLALCHEMY_DATABASE_URI = "sqlite://"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False

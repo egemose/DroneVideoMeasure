@@ -9,7 +9,8 @@ from pathlib import Path
 
 import flask
 import numpy as np
-from celery.app.task import Task as CeleryTask
+from celery import Task as CeleryTask
+from celery import shared_task
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers.response import Response
 
@@ -111,7 +112,7 @@ def do_calibration(drone_id: int) -> str:
     return ""
 
 
-@celery.task(bind=True)  # type: ignore[misc]
+@shared_task(bind=True)  # type: ignore[misc]
 def calibration_task(self: CeleryTask, drone_id: int) -> None:
     self.update_state(state="PROCESSING")
     in_folder = data_dir / "calibration"
@@ -126,11 +127,11 @@ def calibration_task(self: CeleryTask, drone_id: int) -> None:
         if result == -1:
             shutil.rmtree(in_folder)
             Path.mkdir(in_folder)
-            raise TaskFailure("Error: Could not find any checkerboards in the images/video. Try with a new video.")
+            raise Exception("Error: Could not find any checkerboards in the images/video. Try with a new video.")
         if not result:
             shutil.rmtree(in_folder)
             Path.mkdir(in_folder)
-            raise TaskFailure("Error: No video or images found. Please try again.")
+            raise Exception("Error: No video or images found. Please try again.")
         drone_db = Drone.query.get(drone_id)
         drone_db.calibration = result
         db.session.commit()
@@ -139,7 +140,7 @@ def calibration_task(self: CeleryTask, drone_id: int) -> None:
     except AttributeError as exc:
         shutil.rmtree(in_folder)
         Path.mkdir(in_folder)
-        raise TaskFailure("Error: Loading video or images failed. Please try again.") from exc
+        raise Exception("Error: Loading video or images failed. Please try again.") from exc
 
 
 @drones_view.route("/drones/status/<task_id>")  # type: ignore[misc]

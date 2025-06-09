@@ -9,7 +9,8 @@ from pathlib import Path
 
 import ffmpeg
 import flask
-from celery.app.task import Task as CeleryTask
+from celery import Task as CeleryTask
+from celery import shared_task
 from werkzeug.wrappers.response import Response
 
 import dvm
@@ -83,7 +84,7 @@ def get_video_data(
     return video_duration, video_nb_frames, video_size, video_pos
 
 
-@celery.task(bind=True)  # type: ignore[misc]
+@shared_task(bind=True)  # type: ignore[misc]
 def convert_after_upload_task(self: CeleryTask, temp_path_str: str, video_path_str: str) -> None:
     temp_path = Path(temp_path_str)
     video_path = Path(video_path_str)
@@ -122,7 +123,7 @@ def convert_after_upload_task(self: CeleryTask, temp_path_str: str, video_path_s
     subprocess.run(cmd, capture_output=True)
 
 
-@celery.task(bind=True)  # type: ignore[misc]
+@shared_task(bind=True)  # type: ignore[misc]
 def concat_videos_task(self: CeleryTask, videos: list[str], output_file_str: str) -> None:
     output_file = Path(output_file_str)
     self.update_state(state="PROCESSING")
