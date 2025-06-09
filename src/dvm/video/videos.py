@@ -10,7 +10,8 @@ import flask
 import numpy as np
 from werkzeug.wrappers.response import Response
 
-from dvm.app_config import Drone, Project, Video, data_dir, db
+from dvm.app_config import data_dir
+from dvm.db_model import Drone, Project, Video, db
 from dvm.drone import plot_log_data
 from dvm.drone.drone_log_data import drone_log
 from dvm.drone.fov import fov

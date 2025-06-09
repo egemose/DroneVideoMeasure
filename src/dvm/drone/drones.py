@@ -14,8 +14,9 @@ from celery import shared_task
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers.response import Response
 
-from dvm.app_config import Drone, Project, Task, TaskFailure, celery, data_dir, db
+from dvm.app_config import data_dir
 from dvm.calibration.calibration import CalibrateCamera
+from dvm.db_model import Drone, Project, Task, db
 from dvm.forms import EditDroneForm, NewDroneForm
 
 logger = logging.getLogger("app." + __name__)

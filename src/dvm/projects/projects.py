@@ -8,7 +8,8 @@ import flask
 from werkzeug.wrappers.response import Response
 
 import dvm
-from dvm.app_config import Drone, Project, data_dir, db, get_random_filename
+from dvm.app_config import data_dir, get_random_filename
+from dvm.db_model import Drone, Project, db
 from dvm.drone import plot_log_data
 from dvm.drone.drone_log_data import drone_log
 from dvm.forms import EditProjectForm, NewProjectForm
@@ -118,7 +119,7 @@ def get_edit_project_form() -> EditProjectForm:
 @projects_view.route("/projects/<project_id>/plot")  # type: ignore[misc]
 def plot_log(project_id: int) -> Response:
     project = Project.query.get_or_404(project_id)
-    drone_log.get_log_data(project.log_file)
+    drone_log.get_log_data(Path(project.log_file))
     plot_script, plot_div = plot_log_data.get_log_plot(drone_log.log_data())
     logger.debug(f"Render video plot for {project_id}")
     return flask.render_template(

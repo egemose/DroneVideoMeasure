@@ -8,13 +8,22 @@ from pathlib import Path
 import werkzeug.exceptions
 from celery import Celery, Task
 from flask import Flask, Response, render_template, send_from_directory
+from flask_dropzone import Dropzone
+from flask_migrate import Migrate
+from flask_obscure import Obscure
 
-from dvm.app_config import AppConfig, data_dir, db, dropzone, make_celery, migrate, obscure
+from dvm.app_config import AppConfig, TestConfig, data_dir
+from dvm.db_model import db
 from dvm.drone.drones import drones_view
 from dvm.home import home_view
 from dvm.projects.projects import projects_view
 from dvm.projects.video_gallery import video_gallery_view
 from dvm.video.videos import videos_view
+
+dropzone = Dropzone()
+obscure = Obscure()
+migrate = Migrate(compare_type=True)
+
 
 def setup_logger(testing: bool = False) -> Logger:
     logger = logging.getLogger("app")
@@ -83,6 +92,7 @@ def create_app(testing: bool = False) -> Flask:
     app.register_blueprint(home_view)
     app.register_blueprint(video_gallery_view)
     return app
+
 
 # Current version
 __version__ = "2.0.2"

@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from dvm.app_config import Drone, Project, Video
+from dvm.db_model import Drone, Project, Video
 from dvm.drone.drone_log_data import drone_log
 from dvm.drone.fov import fov
 

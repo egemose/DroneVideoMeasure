@@ -14,7 +14,8 @@ from celery import shared_task
 from werkzeug.wrappers.response import Response
 
 import dvm
-from dvm.app_config import Project, Task, Video, celery, data_dir, db, get_random_filename
+from dvm.app_config import data_dir, get_random_filename
+from dvm.db_model import Project, Task, Video, db
 from dvm.helper_functions import get_all_annotations, save_annotations_csv
 
 logger = logging.getLogger("app." + __name__)

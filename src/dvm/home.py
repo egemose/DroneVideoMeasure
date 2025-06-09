@@ -8,7 +8,8 @@ import flask
 from werkzeug.wrappers.response import Response
 
 import dvm
-from dvm.app_config import Drone, Project, data_dir
+from dvm.app_config import data_dir
+from dvm.db_model import Drone, Project
 
 logger = logging.getLogger("app." + __name__)
 home_view = flask.Blueprint("home", __name__)
