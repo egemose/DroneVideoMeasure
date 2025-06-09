@@ -37,3 +37,12 @@ repos:
     hooks:
       - id: mypy
         args: [--strict, --ignore-missing-imports]
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
