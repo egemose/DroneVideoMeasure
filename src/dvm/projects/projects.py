@@ -94,7 +94,7 @@ def get_edit_project_form() -> EditProjectForm:
         if project_title in projects and project_title != project_before:
             flask.flash("A project with that name already exist!")
         else:
-            project = Project.query.get_or_404(project_id)
+            project = db.get_or_404(Project, project_id)
             project.name = project_title
             project.description = description
             project.drone_id = drone_id
@@ -118,7 +118,7 @@ def get_edit_project_form() -> EditProjectForm:
 
 @projects_view.route("/projects/<project_id>/plot")  # type: ignore[misc]
 def plot_log(project_id: int) -> Response:
-    project = Project.query.get_or_404(project_id)
+    project = db.get_or_404(Project, project_id)
     drone_log.get_log_data(Path(project.log_file))
     plot_script, plot_div = plot_log_data.get_log_plot(drone_log.log_data())
     logger.debug(f"Render video plot for {project_id}")
@@ -133,7 +133,7 @@ def plot_log(project_id: int) -> Response:
 
 @projects_view.route("/projects/<project_id>/download")  # type: ignore[misc]
 def download(project_id: int) -> Response:
-    project = Project.query.get_or_404(project_id)
+    project = db.get_or_404(Project, project_id)
     annotations = get_all_annotations(project, dvm.__version__)
     filename = AppConfig.data_dir / "annotations.csv"
     save_annotations_csv(annotations, filename)
@@ -144,7 +144,7 @@ def download(project_id: int) -> Response:
 @projects_view.route("/projects/<project_id>/remove")  # type: ignore[misc]
 def remove_project(project_id: int) -> Response:
     logger.debug(f"Removing project {project_id}")
-    project = Project.query.get_or_404(project_id)
+    project = db.get_or_404(Project, project_id)
     remove_file(project.log_file)
     for video in project.videos:
         remove_file(video.file)

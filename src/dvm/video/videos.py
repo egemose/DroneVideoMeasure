@@ -75,9 +75,9 @@ horizon_dict = get_horizon_dict()
 @videos_view.route("/<video_id>/annotate")  # type: ignore[misc]
 def video(video_id: int) -> Response:
     logger.debug(f"Video called with video: {video_id}")
-    video = Video.query.get_or_404(video_id)
-    project = Project.query.get_or_404(video.project_id)
-    drone = Drone.query.get_or_404(project.drone_id)
+    video = db.get_or_404(Video, video_id)
+    project = db.get_or_404(Project, video.project_id)
+    drone = db.get_or_404(Drone, project.drone_id)
     fov.set_camera_params(*drone.calibration)
     log_file = AppConfig.data_dir.joinpath(project.log_file)
     drone_log.get_log_data(log_file)
@@ -128,7 +128,7 @@ def video(video_id: int) -> Response:
 def save_fabric_json(video_id: int) -> Response:
     logger.debug(f"Saving annotations to json file for {video_id}")
     json_data = flask.request.form.get("fabric_json")
-    video = Video.query.get_or_404(video_id)
+    video = db.get_or_404(Video, video_id)
     video.json_data = json_data
     db.session.commit()
     return ""
@@ -157,7 +157,7 @@ def save_start_time(video_id: int) -> Response:
     start_time_str = flask.request.form.get("new_start_time")
     logger.debug(f'start_time_str: "{start_time_str}"')
     match = re.fullmatch(r"(\d\d):(\d\d):(\d\d)\.?(\d*)", start_time_str)
-    video = Video.query.get_or_404(video_id)
+    video = db.get_or_404(Video, video_id)
     if match:
         match_hour = int(match.group(1))
         match_minute = int(match.group(2))
@@ -199,7 +199,7 @@ def save_takeoff_altitude(video_id: int) -> Response:
     logger.debug(f"save_takeoff_altitude called for {video_id}")
     takeoff_altitude_str = flask.request.form.get("new_takeoff_altitude")
     logger.debug(f"takeoff_altitude_str: {takeoff_altitude_str}")
-    video = Video.query.get_or_404(video_id)
+    video = db.get_or_404(Video, video_id)
     try:
         new_takeoff_altitude = float(takeoff_altitude_str)
         video.takeoff_altitude = new_takeoff_altitude

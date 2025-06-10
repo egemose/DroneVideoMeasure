@@ -63,7 +63,7 @@ def get_edit_drone_form() -> EditDroneForm:
         drone_name_before = form.edit_drone_before.data
         new_drone_name = form.edit_name.data
         new_camera_settings = form.edit_camera_settings.data
-        drone = Drone.query.get_or_404(drone_id)
+        drone = db.get_or_404(Drone, drone_id)
         if drone.name in [x.name for x in drones] and drone.name != drone_name_before:
             flask.flash("A drone with that name already exist!")
         else:
@@ -102,7 +102,7 @@ def add_calibration(drone_id: int) -> Response:
 @drones_view.route("/dones/<drone_id>/do_calibration", methods=["POST"])  # type: ignore[misc]
 def do_calibration(drone_id: int) -> str:
     logger.debug(f"do_calibration is called for drone {drone_id}")
-    drone = Drone.query.get_or_404(drone_id)
+    drone = db.get_or_404(Drone, drone_id)
     drone.calibration = None
     drone.task_error = None
     db.session.commit()
@@ -133,7 +133,7 @@ def calibration_task(self: CeleryTask, drone_id: int) -> None:
             shutil.rmtree(in_folder)
             Path.mkdir(in_folder)
             raise Exception("Error: No video or images found. Please try again.")
-        drone_db = Drone.query.get(drone_id)
+        drone_db = db.get_or_404(Drone, drone_id)
         drone_db.calibration = result
         db.session.commit()
         shutil.rmtree(in_folder)
@@ -146,7 +146,7 @@ def calibration_task(self: CeleryTask, drone_id: int) -> None:
 
 @drones_view.route("/drones/status/<task_id>")  # type: ignore[misc]
 def task_status(task_id: int) -> Response:
-    task_db = Task.query.get_or_404(task_id)
+    task_db = db.get_or_404(Task, task_id)
     task = eval(task_db.function + '.AsyncResult("' + task_db.task_id + '")')
     if task.state == "PENDING":
         response = {"state": task.state, "status": "Pending"}
@@ -158,7 +158,7 @@ def task_status(task_id: int) -> Response:
         response = {"state": task.state, "status": "Processing"}
     else:
         response = {"state": task.state, "status": str(task.info)}
-        drone = Drone.query.get_or_404(task_db.drone_id)
+        drone = db.get_or_404(Task, task_db.drone_id)
         drone.task_error = str(task.info)
         db.session.delete(task_db)
         db.session.commit()
@@ -167,7 +167,7 @@ def task_status(task_id: int) -> Response:
 
 @drones_view.route("/drones/<drone_id>/view_calibration")  # type: ignore[misc]
 def view_calibration(drone_id: int) -> Response:
-    drone = Drone.query.get_or_404(drone_id)
+    drone = db.get_or_404(Drone, drone_id)
     try:
         # From 2025-03-31 Five values are stored in
         # drone.calibration, earlier it was only four.
@@ -191,14 +191,14 @@ def view_calibration(drone_id: int) -> Response:
 @drones_view.route("/drones/<drone_id>/remove")  # type: ignore[misc]
 def remove_drone(drone_id: int) -> Response:
     logger.debug(f"Removing drone {drone_id}")
-    drone = Drone.query.get_or_404(drone_id)
+    drone = db.get_or_404(Drone, drone_id)
     if drone.task:
-        task_db = Task.query.get_or_404(drone.task.id)
+        task_db = db.get_or_404(Task, drone.task.id)
         task = eval(task_db.function + '.AsyncResult("' + task_db.task_id + '")')
         task.revoke(terminate=True)
         db.session.delete(task_db)
     for project in drone.projects:
-        project_db = Project.query.get_or_404(project.id)
+        project_db = db.get_or_404(Project, project.id)
         remove_file(project_db.log_file)
         for video in project_db.videos:
             remove_file(video.file)

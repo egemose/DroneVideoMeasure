@@ -54,7 +54,7 @@ def upload(project_id: int) -> tuple[Response, int] | Response:
                     db.session.commit()
                     return flask.jsonify({}), 202
     logger.debug("Render upload after a GET request")
-    project = Project.query.get_or_404(project_id)
+    project = db.get_or_404(Project, project_id)
     return flask.render_template("video_gallery/upload.html", project_id=project.id, project_name=project.name)
 
 
@@ -170,13 +170,13 @@ def remove_file(file: Path) -> None:
 
 @video_gallery_view.route("/videos/status/<task_id>")  # type: ignore[misc]
 def task_status(task_id: int) -> Response:
-    task_db = Task.query.get_or_404(task_id)
+    task_db = db.get_or_404(Task, task_id)
     task = eval(task_db.function + '.AsyncResult("' + task_db.task_id + '")')
     if task.state == "PENDING":
         response = {"state": task.state, "status": "Pending"}
     elif task.state == "SUCCESS":
         response = {"state": task.state, "status": "Done"}
-        video_db = Video.query.get_or_404(task_db.video_id)
+        video_db = db.get_or_404(Video, task_db.video_id)
         video_data = get_video_data(video_db.file)
         video_db.duration = video_data[0]
         video_db.frames = video_data[1]
@@ -190,7 +190,7 @@ def task_status(task_id: int) -> Response:
         response = {"state": task.state, "status": "Processing"}
     else:
         response = {"state": task.state, "status": str(task.info)}
-        video_db = Video.query.get_or_404(task_db.video_id)
+        video_db = db.get_or_404(Video, task_db.video_id)
         video_db.task_error = str(task.info)
         db.session.delete(task_db)
         db.session.commit()
@@ -224,7 +224,7 @@ def do_concat_videos(project_id: int) -> tuple[Response, int]:
     if output_file_name[-4:] != ".mp4":
         output_file_name += ".mp4"
     video_ids = json.loads(videos_json)
-    videos = [Video.query.get_or_404(i) for i in video_ids]
+    videos = [db.get_or_404(Video, i) for i in video_ids]
     video_files = [v.file for v in videos]
     logger.debug("Calling celery task for concat")
     video_file = AppConfig.data_dir / get_random_filename(output_file_name)
@@ -245,8 +245,8 @@ def do_concat_videos(project_id: int) -> tuple[Response, int]:
 
 @video_gallery_view.route("/videos/<video_id>/download")  # type: ignore[misc]
 def download(video_id: int) -> Response:
-    video = Video.query.get_or_404(video_id)
-    project = Project.query.get_or_404(video.project_id)
+    video = db.get_or_404(Video, video_id)
+    project = db.get_or_404(Project, video.project_id)
     annotations = get_all_annotations(project, dvm.__version__, video)
     filename = AppConfig.data_dir / "annotations.csv"
     save_annotations_csv(annotations, filename)
@@ -258,7 +258,7 @@ def download(video_id: int) -> Response:
 @video_gallery_view.route("/videos/<video_id>/remove")  # type: ignore[misc]
 def remove_video(video_id: int) -> Response:
     logger.debug(f"Removing video {video_id}")
-    video = Video.query.get_or_404(video_id)
+    video = db.get_or_404(Video, video_id)
     project_id = video.project_id
     remove_file(video.file)
     remove_file(video.image)

@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from dvm.db_model import Drone, Project, Video
+from dvm.db_model import Drone, Project, Video, db
 from dvm.drone.drone_log_data import drone_log
 from dvm.drone.fov import fov
 
@@ -55,7 +55,7 @@ def save_annotations_csv(annotations: list[list[Any] | None], filename: Path) ->
 def get_all_annotations(project: Project, pro_version: str, video: Video | None = None) -> list[list[Any] | None]:
     logger.debug("Getting all annotations")
     annotations = []
-    drone = Drone.query.get_or_404(project.drone_id)
+    drone = db.get_or_404(Drone, project.drone_id)
     fov.set_camera_params(*drone.calibration)
     drone_log.get_log_data(Path(project.log_file))
     videos = [video] if video else list(project.videos)
