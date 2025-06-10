@@ -9,7 +9,7 @@ def test_config(app: Flask) -> None:
     assert app.testing
 
 
-def test_home_page(client: FlaskClient, init_database: SQLAlchemy) -> None:
+def test_home_page(client: FlaskClient, database: SQLAlchemy) -> None:
     response = client.get("/")
     assert response.status_code == 200
     assert b"Drone Video Measure" in response.data
@@ -21,7 +21,7 @@ def test_home_page(client: FlaskClient, init_database: SQLAlchemy) -> None:
     assert b"SDU UAS Center" in response.data
 
 
-def test_version_page(client: FlaskClient, init_database: SQLAlchemy) -> None:
+def test_version_page(client: FlaskClient, database: SQLAlchemy) -> None:
     response = client.get("/version")
     assert response.status_code == 200
     assert b"You are using version" in response.data
