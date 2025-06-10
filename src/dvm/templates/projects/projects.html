@@ -44,7 +44,7 @@
           <div class="dropdown-menu">
             <a class="dropdown-item" data-toggle="modal" data-target="#edit_project_modal" data-project="{{ project.name }}" data-project-id="{{ project.id }}" data-description="{{ project.description }}" data-drone-id="{{ project.drone_id }}" href="#"><i class="far fa-edit"></i> Edit</a>
             {% if project.log_file %}
-            <a class="dropdown-item" data-toggle="tooltip" title="Download all annotations" href="{{ url_for('projects.download', project_id=project.id, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
+            <a class="dropdown-item" data-toggle="tooltip" title="Download all annotations" href="{{ url_for('projects.download', project_id=project.id) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
             <a class="dropdown-item" data-toggle="tooltip" title="Show a plot of the drone log" href="{{ url_for( 'projects.plot_log', project_id=project.id) }}"><i class="fas fa-chart-area"></i> Plot Log file</a>
             {% endif %}
             <div class="dropdown-divider"></div>

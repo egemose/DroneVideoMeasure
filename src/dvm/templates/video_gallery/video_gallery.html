@@ -45,7 +45,7 @@
           </button>
           <div class="dropdown-menu">
             {% if not (video.task or video.task_error) %}
-            <a class="dropdown-item" data-toggle="tooltip" title="Download annotations for video" href="{{ url_for('video_gallery.download', video_id=video.id, random_int=random_int|hex) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
+            <a class="dropdown-item" data-toggle="tooltip" title="Download annotations for video" href="{{ url_for('video_gallery.download', video_id=video.id) }}"><i class="fas fa-file-download"></i> Download Annotations</a>
             <div class="dropdown-divider"></div>
             {% endif %}
             <a class="dropdown-item" data-toggle="modal" data-target="#remove_video_modal" data-video="{{ video.name }}" data-link="{{ url_for('video_gallery.remove_video', video_id=video.id) }}" href="#"><i class="far fa-trash-alt"></i> Remove</a>

@@ -10,7 +10,6 @@ from celery import Celery, Task
 from flask import Flask, Response, render_template, send_from_directory
 from flask_dropzone import Dropzone
 from flask_migrate import Migrate
-from flask_obscure import Obscure
 
 from dvm.app_config import AppConfig, TestConfig
 from dvm.db_model import db
@@ -21,7 +20,6 @@ from dvm.projects.video_gallery import video_gallery_view
 from dvm.video.videos import videos_view
 
 dropzone = Dropzone()
-obscure = Obscure()
 migrate = Migrate(compare_type=True)
 
 
@@ -85,7 +83,6 @@ def create_app(testing: bool = False) -> Flask:
     )
     celery_init_app(app)
     dropzone.init_app(app)
-    obscure.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
     app.register_blueprint(projects_view)
