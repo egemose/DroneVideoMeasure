@@ -5,8 +5,6 @@ from pathlib import Path
 
 from werkzeug.utils import secure_filename
 
-data_dir = Path("/app_data").resolve()
-
 
 def get_random_filename(file: str) -> str:
     while True:
@@ -30,13 +28,16 @@ class AppConfig:
     }
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:example@db:5432/postgres"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    data_dir = Path("/app_data").resolve()
 
 
 class TestConfig(AppConfig):
     TESTING = True
+    WTF_CSRF_ENABLED = False
     CELERY = {
         "broker_url": "redis://",
         "result_backend": "redis://",
     }
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    data_dir = Path("./tests/temp").resolve()

@@ -14,7 +14,7 @@ from celery import shared_task
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers.response import Response
 
-from dvm.app_config import data_dir
+from dvm.app_config import AppConfig
 from dvm.calibration.calibration import CalibrateCamera
 from dvm.db_model import Drone, Project, Task, db
 from dvm.forms import EditDroneForm, NewDroneForm
@@ -77,7 +77,7 @@ def get_edit_drone_form() -> EditDroneForm:
 @drones_view.route("/drones/<drone_id>/calibrate", methods=["GET", "POST"])  # type: ignore[misc]
 def add_calibration(drone_id: int) -> Response:
     logger.debug("add_calibration")
-    calibration_folder = data_dir / "calibration"
+    calibration_folder = AppConfig.data_dir / "calibration"
     if not Path.exists(calibration_folder):
         logger.debug("Creating calibration folder")
         Path.mkdir(calibration_folder)
@@ -116,8 +116,8 @@ def do_calibration(drone_id: int) -> str:
 @shared_task(bind=True)  # type: ignore[misc]
 def calibration_task(self: CeleryTask, drone_id: int) -> None:
     self.update_state(state="PROCESSING")
-    in_folder = data_dir / "calibration"
-    in_folder_temp = data_dir / "calibrationtemp"
+    in_folder = AppConfig.data_dir / "calibration"
+    in_folder_temp = AppConfig.data_dir / "calibrationtemp"
     with contextlib.suppress(Exception):
         shutil.rmtree(in_folder_temp)
     Path.mkdir(in_folder_temp)

@@ -11,7 +11,7 @@ import ffmpeg
 import numpy as np
 import utm
 
-from dvm.app_config import data_dir
+from dvm.app_config import AppConfig
 
 logger = logging.getLogger("app." + __name__)
 
@@ -201,7 +201,7 @@ class DroneLog:
 
     def get_video_data(self, project: str, video_file: str) -> None:
         logger.debug(f"Reading video data for video {video_file} in {project}")
-        file = data_dir / "projects" / project / video_file
+        file = AppConfig.data_dir / "projects" / project / video_file
         ffprobe_res = ffmpeg.probe(file, cmd="ffprobe")
         self.video_duration = float(ffprobe_res["format"]["duration"])
         self.video_nb_frames = int(ffprobe_res["streams"][0]["nb_frames"])
@@ -217,7 +217,7 @@ class DroneLog:
 
     def get_video_data_from_data_file(self, project: str, video_file: str) -> None:
         logger.debug(f"Reading video data from data file for video {video_file} from {project}")
-        video_data_file = data_dir / "projects" / project / (video_file + "_data.txt")
+        video_data_file = AppConfig.data_dir / "projects" / project / (video_file + "_data.txt")
         with video_data_file.open(newline="") as data_file:
             reader = csv.DictReader(data_file)
             for row in reader:

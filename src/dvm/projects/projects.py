@@ -8,7 +8,7 @@ import flask
 from werkzeug.wrappers.response import Response
 
 import dvm
-from dvm.app_config import data_dir, get_random_filename
+from dvm.app_config import AppConfig, get_random_filename
 from dvm.db_model import Drone, Project, db
 from dvm.drone import plot_log_data
 from dvm.drone.drone_log_data import drone_log
@@ -57,7 +57,7 @@ def get_new_project_form() -> tuple[Response | None, NewProjectForm]:
             if form.log_file.data:
                 log_error = None
                 log_filename = get_random_filename(form.log_file.data.filename)
-                log_file = data_dir.joinpath(log_filename)
+                log_file = AppConfig.data_dir.joinpath(log_filename)
                 form.log_file.data.save(log_file)
                 success = drone_log.test_log(log_file)
                 if not success:
@@ -102,7 +102,7 @@ def get_edit_project_form() -> EditProjectForm:
                 remove_file(project.log_file)
                 log_error = None
                 log_filename = get_random_filename(form.edit_log_file.data.filename)
-                log_file = data_dir.joinpath(log_filename)
+                log_file = AppConfig.data_dir.joinpath(log_filename)
                 form.edit_log_file.data.save(log_file)
                 success = drone_log.test_log(log_file)
                 if success:
@@ -135,7 +135,7 @@ def plot_log(project_id: int) -> Response:
 def download(project_id: int) -> Response:
     project = Project.query.get_or_404(project_id)
     annotations = get_all_annotations(project, dvm.__version__)
-    filename = data_dir / "annotations.csv"
+    filename = AppConfig.data_dir / "annotations.csv"
     save_annotations_csv(annotations, filename)
     logger.debug("Sending annotations.csv to user.")
     return flask.send_file(filename, as_attachment=True)

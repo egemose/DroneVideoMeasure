@@ -12,7 +12,7 @@ from flask_dropzone import Dropzone
 from flask_migrate import Migrate
 from flask_obscure import Obscure
 
-from dvm.app_config import AppConfig, TestConfig, data_dir
+from dvm.app_config import AppConfig, TestConfig
 from dvm.db_model import db
 from dvm.drone.drones import drones_view
 from dvm.home import home_view
@@ -25,20 +25,17 @@ obscure = Obscure()
 migrate = Migrate(compare_type=True)
 
 
-def setup_logger(testing: bool = False) -> Logger:
+def setup_logger(data_folder: Path = AppConfig.data_dir) -> Logger:
     logger = logging.getLogger("app")
     logger.setLevel(logging.DEBUG)
-    if not testing:
-        log_dir = data_dir / "logs"
-        log_file = log_dir / "python.log"
-        if not Path.exists(log_dir):
-            Path.mkdir(log_dir)
-        fh = logging.handlers.TimedRotatingFileHandler(log_file, when="midnight", backupCount=2)
-        formatter = logging.Formatter("{asctime} | {name:<20} | {levelname:<8} - {message}", style="{")
-        fh.setFormatter(formatter)
-        logger.addHandler(fh)
-    else:
-        logger.addHandler(logging.NullHandler())
+    log_dir = data_folder / "logs"
+    log_file = log_dir / "python.log"
+    if not Path.exists(log_dir):
+        Path.mkdir(log_dir)
+    fh = logging.handlers.TimedRotatingFileHandler(log_file, when="midnight", backupCount=2)
+    formatter = logging.Formatter("{asctime} | {name:<20} | {levelname:<8} - {message}", style="{")
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
     return logger
 
 
@@ -69,11 +66,16 @@ def celery_init_app(app: Flask) -> Celery:
 
 def create_app(testing: bool = False) -> Flask:
     app = Flask(__name__)
-    setup_logger(testing)
     if not testing:
+        data_dir = AppConfig.data_dir
         app.config.from_object(AppConfig)
     else:
+        data_dir = TestConfig.data_dir
+        AppConfig.data_dir = data_dir
         app.config.from_object(TestConfig)
+    if not Path.exists(data_dir):
+        Path.mkdir(data_dir)
+    setup_logger(data_folder=data_dir)
     app.register_error_handler(404, page_not_found)
     app.add_url_rule("/data/<path:filename>", endpoint="data", view_func=serve_data_file)
     app.add_url_rule(

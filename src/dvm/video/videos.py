@@ -10,7 +10,7 @@ import flask
 import numpy as np
 from werkzeug.wrappers.response import Response
 
-from dvm.app_config import data_dir
+from dvm.app_config import AppConfig
 from dvm.db_model import Drone, Project, Video, db
 from dvm.drone import plot_log_data
 from dvm.drone.drone_log_data import drone_log
@@ -79,7 +79,7 @@ def video(video_id: int) -> Response:
     project = Project.query.get_or_404(video.project_id)
     drone = Drone.query.get_or_404(project.drone_id)
     fov.set_camera_params(*drone.calibration)
-    log_file = data_dir.joinpath(project.log_file)
+    log_file = AppConfig.data_dir.joinpath(project.log_file)
     drone_log.get_log_data(log_file)
     drone_log.set_video_data(
         video.duration,

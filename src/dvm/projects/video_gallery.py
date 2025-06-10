@@ -14,7 +14,7 @@ from celery import shared_task
 from werkzeug.wrappers.response import Response
 
 import dvm
-from dvm.app_config import data_dir, get_random_filename
+from dvm.app_config import AppConfig, get_random_filename
 from dvm.db_model import Project, Task, Video, db
 from dvm.helper_functions import get_all_annotations, save_annotations_csv
 
@@ -27,12 +27,12 @@ def upload(project_id: int) -> tuple[Response, int] | Response:
     if flask.request.method == "POST":
         for key, file_obj in flask.request.files.items():
             if key.startswith("file"):
-                video_file = data_dir / get_random_filename(file_obj.filename.rsplit(".", 1)[0] + ".mp4")
+                video_file = AppConfig.data_dir / get_random_filename(file_obj.filename.rsplit(".", 1)[0] + ".mp4")
                 video_mime_type = re.compile("video/*")
                 if video_mime_type.match(file_obj.mimetype):
                     temp_filename = get_random_filename(file_obj.filename)
                     logger.debug(f"Uploading file: {video_file}")
-                    temp_file = data_dir / temp_filename
+                    temp_file = AppConfig.data_dir / temp_filename
                     file_obj.save(temp_file)
                     logger.debug(f"Upload done for file: {video_file}")
                     logger.debug(f"Calling celery to convert file: {temp_filename} and save as {video_file}")
@@ -131,7 +131,7 @@ def concat_videos_task(self: CeleryTask, videos: list[str], output_file_str: str
     video_str = ""
     for video in videos:
         video_str += "file " + video + "\n"
-    concat_file = data_dir / "concat.txt"
+    concat_file = AppConfig.data_dir / "concat.txt"
     with concat_file.open("w") as file:
         file.write(video_str)
     cmd = [
@@ -227,7 +227,7 @@ def do_concat_videos(project_id: int) -> tuple[Response, int]:
     videos = [Video.query.get_or_404(i) for i in video_ids]
     video_files = [v.file for v in videos]
     logger.debug("Calling celery task for concat")
-    video_file = data_dir / get_random_filename(output_file_name)
+    video_file = AppConfig.data_dir / get_random_filename(output_file_name)
     video = Video(
         file=str(video_file),
         name=output_file_name,
@@ -248,7 +248,7 @@ def download(video_id: int) -> Response:
     video = Video.query.get_or_404(video_id)
     project = Project.query.get_or_404(video.project_id)
     annotations = get_all_annotations(project, dvm.__version__, video)
-    filename = data_dir / "annotations.csv"
+    filename = AppConfig.data_dir / "annotations.csv"
     save_annotations_csv(annotations, filename)
     logger.debug("Sending annotations.csv to user.")
     annotated_filename = f"annotations - {project.name} - {video.name}.csv"

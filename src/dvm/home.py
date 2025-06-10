@@ -8,7 +8,7 @@ import flask
 from werkzeug.wrappers.response import Response
 
 import dvm
-from dvm.app_config import data_dir
+from dvm.app_config import AppConfig
 from dvm.db_model import Drone, Project
 
 logger = logging.getLogger("app." + __name__)
@@ -32,9 +32,9 @@ def version() -> Response:
 @home_view.route("/download_logs")  # type: ignore[misc]
 def download_logs() -> Response:
     logger.debug("Downloading logs")
-    log_dir = data_dir / "logs"
+    log_dir = AppConfig.data_dir / "logs"
     file_paths = get_all_file_paths(log_dir)
-    log_zip = data_dir / "logs.zip"
+    log_zip = AppConfig.data_dir / "logs.zip"
     with ZipFile(log_zip, "w") as zip_file:
         for file in file_paths:
             zip_file.write(file)
