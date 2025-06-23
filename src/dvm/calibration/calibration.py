@@ -7,6 +7,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from dvm.app_config import AppConfig
 from dvm.calibration.corner_detector import ChessBoardCornerDetector
 
 logger = logging.getLogger("app." + __name__)
@@ -24,7 +25,7 @@ class CalibrateCamera:
             img,
             debug=True,
             path_to_image=Path(filename),
-            path_to_output_folder=Path("/app_data/calibrationtemp"),
+            path_to_output_folder=AppConfig.data_dir.joinpath("calibrationtemp"),
         )
         obj_points = []
         img_points = []

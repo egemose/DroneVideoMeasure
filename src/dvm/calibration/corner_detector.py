@@ -59,6 +59,7 @@ class ChessBoardCornerDetector:
             ic(e)
         if debug and path_to_image is not None and path_to_output_folder is not None:
             # Make output folders
+            path_to_output_folder.mkdir(parents=False, exist_ok=True)
             path_to_output_response_folder = path_to_output_folder.joinpath("1_response")
             path_to_output_response_folder.mkdir(parents=False, exist_ok=True)
             path_to_output_response_neighbourhood_folder = path_to_output_folder.joinpath(
