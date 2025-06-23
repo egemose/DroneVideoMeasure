@@ -1,0 +1,39 @@
+name: Python tests
+
+on:
+  push:
+    paths:
+      - src/**
+      - tests/**
+      - .github/workflows/tests.yml
+      - pyproject.toml
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    runs-on: ${{ matrix.platform }}
+
+    env:
+      FORCE_COLOR: true
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install .[test]
+
+    - name: Test with pytest
+      run: |
+        pytest
