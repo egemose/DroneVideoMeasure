@@ -13,6 +13,7 @@ env:
 jobs:
     build-and-push-image:
         name: Build docker image and publish to ghcr.io
+        environment: publish container
         runs-on: ubuntu-latest
 
         permissions:
