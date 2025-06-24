@@ -12,6 +12,10 @@ Thank you for your interest in contributing to *DVM* and we welcome all pull req
 
 *DVM* is build as a `Flask <https://flask.palletsprojects.com/en/stable/>`_ application as the python backend and uses `Node.js <https://nodejs.org/en>`_ to handle JavaScript dependencies. The python dependencies are listed in *requirements.txt* and Node.js dependencies in *package.json*.
 
+.. note::
+    Python version 3.12 or newer is required.
+
+
 Pre-commit
 ----------
 
