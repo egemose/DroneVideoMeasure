@@ -71,4 +71,4 @@ html_theme_options = {
         },
     ],
 }
-html_title = "DroneVideoMeasure"
+html_title = "DVM"
