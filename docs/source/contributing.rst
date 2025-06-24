@@ -104,6 +104,51 @@ To generate this documentation, in the *docs* folder run:
 
 This will generate html documentation in the *docs/build/html* folder.
 
+.. _manual_test:
+
+Manual Test
+-------------------
+
+To run a manual test we will use the test dataset from `zenodo <https://doi.org/10.5281/zenodo.3604005>`_. Then follow these steps to test must aspects of the program:
+
+#. Make sure DVM is started from a clean build.
+    * Delete all DVM containers (:code:`docker container prune`)
+    * Delete all volumes (:code:`docker volume prune --all`)
+    * Run DVM in dev mode (:code:`./dvm.sh start --dev`)
+#. Open DVM at `http://localhost:5000 <http://localhost:5000>`_.
+#. Create a new Drone.
+    * Give the drone a name and a description of camera settings.
+    * Upload calibration video.
+    * When calibration is done check calibration by clicking on view calibration.
+#. Create a new Project
+    * Give the Project a name and a description.
+    * Choose the created drone.
+    * upload Drone log file.
+#. Upload Video to Project.
+    * Open the project and upload the *DJI_0013.MOV* file.
+    * When conversion is complete check that video thumbnail is shown.
+#. Test video concatenating **Optional**.
+    * Upload another *DJI_0013.MOV* file.
+    * Concatenate the 2 videos and give the output video a name.
+#. Open a Video and make an Annotation.
+    * Open a video and choose a frame to make a annotation.
+    * Make a point annotation and verify it shows in *Doodles*.
+    * make a line annotation and verify it shows in *Doodles*.
+    * Add a new annotation group and give it a name.
+    * Make a point annotation and verify it shows in the new annotation group.
+    * make a line annotation and verify it shows in the new annotation group.
+#. Test Misc.
+    * Make sure the video plays and controls work.
+    * Add artificial horizon and world corners and check if it matches the video.
+    * Show plot of drone log and verify video position.
+    * Download annotations from video.
+    * Download annotations from project.
+    * Download logs.
+#. Test Clean Up.
+    * Remove Project.
+    * Remove Drone.
+    * verify files have been removed.
+
 Creating Github Release
 -----------------------
 
@@ -114,7 +159,10 @@ When a new release is desired from the commits to the master branch, the followi
 * Push the changes to github: :code:`git push origin` (where origin is the name of github upstream).
 * push the tag to github: :code:`git push origin tag vXX.XX.XX`.
 
-This will start the github actions to create a new release and publish the code to PyPI together with generating the new documentation.
+This will start the github actions to create a new release and publish the container to ghcr.io. The workflow needs to be approved by either Henrik Dyrberg Egemose or Henrik Skov Midtiby.
+
+.. note::
+    Before the publishing can be approved a manual test of the program have to be run. See :ref:`manual_test`.
 
 Changing database version
 -------------------------
