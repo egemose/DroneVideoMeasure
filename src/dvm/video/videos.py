@@ -162,7 +162,6 @@ def save_start_time(video_id: int) -> Response:
         match_hour = int(match.group(1))
         match_minute = int(match.group(2))
         match_second = int(match.group(3))
-        # TODO: Handle case with less than 6 digits after the period.
         match_microseconds = int(match.group(4) if match.group(4) else 0)
         if len(match.group(4)) < 6:
             logger.debug(f"len(match.group(4)): {len(match.group(4))}")

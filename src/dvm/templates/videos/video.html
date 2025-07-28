@@ -21,6 +21,18 @@ li.jstree-node > ul.jstree-children > li.jstree-node > i.jstree-ocl {
 style="margin-bottom: 0px; height: 100vh;"
 {% endblock body_attribs %}
 
+{% block navbar_end %}
+<div class="btn-group ml-4" role="group" aria-label="First group">
+  <button class="btn btn-outline-secondary" type="button" onclick="on_page_zoom_out()"> <i class="fa fa-search-minus" aria-hidden="true"></i>
+</button>
+  <button class="btn btn-outline-secondary" type="button" onclick="on_page_zoom_reset()"> <i class="fa fa-window-restore" aria-hidden="true"></i>
+
+</button>
+  <button class="btn btn-outline-secondary" type="button" onclick="on_page_zoom_in()"> <i class="fa fa-search-plus" aria-hidden="true"></i>
+</button>
+</div>
+{% endblock %}
+
 {% block before_content %}
 <div class="container-fluid h-100" style="padding-bottom: 60px;">
   {% with messages = get_flashed_messages(with_categories=True) %}
@@ -87,6 +99,30 @@ style="margin-bottom: 0px; height: 100vh;"
 <script src={{ url_for( 'static', filename='fabric.adapted.js' ) }}></script>
 <script src={{ url_for( 'static', filename='VideoFrame.min.js' ) }}></script>
 <script src={{ url_for( 'static', filename='video_annotator.js' ) }}></script>
+<script type="text/javascript">
+var page_zoom = 1.0;
+function on_page_zoom_out() {
+  page_zoom = page_zoom - 0.1;
+  if (page_zoom < 0.5) {
+    page_zoom = 0.5;
+  }
+  set_page_zoom();
+};
+function on_page_zoom_in() {
+  page_zoom = page_zoom + 0.1;
+  if (page_zoom > 1.5) {
+    page_zoom = 1.5;
+  }
+  set_page_zoom();
+};
+function on_page_zoom_reset() {
+  page_zoom = 1;
+  set_page_zoom();
+};
+function set_page_zoom() {
+  document.body.style.zoom = page_zoom
+};
+</script>
 <script type="text/javascript">
   var VideoAnnotator = new video_annotator("{{ url_for('static', filename='background.jpg') }}", "toolbar", {{ video_width }}, {{ video_height }}, {{ fps }}, {{ num_frames }});
   if ("{{ json_data }}" != "None") {
