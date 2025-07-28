@@ -298,7 +298,7 @@ style="margin-bottom: 0px; height: 100vh;"
       VideoAnnotator.save('{{ url_for('videos.save_fabric_json', video_id=video.id) }}');
       });
   };
-  markings_modified(JSON.stringify(VideoAnnotator.overlay.fabricCanvas()));
+  //markings_modified(JSON.stringify(VideoAnnotator.overlay.fabricCanvas()));
 </script>
    {% endblock %}
 

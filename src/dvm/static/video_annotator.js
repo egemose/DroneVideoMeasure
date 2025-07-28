@@ -432,7 +432,7 @@ class video_annotator {
     this.overlay.fabricCanvas().loadFromJSON(json_data);
     this.overlay.fabricCanvas().add(this.fabric_video);
     this.overlay.fabricCanvas().sendToBack(this.fabric_video);
-    this.updateModifications(true);
+    this.updateModifications(true, false);
   }
 
   navigate(save_url, to_url) {
