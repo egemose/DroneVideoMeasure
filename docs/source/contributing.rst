@@ -115,6 +115,7 @@ To run a manual test we will use the test dataset from `zenodo <https://doi.org/
     * Delete all DVM containers (:code:`docker container prune`)
     * Delete all volumes (:code:`docker volume prune --all`)
     * Run DVM in dev mode (:code:`./dvm.sh start --dev`)
+        * Non dev mode can also be used if changes are made to how dvm runs.
 #. Open DVM at `http://localhost:5000 <http://localhost:5000>`_.
 #. Create a new Drone.
     * Give the drone a name and a description of camera settings.
