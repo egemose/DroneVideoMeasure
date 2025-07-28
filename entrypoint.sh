@@ -27,5 +27,5 @@ run "flask --app dvm db upgrade --directory /app/src/dvm/migrations"
 if [[ $dev_mode = true ]]; then
   run "flask --app dvm run --host 0.0.0.0 --debug"
 else
-  run "gunicorn -b 0.0.0.0:5000 -k gevent -t 10000 'dvm:app'"
+  run "gunicorn -b 0.0.0.0:5000 -k gevent -t 10000 'dvm:create_app()'"
 fi
