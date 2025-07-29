@@ -14,9 +14,13 @@ logger = logging.getLogger("app." + __name__)
 
 
 class CalibrateCamera:
-    def __init__(self) -> None:
+    def __init__(self, temp_output_folder: Path | None = None) -> None:
         self.min_percentage_coverage = 15
         self.detector = ChessBoardCornerDetector()
+        if temp_output_folder is None:
+            self.temp_output_folder = AppConfig.data_dir.joinpath("calibrationtemp")
+        else:
+            self.temp_output_folder = temp_output_folder
 
     def detect_calibration_pattern_in_image(
         self, img: np.ndarray, filename: Path
@@ -25,7 +29,7 @@ class CalibrateCamera:
             img,
             debug=True,
             path_to_image=Path(filename),
-            path_to_output_folder=AppConfig.data_dir.joinpath("calibrationtemp"),
+            path_to_output_folder=self.temp_output_folder,
         )
         obj_points = []
         img_points = []

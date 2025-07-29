@@ -77,7 +77,10 @@ def get_edit_drone_form() -> EditDroneForm:
 @drones_view.route("/drones/<drone_id>/calibrate", methods=["GET", "POST"])  # type: ignore[misc]
 def add_calibration(drone_id: int) -> Response:
     logger.debug("add_calibration")
-    calibration_folder = AppConfig.data_dir / "calibration"
+    calibration_folder = AppConfig.data_dir / f"calibration/{drone_id}"
+    if not Path.exists(calibration_folder.parent):
+        logger.debug("Creating parent calibration folder")
+        Path.mkdir(calibration_folder.parent)
     if not Path.exists(calibration_folder):
         logger.debug("Creating calibration folder")
         Path.mkdir(calibration_folder)
@@ -116,31 +119,33 @@ def do_calibration(drone_id: int) -> str:
 @shared_task(bind=True)  # type: ignore[misc]
 def calibration_task(self: CeleryTask, drone_id: int) -> None:
     self.update_state(state="PROCESSING")
-    in_folder = AppConfig.data_dir / "calibration"
-    in_folder_temp = AppConfig.data_dir / "calibrationtemp"
+    in_folder = AppConfig.data_dir / f"calibration/{drone_id}"
+    in_folder_temp = AppConfig.data_dir / f"calibrationtemp/{drone_id}"
+    if not Path.exists(in_folder_temp.parent):
+        Path.mkdir(in_folder_temp.parent)
     with contextlib.suppress(Exception):
         shutil.rmtree(in_folder_temp)
     Path.mkdir(in_folder_temp)
-    calibrate_cam = CalibrateCamera()
+    calibrate_cam = CalibrateCamera(in_folder_temp)
     try:
         result = calibrate_cam(in_folder)
         logger.debug(f"calibration result {result}")
         if result == -1:
             shutil.rmtree(in_folder)
-            Path.mkdir(in_folder)
+            shutil.rmtree(in_folder_temp)
             raise Exception("Error: Could not find any checkerboards in the images/video. Try with a new video.")
         if not result:
             shutil.rmtree(in_folder)
-            Path.mkdir(in_folder)
+            shutil.rmtree(in_folder_temp)
             raise Exception("Error: No video or images found. Please try again.")
         drone_db = db.get_or_404(Drone, drone_id)
         drone_db.calibration = result
         db.session.commit()
         shutil.rmtree(in_folder)
-        Path.mkdir(in_folder)
+        shutil.rmtree(in_folder_temp)
     except AttributeError as exc:
         shutil.rmtree(in_folder)
-        Path.mkdir(in_folder)
+        shutil.rmtree(in_folder_temp)
         raise Exception("Error: Loading video or images failed. Please try again.") from exc
 
 
