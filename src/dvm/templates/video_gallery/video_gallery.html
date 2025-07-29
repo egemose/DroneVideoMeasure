@@ -36,7 +36,7 @@
       <div class="card-img-overlay d-flex align-items-end justify-content-end" style="top: 61px">
         <div class="btn-group">
           {% if video.task or video.task_error %}
-          <button type="button" data-toggle="tooltip" title="Open video" class="btn btn-primary disabled"><i class="far fa-folder-open"></i> Open</button>
+          <button type="button" data-toggle="tooltip" title="Open video" class="btn btn-primary disabled" disabled onclick="window.location.href='{{ url_for('videos.video', video_id=video.id) }}'"><i class="far fa-folder-open"></i> Open</button>
           {% else %}
           <button type="button" data-toggle="tooltip" title="Open video" class="btn btn-primary" onclick="window.location.href='{{ url_for('videos.video', video_id=video.id) }}'"><i class="far fa-folder-open"></i> Open</button>
           {% endif %}
@@ -149,6 +149,7 @@
           var video_url = $(status_element).data('video-url');
           $(status_element).parents('.card').find('img').attr('src', image_url);
           $(status_element).parents('.card-header').wrap('<a href="' + video_url + '"></a>"');
+          $(status_element).parents('.card').find('.disabled').prop('disabled', false);
           $(status_element).parents('.card').find('.disabled').removeClass('disabled');
           $(status_element).remove();
         } else {
