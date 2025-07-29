@@ -39,6 +39,7 @@
             <a data-toggle="tooltip" title="View camera calibration details" class="dropdown-item" href="{{ url_for('drones.view_calibration', drone_id=drone.id) }}"><i class="fas fa-eye"></i> View Camera Calibration</a>
             <a data-toggle="tooltip" title="Redo the camera calibration with new data" class="dropdown-item" href="{{ url_for('drones.add_calibration', drone_id=drone.id) }}"><i class="fas fa-camera"></i> Redo Camera Calibration</a>
             {% else %}
+            <a style="display: none;" data-toggle="tooltip" title="View camera calibration details" class="dropdown-item" href="{{ url_for('drones.view_calibration', drone_id=drone.id) }}"><i class="fas fa-eye"></i> View Camera Calibration</a>
             <a data-toggle="tooltip" title="Redo the camera calibration with new data" class="dropdown-item" href="{{ url_for('drones.add_calibration', drone_id=drone.id) }}"><i class="fas fa-camera"></i> Camera Calibration</a>
             {% endif %}
             <div class="dropdown-divider"></div>
@@ -115,6 +116,7 @@
     $.getJSON(status_url, function(data) {
       if (data['state'] != 'PENDING' && data['state'] != 'PROCESSING') {
         if (data['state'] == 'SUCCESS') {
+          $(status_element).parent().parent().parent().children('.card-body').children('.btn-group').children('.dropdown-menu').children().first().css({'display': ''})
           $(status_element).remove();
         } else {
           var error_element = '<span style="color: crimson;" class="ml-auto" data-toggle="tooltip" title="' + data['status'] + '"><i class="fas fa-exclamation-triangle fa-lg"></i></span>';
