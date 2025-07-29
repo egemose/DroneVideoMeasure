@@ -11,7 +11,7 @@ class NewProjectForm(flask_wtf.FlaskForm):  # type: ignore[misc]
         "Description", render_kw={"placeholder": "Optional short project description"}
     )
     drone = wtforms.fields.SelectField("Drone", coerce=int)
-    log_file = FileField("Drone log")
+    log_file = FileField("Drone log in CSV format")
     submit = wtforms.fields.SubmitField("Add Project")
 
 

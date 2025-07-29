@@ -10,6 +10,16 @@
 li.jstree-node > ul.jstree-children > li.jstree-node > i.jstree-ocl {
   width: 0px !important;
 }
+.btn-secondary:not(:disabled):not(.disabled).active, .btn-secondary:not(:disabled):not(.disabled):active, .show > .btn-secondary.dropdown-toggle {
+	color: #fff;
+	background-color: #3798e7;
+	border-color: #4c718f;
+}
+.btn-secondary {
+	color: #fff;
+	background-color: #4c718f;
+	border-color: #4c718f;
+}
 </style>
 <script type="text/javascript">
   Bokeh.set_log_level("info");
@@ -26,7 +36,6 @@ style="margin-bottom: 0px; height: 100vh;"
   <button class="btn btn-outline-secondary" type="button" onclick="on_page_zoom_out()"> <i class="fa fa-search-minus" aria-hidden="true"></i>
 </button>
   <button class="btn btn-outline-secondary" type="button" onclick="on_page_zoom_reset()"> <i class="fa fa-window-restore" aria-hidden="true"></i>
-
 </button>
   <button class="btn btn-outline-secondary" type="button" onclick="on_page_zoom_in()"> <i class="fa fa-search-plus" aria-hidden="true"></i>
 </button>
