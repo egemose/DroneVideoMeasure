@@ -36,7 +36,7 @@
       <div class="card-img-overlay d-flex align-items-end justify-content-end" style="top: 61px">
         <div class="btn-group">
           {% if video.task or video.task_error %}
-          <button type="button" data-toggle="tooltip" title="Open video" class="btn btn-primary disabled" disabled onclick="window.location.href='{{ url_for('videos.video', video_id=video.id) }}'"><i class="far fa-folder-open"></i> Open</button>
+          <button disabled type="button" data-toggle="tooltip" title="Open video" class="btn btn-primary disabled" onclick="window.location.href='{{ url_for('videos.video', video_id=video.id) }}'"><i class="far fa-folder-open"></i> Open</button>
           {% else %}
           <button type="button" data-toggle="tooltip" title="Open video" class="btn btn-primary" onclick="window.location.href='{{ url_for('videos.video', video_id=video.id) }}'"><i class="far fa-folder-open"></i> Open</button>
           {% endif %}

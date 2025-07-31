@@ -13,7 +13,7 @@ services:
   worker:
     build: .
     pull_policy: build
-    command: "watchfiles --filter python 'celery -A dvm.make_celery worker --loglevel=WARNING -c 1' /app/src/dvm"
+    command: "watchfiles --filter python 'celery -A dvm.make_celery worker --loglevel=WARNING' /app/src/dvm"
     volumes:
       - type: bind
         source: ./src/dvm

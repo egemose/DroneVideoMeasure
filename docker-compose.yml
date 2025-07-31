@@ -16,7 +16,7 @@ services:
   worker:
     image: ghcr.io/egemose/dronevideomeasure:latest
     container_name: dvm_worker
-    command: celery -A dvm.make_celery worker --loglevel=WARNING -c 1
+    command: celery -A dvm.make_celery worker --loglevel=WARNING
     volumes:
       - type: volume
         source: dvm_app_media
