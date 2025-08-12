@@ -52,7 +52,7 @@
     <footer class="footer">
       <div class="container">
         <span class="text-muted">
-          <a class="text-left" data-toggle="tooltip" title="See which version you are running" href="{{ url_for('home.version') }}" >Version</a>
+          <a class="text-left" data-toggle="tooltip" title="See which version you are running" href="{{ url_for('home.version') }}" >Version {{ config.version }}</a>
            | 2019 &copy; Henrik Dyrberg Egemose
           <a class="float-right" data-toggle="tooltip" title="Download the log files for debug use" href="{{ url_for('home.download_logs') }}" >Download logs</a>
         </span>

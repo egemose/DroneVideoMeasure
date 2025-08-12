@@ -64,6 +64,7 @@ def celery_init_app(app: Flask) -> Celery:
 
 def create_app(testing: bool = False) -> Flask:
     app = Flask(__name__)
+    app.config.update({"version": __version__})
     if not testing:
         data_dir = AppConfig.data_dir
         app.config.from_object(AppConfig)
