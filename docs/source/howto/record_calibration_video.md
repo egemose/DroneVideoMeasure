@@ -10,6 +10,7 @@ The chessboard calibration pattern can be downloaded from
 [calib.io](https://calib.io/pages/camera-calibration-pattern-generator)
 
 The next step is to record a video of the calibration pattern, in which the camera orientation relative to the pattern is varied. See the example images below. It is not needed to have the entire calibration pattern be visible in each part of the video.
+For best results make the checkerboard fill as much of the video as possible.
 
 ```{Note}
 It is important that the camera settings i.e. resolution, zoom etc. used to make the calibration video is the same as the videos for annotation.
