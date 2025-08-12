@@ -21,11 +21,19 @@
       </div>
       {{ dropzone.create(action=url_for('drones.add_calibration', drone_id=drone)) }}
       {{ dropzone.config() }}
-      <div class="row justify-content-end">
-        <div class="col">
-          <button type="button" class="btn btn-primary float-right" id="calibrate_btn" onclick="calibrate()"><i class="fas fa-camera"></i> Calibrate Camera</button>
+      <form class="form" action="{{ url_for('drones.do_calibration', drone_id=drone) }}" method="post">
+        <div class="row justify-content-center">
+          <div class="form-group">
+            <label id="calibrate_coverage_label" for="calibrate_coverage">Minimum calibration coverage: 15% &nbsp; </label><i class="far fa-circle-question" data-toggle="tooltip" data-placement="" title="Lower coverage may include smaller checkerboards, but at the cost of quality of the calibration"></i>
+            <input type="range" class="form-control" id="calibrate_coverage" name="coverage" min="5" max="50" value="15" oninput="$('#calibrate_coverage_label').html('Minimum calibration coverage: ' + $(this).val() + '% ')">
+          </div>
+          <div class="form-group mx-sm-3">
+            <label for="calibration_images">Number of images to extract from video &nbsp; </label><i class="far fa-circle-question" data-toggle="tooltip" data-placement="" title="Number of images to extract from calibration video. A higher number is better, but takes more time."></i>
+            <input type="number" class="form-control" id="calibration_images" name="n_images" min="1" step="1" value="30">
+          </div>
         </div>
-      </div>
+        <button type="submit" class="btn btn-primary float-right" id="calibrate_btn"><i class="fas fa-camera"></i> Calibrate Camera</button>
+      </form>
     </div>
     <div class="container flashed-messages">
       <div class="row">
@@ -34,14 +42,3 @@
       </div>
     </div>
 {%- endblock %}
-{% block scripts %}
-{{ super() }}
-<script type="text/javascript">
-function calibrate() {
-  $.post('{{ url_for("drones.do_calibration", drone_id=drone) }}', {
-  }, function(data) {
-    window.location.href = '{{ url_for("drones.drones") }}';
-  });
-};
-</script>
-{% endblock %}

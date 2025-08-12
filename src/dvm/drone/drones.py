@@ -102,22 +102,27 @@ def add_calibration(drone_id: int) -> Response:
     return flask.render_template("drones/calibration.html", drone=drone_id)
 
 
-@drones_view.route("/dones/<drone_id>/do_calibration", methods=["POST"])  # type: ignore[misc]
-def do_calibration(drone_id: int) -> str:
+@drones_view.route("/drones/<drone_id>/do_calibration", methods=["POST"])  # type: ignore[misc]
+def do_calibration(drone_id: int) -> Response:
     logger.debug(f"do_calibration is called for drone {drone_id}")
     drone = db.get_or_404(Drone, drone_id)
     drone.calibration = None
     drone.task_error = None
     db.session.commit()
-    task = calibration_task.apply_async(args=(drone.id,))
+    coverage = int(flask.request.form["coverage"])
+    n_images = int(flask.request.form["n_images"])
+    logger.debug(
+        f"Starting calibration of drone {drone.name} with {coverage}% coverage and trying to extract {n_images} images"
+    )
+    task = calibration_task.apply_async(args=(drone.id, coverage, n_images))
     task_db = Task(task_id=task.id, function="calibration_task", drone_id=drone.id)
     db.session.add(task_db)
     db.session.commit()
-    return ""
+    return flask.redirect(flask.url_for("drones.drones"))
 
 
 @shared_task(bind=True)  # type: ignore[misc]
-def calibration_task(self: CeleryTask, drone_id: int) -> None:
+def calibration_task(self: CeleryTask, drone_id: int, coverage: int, n_images: int) -> None:
     self.update_state(state="PROCESSING")
     in_folder = AppConfig.data_dir / f"calibration/{drone_id}"
     in_folder_temp = AppConfig.data_dir / f"calibrationtemp/{drone_id}"
@@ -126,7 +131,7 @@ def calibration_task(self: CeleryTask, drone_id: int) -> None:
     with contextlib.suppress(Exception):
         shutil.rmtree(in_folder_temp)
     Path.mkdir(in_folder_temp)
-    calibrate_cam = CalibrateCamera(in_folder_temp)
+    calibrate_cam = CalibrateCamera(in_folder_temp, coverage=coverage, n_images=n_images)
     try:
         result = calibrate_cam(in_folder)
         logger.debug(f"calibration result {result}")

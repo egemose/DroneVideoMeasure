@@ -14,8 +14,11 @@ logger = logging.getLogger("app." + __name__)
 
 
 class CalibrateCamera:
-    def __init__(self, temp_output_folder: Path | None = None) -> None:
-        self.min_percentage_coverage = 15
+    def __init__(
+        self, temp_output_folder: Path | None = None, coverage: int | None = None, n_images: int | None = None
+    ) -> None:
+        self.min_percentage_coverage = coverage if coverage is not None else 15
+        self.n_images = n_images if n_images is not None else 30
         self.detector = ChessBoardCornerDetector()
         if temp_output_folder is None:
             self.temp_output_folder = AppConfig.data_dir.joinpath("calibrationtemp")
@@ -53,7 +56,7 @@ class CalibrateCamera:
             image_size = (img.shape[1], img.shape[0])
             try:
                 obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(img, filename=image_file)
-                if coverage > self.min_percentage_coverage:
+                if coverage >= self.min_percentage_coverage:
                     obj_points_list.append(obj_points)
                     img_points_list.append(img_points)
                 else:
@@ -80,9 +83,8 @@ class CalibrateCamera:
         for video_file in video_files:
             cap = cv2.VideoCapture(str(video_file))
             num_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-            num_images = 30
             logger.debug(f"Number of frames in video: {num_frames}")
-            logger.debug(f"Number of images to extract: {num_images}")
+            logger.debug(f"Number of images to extract: {self.n_images}")
             count = 0
             while cap.isOpened():
                 # Set next frame to read
@@ -97,16 +99,16 @@ class CalibrateCamera:
                     obj_points, img_points, coverage = self.detect_calibration_pattern_in_image(
                         frame, filename=Path(f"frame_from_video_{count}.png")
                     )
-                    if coverage > self.min_percentage_coverage:
+                    if coverage >= self.min_percentage_coverage:
                         logger.debug(f"Calibration pattern coverage is fine ({coverage})")
                         obj_points_list.append(obj_points)
                         img_points_list.append(img_points)
                     else:
                         logger.debug(f"Calibration pattern coverage too low in image ({coverage})")
-                        num_images = num_images + 1 if num_images < 30 else 30
+                        # num_images = num_images + 1 if num_images < 30 else 30
 
                 # Calculate next frame to extract
-                count += int(num_frames / num_images)
+                count += int(num_frames / self.n_images)
                 if count > num_frames:
                     break
             cap.release()

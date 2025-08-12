@@ -61,9 +61,8 @@ def test_do_calibration(client: FlaskClient, database: SQLAlchemy, monkeypatch: 
 
     with monkeypatch.context() as mp:
         mp.setattr(calibration_task, "apply_async", mock_apply_async)
-        response = client.post("/dones/1/do_calibration")
-    assert response.status_code == 200
-    assert response.data == b""
+        response = client.post("/drones/1/do_calibration", data={"coverage": 15, "n_images": 30})
+    assert response.status_code == 302
     task = Task.query.all()[0]
     assert task.id == 1
 
