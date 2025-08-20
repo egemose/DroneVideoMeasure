@@ -182,16 +182,25 @@ def task_status(task_id: int) -> Response:
 @drones_view.route("/drones/<drone_id>/view_calibration")  # type: ignore[misc]
 def view_calibration(drone_id: int) -> Response:
     drone = db.get_or_404(Drone, drone_id)
-    try:
-        # From 2025-03-31 Five values are stored in
-        # drone.calibration, earlier it was only four.
-        # This try catch block is to support both cases.
-        mtx, dist, fov_x, fov_y, n_images = drone.calibration
-    except ValueError:
+    # From 2025-08-20 Six values are stored in drone.calibration.
+    # From 2025-03-31 Five values are stored in drone.calibration.
+    # earlier it was only four. the if block is to support all variations.
+    if len(drone.calibration) == 4:
         mtx, dist, fov_x, fov_y = drone.calibration
         n_images = -1
+        stds = None
+    elif len(drone.calibration) == 5:
+        mtx, dist, fov_x, fov_y, n_images = drone.calibration
+        stds = None
+    elif len(drone.calibration) == 6:
+        mtx, dist, fov_x, fov_y, n_images, stds = drone.calibration
+    else:
+        logger.warning(f"Error in retrieved drone calibration for drone {drone_id}")
+        raise IndexError("Drone Calibration Error. Parameter mismatch.")
 
     logger.debug("Render view_calibration")
+    if stds is not None:
+        stds = np.round(stds, 5)
     return flask.render_template(
         "drones/view_calibration.html",
         mtx=np.around(mtx, 1),
@@ -199,6 +208,7 @@ def view_calibration(drone_id: int) -> Response:
         fov_x=np.round(fov_x, 2),
         fov_y=np.round(fov_y, 2),
         n_images=n_images,
+        stds=stds,
     )
 
 

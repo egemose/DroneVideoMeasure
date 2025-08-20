@@ -22,17 +22,39 @@
           0 & 0 & 1
         \end{bmatrix}
         $$
+        {% if stds is not none %}
+        $$
+        \text{std. for } f_x = {{ stds[0][0] }} \\
+        \text{std. for } f_y = {{ stds[1][0] }} \\
+        \text{std. for } c_x = {{ stds[2][0] }} \\
+        \text{std. for } c_y = {{ stds[3][0] }} \\
+        $$
+        {% endif %}
         $$
         \text{distortion coefficients} =
         \begin{bmatrix}
           k_1={{ dist[0, 0] }} & k_2={{ dist[0, 1] }} & p_1={{ dist[0, 2] }} & p_2={{ dist[0, 3] }} & k_3={{ dist[0, 4] }}\\
         \end{bmatrix}
         $$
+        {% if stds is not none %}
+        $$
+        \text{std. for distortion coefficients} =
+        \begin{bmatrix}
+          k_1={{ stds[4][0] }} & k_2={{ stds[5][0] }} & p_1={{ stds[6][0] }} & p_2={{ stds[7][0] }} & k_3={{ stds[8][0] }}\\
+        \end{bmatrix}
+        $$
+        {% endif %}
         $$
         \text{horizontal field of view} = {{ fov_x }}^{\circ}
+        {% if stds is not none %}
+        \\ \text{std. for horizontal field of view} = {{ stds[9][0] }}^{\circ}
+        {% endif %}
         $$
         $$
         \text{vertical field of view} = {{ fov_y }}^{\circ}
+        {% if stds is not none %}
+        \\ \text{std. for vertical field of view} = {{ stds[10][0] }}^{\circ}
+        {% endif %}
         $$
         $$
         \text{number of images used for calibration} = {{ n_images }}

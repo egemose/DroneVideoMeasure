@@ -48,7 +48,7 @@ class CalibrateCamera:
 
     def calibrate_camera_from_images(
         self, image_files: list[Path]
-    ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], int] | None:
+    ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], int, np.ndarray] | None:
         obj_points_list = []
         img_points_list = []
         for image_file in image_files:
@@ -67,17 +67,17 @@ class CalibrateCamera:
                 print("Something failed in calibrate_camera_from_images")
                 print(e)
         if obj_points_list:
-            n_images_used_for_calibration = len(obj_points_list)
-            logger.debug(f"Using {n_images_used_for_calibration} images to calibrate")
-            _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
-            return mtx, dist, image_size, n_images_used_for_calibration
+            mtx, dist, std_int, n_images_used_for_calibration = self.get_camera_calibration(
+                obj_points_list, img_points_list, image_size
+            )
+            return mtx, dist, image_size, n_images_used_for_calibration, std_int
         else:
             logger.debug("No usable images found")
             return None
 
     def calibrate_camera_from_video(
         self, video_files: list[Path]
-    ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], int] | None:
+    ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], int, np.ndarray] | None:
         obj_points_list = []
         img_points_list = []
         for video_file in video_files:
@@ -113,22 +113,40 @@ class CalibrateCamera:
                     break
             cap.release()
         if obj_points_list:
-            n_images_used_for_calibration = len(obj_points_list)
-            logger.debug(f"Using {n_images_used_for_calibration} images from video to calibrate")
-            _, mtx, dist, _, _ = cv2.calibrateCamera(obj_points_list, img_points_list, image_size, None, None)
-            return mtx, dist, image_size, n_images_used_for_calibration
+            mtx, dist, std_int, n_images_used_for_calibration = self.get_camera_calibration(
+                obj_points_list, img_points_list, image_size
+            )
+            return mtx, dist, image_size, n_images_used_for_calibration, std_int
         else:
             logger.debug("No usable images found in the video")
             return None
+
+    def get_camera_calibration(
+        self, obj_points_list: list[Any], img_points_list: list[Any], image_size: tuple[int, int]
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, int]:
+        n_images_used_for_calibration = len(obj_points_list)
+        logger.debug(f"Using {n_images_used_for_calibration} images from video to calibrate")
+        _, mtx, dist, _, _, std_int, _, _ = cv2.calibrateCameraExtended(
+            obj_points_list, img_points_list, image_size, None, None
+        )
+        return mtx, dist, std_int, n_images_used_for_calibration
 
     @staticmethod
     def calculate_camera_fov(mtx: np.ndarray, image_size: tuple[int, int]) -> tuple[float, float]:
         fov_x, fov_y, _, _, _ = cv2.calibrationMatrixValues(mtx, image_size, 1, 1)
         return fov_x, fov_y
 
+    def get_standard_deviations(self, std_int: np.ndarray, mtx: np.ndarray, image_size: tuple[int, int]) -> list[float]:
+        std_fov_x = abs(np.rad2deg(4 * image_size[0] / (4 * mtx[0, 0] ** 2 + image_size[0] ** 2) * std_int[0]))
+        std_fov_y = abs(np.rad2deg(4 * image_size[1] / (4 * mtx[1, 1] ** 2 + image_size[1] ** 2) * std_int[1]))
+        stds = list(std_int[0:9])
+        stds.append(std_fov_x)
+        stds.append(std_fov_y)
+        return stds
+
     def __call__(
         self, in_folder: Path, *args: tuple[Any, ...], **kwargs: dict[str, Any]
-    ) -> tuple[np.ndarray, np.ndarray, float, float, int] | int | None:
+    ) -> tuple[np.ndarray, np.ndarray, float, float, int, list[float]] | int | None:
         logger.debug("Calibrating camera")
         image_files: list[Path] = []
         for file_format in [
@@ -167,6 +185,7 @@ class CalibrateCamera:
         if res is None:
             return -1
         else:
-            mtx, dist, image_size, n_images = res
+            mtx, dist, image_size, n_images, std_int = res
             fov_x, fov_y = self.calculate_camera_fov(mtx, image_size)
-            return mtx, dist, fov_x, fov_y, n_images
+            stds = self.get_standard_deviations(std_int, mtx, image_size)
+            return mtx, dist, fov_x, fov_y, n_images, stds

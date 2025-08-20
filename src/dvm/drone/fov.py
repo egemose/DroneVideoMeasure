@@ -35,6 +35,7 @@ class Fov:
         horizontal_fov: float,
         vertical_fov: float,
         n_images: int | None = None,
+        stds: list[float] | None = None,
     ) -> None:
         logger.debug("Setting camera params")
         self.camera_matrix = camera_matrix
