@@ -152,6 +152,10 @@ def calibration_task(self: CeleryTask, drone_id: int, coverage: int, n_images: i
         shutil.rmtree(in_folder)
         shutil.rmtree(in_folder_temp)
         raise Exception("Error: Loading video or images failed. Please try again.") from exc
+    except Exception as exc:
+        shutil.rmtree(in_folder)
+        shutil.rmtree(in_folder_temp)
+        raise Exception("Error: An unexpected error occurred. Please try again.") from exc
 
 
 @drones_view.route("/drones/status/<task_id>")  # type: ignore[misc]
