@@ -18,10 +18,12 @@ class AppConfig:
     SECRET_KEY = secrets.token_hex(32)
     WTF_CSRF_SECRET_KEY = secrets.token_hex(32)
     OBSCURE_SALT = secrets.randbelow(9999999999)
-    DROPZONE_UPLOAD_MULTIPLE = True
+    DROPZONE_UPLOAD_MULTIPLE = False
     DROPZONE_MAX_FILE_SIZE = 100000
     DROPZONE_PARALLEL_UPLOADS = 1
     DROPZONE_TIMEOUT = 1800000
+    DROPZONE_ALLOWED_FILE_CUSTOM = True
+    DROPZONE_ALLOWED_FILE_TYPE = "image/*, video/*, .mov"
     CELERY = {
         "broker_url": "redis://redis:6379/0",
         "result_backend": "redis://redis:6379/0",
