@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import logging
 import random
 from pathlib import Path
@@ -40,6 +41,26 @@ def projects() -> str | Response:
     return flask.render_template("projects/projects.html", **arguments)
 
 
+def create_fake_drone_log(
+    filename: Path, height: float, lat: float, lon: float, yaw: float, pitch: float, roll: float
+) -> None:
+    with Path.open(filename, "w", newline="") as csv_file:
+        log_writer = csv.writer(csv_file)
+        header = [
+            "CUSTOM.isVideo",
+            "OSD.latitude",
+            "OSD.longitude",
+            "OSD.height [m]",
+            "GIMBAL.yaw",
+            "GIMBAL.pitch",
+            "GIMBAL.roll",
+            "CUSTOM.updateTime",
+        ]
+        log_writer.writerow(header)
+        data = ["Recording", lat, lon, height, yaw, pitch, roll, "2000/01/01 12:00:00.000"]
+        log_writer.writerow(data)
+
+
 def get_new_project_form() -> tuple[Response | None, NewProjectForm]:
     form = NewProjectForm()
     drones = Drone.query.all()
@@ -54,7 +75,23 @@ def get_new_project_form() -> tuple[Response | None, NewProjectForm]:
         else:
             logger.debug(f"Creating project with name {project_title}")
             log_file = None
-            if form.log_file.data:
+            if form.fixed_cam_checkbox.data:
+                log_error = None
+                drone_height = form.fixed_cam_drone_height.data
+                drone_lat = form.fixed_cam_drone_lat.data
+                drone_lon = form.fixed_cam_drone_lon.data
+                drone_yaw = form.fixed_cam_drone_yaw.data
+                drone_pitch = form.fixed_cam_drone_pitch.data
+                drone_roll = form.fixed_cam_drone_roll.data
+                log_filename = get_random_filename("fake_drone_log.csv")
+                log_file = AppConfig.data_dir.joinpath(log_filename)
+                create_fake_drone_log(log_file, drone_height, drone_lat, drone_lon, drone_yaw, drone_pitch, drone_roll)
+                success = drone_log.test_log(log_file)
+                if not success:
+                    remove_file(log_file)
+                    log_filename = None  # type: ignore[assignment]
+                    log_error = "Error creating the artificial drone log file. Please try again."
+            elif form.log_file.data:
                 log_error = None
                 log_filename = get_random_filename(form.log_file.data.filename)
                 log_file = AppConfig.data_dir.joinpath(log_filename)
@@ -62,10 +99,10 @@ def get_new_project_form() -> tuple[Response | None, NewProjectForm]:
                 success = drone_log.test_log(log_file)
                 if not success:
                     remove_file(log_file)
-                    log_filename = None  # type: ignore[assignment]
+                    log_filename = None
                     log_error = "Error interpreting the drone log file. Try and upload the log file again."
             else:
-                log_error = "No drone log file added. Please add a log file."
+                log_error = "No drone log file added. Please add a log file or use a fixed camera."
             project = Project(
                 name=project_title,
                 description=description,
@@ -98,7 +135,27 @@ def get_edit_project_form() -> EditProjectForm:
             project.name = project_title
             project.description = description
             project.drone_id = drone_id
-            if form.edit_log_file.data:
+            if form.edit_fixed_cam_checkbox.data:
+                remove_file(project.log_file)
+                log_error = None
+                drone_height = form.edit_fixed_cam_drone_height.data
+                drone_lat = form.edit_fixed_cam_drone_lat.data
+                drone_lon = form.edit_fixed_cam_drone_lon.data
+                drone_yaw = form.edit_fixed_cam_drone_yaw.data
+                drone_pitch = form.edit_fixed_cam_drone_pitch.data
+                drone_roll = form.edit_fixed_cam_drone_roll.data
+                log_filename = get_random_filename("fake_drone_log.csv")
+                log_file = AppConfig.data_dir.joinpath(log_filename)
+                create_fake_drone_log(log_file, drone_height, drone_lat, drone_lon, drone_yaw, drone_pitch, drone_roll)
+                success = drone_log.test_log(log_file)
+                if success:
+                    project.log_file = str(log_file)
+                if not success:
+                    remove_file(log_file)
+                    project.log_file = None
+                    log_error = "Error creating the artificial drone log file. Please try again."
+                project.log_error = log_error
+            elif form.edit_log_file.data:
                 remove_file(project.log_file)
                 log_error = None
                 log_filename = get_random_filename(form.edit_log_file.data.filename)

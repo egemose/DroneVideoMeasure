@@ -82,6 +82,30 @@
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript">
+  function on_fixed_cam_checkbox() {
+    var checkbox = document.getElementById("fixed_cam_checkbox");
+    if (checkbox.checked == true) {
+      $('.fixed_cam_forms').css('display', 'block');
+      $('#log_file').prop('disabled', true);
+      $('#log_file').addClass('disabled');
+    } else {
+      $('.fixed_cam_forms').css('display', 'none');
+      $('#log_file').prop('disabled', false);
+      $('#log_file').removeClass('disabled');
+    }
+  }
+  function on_edit_fixed_cam_checkbox() {
+    var checkbox = document.getElementById("edit_fixed_cam_checkbox");
+    if (checkbox.checked == true) {
+      $('.edit_fixed_cam_forms').css('display', 'block');
+      $('#edit_log_file').prop('disabled', true);
+      $('#edit_log_file').addClass('disabled');
+    } else {
+      $('.edit_fixed_cam_forms').css('display', 'none');
+      $('#edit_log_file').prop('disabled', false);
+      $('#edit_log_file').removeClass('disabled');
+    }
+  }
   $('#remove_project_modal').on('show.bs.modal', function(event) {
     var button = $(event.relatedTarget) // Button that triggered the modal
     var project = button.data('project') // Extract info from data-* attributes

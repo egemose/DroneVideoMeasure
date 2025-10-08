@@ -15,6 +15,34 @@
             {{ wtf.form_field(new_project_form.description) }}
             {{ wtf.form_field(new_project_form.drone) }}
             {{ wtf.form_field(new_project_form.log_file) }}
+            <div class="form-group">
+              {{ new_project_form.fixed_cam_checkbox(onclick="on_fixed_cam_checkbox()") }}
+              {{ new_project_form.fixed_cam_checkbox.label }}
+            </div>
+            <div class="form-group fixed_cam_forms" style="display: none;">
+              {{ new_project_form.fixed_cam_drone_height.label }}
+              {{ new_project_form.fixed_cam_drone_height(class_="form-control") }}
+            </div>
+            <div class="form-group fixed_cam_forms" style="display: none;">
+              {{ new_project_form.fixed_cam_drone_lat.label }}
+              {{ new_project_form.fixed_cam_drone_lat(class_="form-control") }}
+            </div>
+            <div class="form-group fixed_cam_forms" style="display: none;">
+              {{ new_project_form.fixed_cam_drone_lon.label }}
+              {{ new_project_form.fixed_cam_drone_lon(class_="form-control") }}
+            </div>
+            <div class="form-group fixed_cam_forms" style="display: none;">
+              {{ new_project_form.fixed_cam_drone_yaw.label }}
+              {{ new_project_form.fixed_cam_drone_yaw(class_="form-control") }}
+            </div>
+            <div class="form-group fixed_cam_forms" style="display: none;">
+              {{ new_project_form.fixed_cam_drone_pitch.label }}
+              {{ new_project_form.fixed_cam_drone_pitch(class_="form-control") }}
+            </div>
+            <div class="form-group fixed_cam_forms" style="display: none;">
+              {{ new_project_form.fixed_cam_drone_roll.label }}
+              {{ new_project_form.fixed_cam_drone_roll(class_="form-control") }}
+            </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
