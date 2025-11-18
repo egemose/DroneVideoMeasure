@@ -1,6 +1,9 @@
 DVM - Drone Video Measure
 =========================
 
+.. Important::
+    This project have been moved to https://github.com/SDU-UAS-Center/DVM where all future development and updates will be made available.
+
 A tool to measure and track things on a planar surface.
 Developed to measure and track marine mammals in the surface of the ocean.
 
