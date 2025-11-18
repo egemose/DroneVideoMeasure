@@ -1,3 +1,8 @@
+# Archive notice
+
+> [!IMPORTANT]  
+> This project have been moved to [https://github.com/SDU-UAS-Center/DVM](https://github.com/SDU-UAS-Center/DVM) where all future development and updates will be made available. 
+
 # Drone Video Measure
 
 A tool to measure and track things on a planar surface.
